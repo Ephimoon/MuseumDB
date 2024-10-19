@@ -7,6 +7,7 @@ import Art from './pages/Art';
 import MFAShop from './pages/MFAShop';
 import BecomeAMember from './pages/BecomeAMember';
 import BuyTickets from './pages/BuyTickets';
+import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
         
         <Route path='/BecomeAMember' element={<BecomeAMember />} />
         <Route path='/BuyTickets' element={<BuyTickets />} />
+        <Route path='/EventDirectorDash' element={<EventDirectorDashboard/>} />
       </Routes>
     </BrowserRouter>
   )
