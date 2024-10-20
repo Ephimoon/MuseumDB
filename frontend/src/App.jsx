@@ -9,6 +9,7 @@ import BecomeAMember from './pages/BecomeAMember';
 import BuyTickets from './pages/BuyTickets';
 import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
 
+
 const App = () => {
   return (
     <BrowserRouter>
