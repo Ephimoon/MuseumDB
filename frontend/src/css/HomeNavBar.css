@@ -1,0 +1,107 @@
+/* Apply Inter font to all text globally */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Ensure buttons, links, and other elements also inherit Inter font */
+button, a, p, li, span {
+    font-family: 'Inter', sans-serif;
+}
+
+.navbar {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: background-color 0.3s ease-in-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 100px; /* Adjust as necessary */
+    box-sizing: border-box;
+}
+  
+/* Container for logo, links, and buttons */
+.navbar-container {
+    display: flex;
+    width: 100%; /* Spread items across the navbar */
+    justify-content: space-between; /* Logo and links on the left, buttons on the right */
+    align-items: center;
+}
+  
+/* Left side: Logo and nav links */
+.left-side {
+    display: flex;
+    align-items: center;
+  }
+  
+/* Logo styling */
+.logo {
+    cursor: pointer;
+    height: 40px; /* Adjust logo size */
+    margin: 0; /* Reset any default margin */
+}
+
+/* Navigation Links */
+.nav-links {
+    display: flex;
+    list-style-type: none;
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+}
+
+.nav-links li {
+    margin-left: 20px;
+}
+
+/* text of the links */
+.nav-links a {
+    color: #FCFCFC;
+    font-style: normal;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* Buttons for "Become a Member" and "Buy Tickets" */
+.nav-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.nav-buttons .becomeamember {
+    padding: 8px 20px;
+    color: #FCFCFC;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    margin-right: 10px;
+}
+.nav-buttons .becomeamember:hover {
+    text-decoration: underline;
+}
+
+.nav-buttons .btn-outline {
+    padding: 8px 20px;
+    border-radius: 12px;
+    border: 2px solid #FCFCFC;
+    color: #FCFCFC;
+    background-color: transparent;
+    text-decoration: none;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.nav-buttons .btn-outline:hover {
+    background-color: #DC4A38;
+    color: #FCFCFC;
+}
