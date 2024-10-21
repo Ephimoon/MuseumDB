@@ -1,0 +1,9 @@
+.dashboard-container {
+    display: flex;
+  }
+  
+  .main-section {
+    flex-grow: 1;
+    background-color: #f8f8f8;
+  }
+  
