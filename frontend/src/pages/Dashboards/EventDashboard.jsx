@@ -60,38 +60,45 @@ const EventDirectorDashboard = () => {
                     </div>
                 </div>
 
-                {/* Events Section */}
-                <div className="events">
-                    <h3>Events</h3>
-                    <button className="add_event" onClick={addEventCard}>Add Event</button>
-                    
-                    {/* Event Cards */}
-                    <div className='event-cards-container'>
-                        {activeEvents.map((event) => (
-                            <div key={event.id} className="event-card">
-                                <p>Event Date: {event.date.toDateString()}</p>
-                                <button>Edit</button>
-                                <button className="Remove">Remove</button>
-                                <button>View Members</button>
-                            </div>
-                        ))}
-                    </div>
-                
+                {activeTab === 'dashboard' && (
+                    <div className="events">
+                        <h3>Events</h3>
+                        <button className="add_event" onClick={addEventCard}>Add Event</button>
 
-                    {/* Archive Section */}
-                    <div className="archive">
-                        <h3>Archive</h3>
-                        <div className='event-cards-container'>
-                            {archivedEvents.map((event) => (
+                        {/* Event Cards */}
+                        <div className="event-cards-container">
+                            {activeEvents.map((event) => (
                                 <div key={event.id} className="event-card">
-                                    <p>Archived Event Date: {event.date.toDateString()}</p>
+                                    {/*<p>Event Date: {event.date.toDateString()}</p>*/}
+                                    <button>Edit</button>
                                     <button className="Remove">Remove</button>
-                                    {/* You can add more actions here if needed */}
+                                    <button>View Members</button>
                                 </div>
                             ))}
                         </div>
+
+                        {/* Archive Section */}
+                        <div className="archive">
+                            <h3>Archive</h3>
+                            <div className="event-cards-container">
+                                {archivedEvents.map((event) => (
+                                    <div key={event.id} className="event-card">
+                                        <p>Archived Event Date: {event.date.toDateString()}</p>
+                                        <button className="Remove">Remove</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {activeTab === 'reports' && (
+                    <div className="reports-section">
+                        <h3>Reports</h3>
+                        {/* Add your report generation logic here */}
+                        <p>Generate reports for events here...</p>
+                    </div>
+                )}
             </div>
         </div>
     );
