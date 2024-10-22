@@ -16,7 +16,7 @@ const Visit = () => {
        <div>
            <Header />
 <Hero />
-           <div style={{ marginTop: '100px' }}> {/* Adjust the margin to match the
+           <div style={{ marginTop: '100px' }}> {/* margin to match the
 navbar height */}
                <HomeNavBar />
                <h1>Visit</h1> {/* Test, you can delete */}

@@ -11,7 +11,7 @@ const Home = () => {
         <div>
             <HomeNavBar />
             {/* Background Image */}
-            <img src={HomeImage} alt="MFAH Landing Page Image" className="BackgroundImage" />
+            <img src={HomeImage} alt="MFAH Landing Page Image" className="HomeBackgroundImage" />
             
             {/* Overlayed content */}
             <div className="home-content">
