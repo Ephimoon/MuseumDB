@@ -1,0 +1,9 @@
+.main-content {
+    padding: 20px;
+  }
+  
+  .events-section {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  

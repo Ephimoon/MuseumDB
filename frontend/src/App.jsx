@@ -8,7 +8,8 @@ import MFAShop from './pages/MFAShop';
 import BecomeAMember from './pages/BecomeAMember';
 import BuyTickets from './pages/BuyTickets';
 import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
-import MemberDashboard from './pages/Dashboards/MemberDashboard';
+import MemberDashboard from './pages/Dashboards/MemberDashboard/MemberDashboard';
+import Settings from './components/MemberDashboard/Settings';
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         <Route path='/BuyTickets' element={<BuyTickets />} />
         <Route path='/EventDirectorDash' element={<EventDirectorDashboard/>} />
         <Route path='/MemberDashboard' element={<MemberDashboard />} />
+        <Route path='/Settings' element={<Settings />} />
       </Routes>
     </BrowserRouter>
   )

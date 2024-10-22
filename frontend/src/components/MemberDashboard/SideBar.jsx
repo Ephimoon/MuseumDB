@@ -1,17 +1,20 @@
 import React from 'react';
-import '../../css/MemberDashboard/SideBar.css';  // Importing the CSS for styling the sidebar
+import '../../css/MemberDashboard/SideBar.css';  
+import logo from '../../assets/LOGO.png';
 
 const Sidebar = () => {
   return (
     <div className="sidebar">
       <div className="logo">
-        <h2>MFA</h2>
+        <img src={logo} alt='MFA Logo' />
       </div>
       <ul className="menu">
         <li><a href="/dashboard">Dashboard</a></li>
         <li><a href="/settings">Settings</a></li>
-        <li><a href="/logout" className="logout">Logout</a></li>
       </ul>
+      <div className='logout'>
+        <a href='logout'>Logout</a>
+      </div>
     </div>
   );
 };

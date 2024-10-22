@@ -1,0 +1,25 @@
+.settings-container {
+    padding: 20px;
+  }
+  
+  .settings-container h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .settings-options ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .settings-options li {
+    margin: 10px 0;
+    cursor: pointer;
+    color: #333;
+  }
+  
+  .settings-options li:hover {
+    color: #007bff; /* Change color on hover */
+    text-decoration: underline;
+  }
+  

@@ -1,6 +1,8 @@
 import React from 'react';
-import Sidebar from '../../components/MemberDashboard/SideBar';
-import '../../css/MemberDashboard/MemberDashboard.css'; // Custom CSS for the Member Dashboard page
+import Sidebar from '../../../components/MemberDashboard/SideBar';
+import Header from '../../../components/MemberDashboard/Header';
+import MainContent from '../../../components/MemberDashboard/MainContent';
+import '../../../css/MemberDashboard/MemberDashboard.css'; 
 
 
 
