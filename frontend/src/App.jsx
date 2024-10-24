@@ -9,7 +9,7 @@ import BecomeAMember from './pages/BecomeAMember';
 import BuyTickets from './pages/BuyTickets';
 import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
 import MemberDashboard from './pages/Dashboards/MemberDashboard/MemberDashboard';
-import Settings from './components/MemberDashboard/Settings';
+import Settings from './pages/Dashboards/MemberDashboard/Settings';
 
 const App = () => {
   return (

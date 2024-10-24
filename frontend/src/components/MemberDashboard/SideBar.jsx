@@ -9,7 +9,7 @@ const Sidebar = () => {
         <img src={logo} alt='MFA Logo' />
       </div>
       <ul className="menu">
-        <li><a href="/dashboard">Dashboard</a></li>
+        <li><a href="/MemberDashboard">Dashboard</a></li>
         <li><a href="/settings">Settings</a></li>
       </ul>
       <div className='logout'>

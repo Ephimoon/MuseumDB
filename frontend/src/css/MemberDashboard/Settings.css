@@ -1,3 +1,7 @@
+.header-container {
+    flex-grow: 1;
+  }
+
 .settings-container {
     padding: 20px;
   }
@@ -19,7 +23,7 @@
   }
   
   .settings-options li:hover {
-    color: #007bff; /* Change color on hover */
+    color: #007bff; 
     text-decoration: underline;
   }
   
