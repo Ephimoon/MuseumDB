@@ -4,7 +4,7 @@ import DashboardNavBar from '../../components/DashboardNavBar'
 const MemberDashboard = () => {
   return (
       <div>
-        <DashboardNavBar />
+        {/* <DashboardNavBar /> */}
       </div>
   )
 }

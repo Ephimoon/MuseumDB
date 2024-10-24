@@ -22,6 +22,8 @@ import CurateExhibitions from './pages/Dashboards/CurateExhibitions';
 import MFAShopStaff from './pages/Dashboards/MFAShopStaff';
 import ShopReport from './pages/Dashboards/ShopReport';
 
+import MemberDashboard from './pages/Dashboards/MemberDashboard';
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -37,7 +39,7 @@ const App = () => {
         <Route path='/BecomeAMember' element={<BecomeAMember />} />
         <Route path='/BuyTickets' element={<BuyTickets />} />
 
-        {/* DASHBOARDS */}
+        {/* EMPLOYEE DASHBOARDS */}
         <Route path='/AdminDashboard' element={<AdminDashboard/>} /> // will display employees
         <Route path='/admin-report' element={<AdminReport/>} />
 
@@ -51,6 +53,9 @@ const App = () => {
 
         <Route path='/MFAShopStaff' element={<MFAShopStaff/>} />
         <Route path='/shop-report' element={<ShopReport/>} />
+
+        {/* MEMBER DASHBOARD */}
+        <Route path='/MemberDashboard' element={<MemberDashboard/>} />
 
       </Routes>
     </BrowserRouter>
