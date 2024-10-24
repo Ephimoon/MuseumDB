@@ -1,0 +1,148 @@
+.ArtContainer {
+    padding-top: 100px;
+    min-height: 100vh;
+    background-color: #fcfcfc;
+    /* background: linear-gradient(180deg, #5D595E 2.49%, #352F36 97.51%); */
+}
+
+.ImageContainer {
+    width: 100%;
+    position: relative;
+}
+
+.HalfBackgroundImage {
+    width: 90%;
+    height: auto;
+    display: block;
+    margin: 0 auto; /* Centers the image horizontally */
+    position: relative;
+}
+
+.overlay {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 80px;
+    font-style: italic;
+    font-weight: 400;
+    color: #fcfcfc;
+    text-align: center;
+}
+
+/* --------------------------- SEARCH ITEMS --------------------------- */
+
+.FilterContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 1200px;
+    margin: 20px auto;
+    gap: 20px;
+}
+
+/* Flex container for the tabs */
+.tabs {
+    display: flex;
+    /* justify-content: center; */
+    gap: 15px;
+}
+
+.tabs button {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border: none;
+    background-color: #fcfcfc;
+    cursor: pointer;
+    color: #352F36;
+    border: solid 1px #D7D5D7;
+    border-radius: 12px;
+}
+
+.tabs .activeTab {
+    background-color: #D7D5D7; /* Your pinkish tone */
+}
+
+/* Search Section */
+.search {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.search input {
+    width: 50%; /* Make the search input take 50% of the parent container */
+    padding: 10px 15px;
+    border: 1px solid #D7D5D7;
+    color: #352F36;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    max-width: 600px; /* Optional: Set a max-width if you don't want it to exceed a certain size */
+}
+
+
+/* Filter Section */
+.filterSection {
+    display: flex;
+    /* justify-content: center; */
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filterSection select {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #D7D5D7;
+    border-radius: 5px;
+    color: #352F36;
+    background-color: #fcfcfc;
+}
+
+/* Tag Section */
+.tagContainer {
+    display: flex;
+    gap: 10px;
+    /* justify-content: center; */
+    flex-wrap: wrap;
+}
+
+.tagContainer span {
+    background-color: #D7D5D7;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    /* align-items: center; */
+}
+
+.tagContainer button {
+    background: none;
+    border: none;
+    color: #352F36;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+/* Sort By Section */
+.sortSection {
+    display: flex;
+    /* justify-content: center; */
+}
+
+.sortSection select {
+    padding: 10px;
+    font-size: 1rem;
+    color: #352F36;
+    border: 1px solid #D7D5D7;
+    border-radius: 5px;
+    background-color: #fcfcfc;
+}
