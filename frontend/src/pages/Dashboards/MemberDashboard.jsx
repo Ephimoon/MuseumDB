@@ -1,10 +1,11 @@
 import React from 'react'
+import DashboardNavBar from '../../components/DashboardNavBar'
 
 const MemberDashboard = () => {
   return (
-    <div>
-      
-    </div>
+      <div>
+        <DashboardNavBar />
+      </div>
   )
 }
 
