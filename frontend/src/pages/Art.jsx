@@ -216,7 +216,7 @@ const Art = () => {
             <div className={styles.ArtContainer}>
                 <HomeNavBar />
                 <div className={styles.ImageContainer}>
-                    <img src={ArtImage} alt="Art Image" className={styles.HalfBackgroundImage} />
+                    <img src={ArtImage} alt="Art" className={styles.HalfBackgroundImage} />
                     <div className={styles.overlay}>
                         <h1 className={styles.title}>Artwork</h1>
                     </div>
@@ -339,7 +339,7 @@ const Art = () => {
                         searchArtwork(artwork).length > 0 ? (
                             <div>
                                 <ArtworkCard artwork_={searchArtwork(artwork)} getArtistName_={getArtistName} onCardClick={handleArtworkExploreClick} />
-                                {isModalOpen && ( <ArtworkModalUser artwork_={selectedCard} onClose={closeModal} /> )}
+                                {isModalOpen && activeModalType === 'artwork' && ( <ArtworkModalUser artwork_={selectedCard} onClose={closeModal} /> )}
 
                             </div>
                         ) : (
@@ -349,7 +349,7 @@ const Art = () => {
                         searchArtists(artist).length > 0 ? (
                             <div>
                                 <ArtistCard artist_={searchArtists(artist)} onCardClick={handleArtistExploreClick} />
-                                {isModalOpen && ( <ArtistModalUser artist_={selectedCard} onClose={closeModal} /> )}
+                                {isModalOpen && activeModalType === 'artist' && ( <ArtistModalUser artist_={selectedCard} onClose={closeModal} /> )}
                             </div>
                         ) : (
                             <p>No artists found matching your query.</p>
