@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
-import ArtworkCard from '../components/ArtworkCard';
-import ArtistCard from '../components/ArtistCard';
+import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser } from '../components/ArtworkCard';
 import ArtImage from '../assets/art.png';
 import styles from '../css/Art.module.css';
 
@@ -93,6 +92,27 @@ const Art = () => {
     const [selectedGender, setSelectedGender] = useState('');
     const [selectedNationality, setSelectedNationality] = useState('');
     const [sortOption, setSortOption] = useState('A-Z');
+
+    const [selectedCard, setSelectedCard] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeModalType, setActiveModalType] = useState(null); // track modal type
+
+    const handleArtworkExploreClick = (artwork) => {
+        setSelectedCard(artwork);
+        setActiveModalType('artwork');
+        setIsModalOpen(true);
+    };
+    
+    const handleArtistExploreClick = (artist) => {
+        setSelectedCard(artist);
+        setActiveModalType('artist');
+        setIsModalOpen(true);
+    };
+    
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setActiveModalType(null); // Reset modal type on close
+    };
 
     // Get unique values for filter dropdowns
     const getUniqueValues = (data, key) => [...new Set(data.map(item => item[key]))];
@@ -189,7 +209,8 @@ const Art = () => {
         });
     };
     
-
+    console.log("Selected artwork:", selectedCard);
+    console.log("Selected artist:", selectedCard);
     return (
         <div>
             <div className={styles.ArtContainer}>
@@ -316,13 +337,20 @@ const Art = () => {
                 <div>
                     {activeTab === 'artwork' ? (
                         searchArtwork(artwork).length > 0 ? (
-                            <ArtworkCard artwork_={searchArtwork(artwork)} getArtistName_={getArtistName} />
+                            <div>
+                                <ArtworkCard artwork_={searchArtwork(artwork)} getArtistName_={getArtistName} onCardClick={handleArtworkExploreClick} />
+                                {isModalOpen && ( <ArtworkModalUser artwork_={selectedCard} onClose={closeModal} /> )}
+
+                            </div>
                         ) : (
                             <p>No artwork found matching your query.</p>
                         )
                     ) : (
                         searchArtists(artist).length > 0 ? (
-                            <ArtistCard artist_={searchArtists(artist)} />
+                            <div>
+                                <ArtistCard artist_={searchArtists(artist)} onCardClick={handleArtistExploreClick} />
+                                {isModalOpen && ( <ArtistModalUser artist_={selectedCard} onClose={closeModal} /> )}
+                            </div>
                         ) : (
                             <p>No artists found matching your query.</p>
                         )

@@ -5,8 +5,6 @@ import { ExhibitionsCardUser, ExhibitionModalUser } from '../components/Exhibiti
 import '../css/ExhibitionsAndEvents.css';
 
 const ExhibitionsAndEvents = () => {
-    const [selectedExhibition, setSelectedExhibition] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const exhibitions = [
         {
@@ -34,6 +32,9 @@ const ExhibitionsAndEvents = () => {
             description: 'Discover more about this exhibition.'
         },
     ];
+
+    const [selectedExhibition, setSelectedExhibition] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleExploreClick = (exhibition) => {
         setSelectedExhibition(exhibition);
