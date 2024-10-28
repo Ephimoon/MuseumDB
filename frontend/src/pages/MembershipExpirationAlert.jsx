@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import '/Users/dennis/Desktop/Programs/MuseumDB/frontend/src/css/MembershipExpirationAlert.css';
+import '../css/MembershipExpirationAlert.css';
 
 
 

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import '../../css/event_director.css'
+import logo from '../../assets/LOGO.png';
+
 
 const EventDirectorDashboard = () => {
     const [eventCards, setEventCards] = useState([]);
@@ -52,19 +54,23 @@ const EventDirectorDashboard = () => {
         <div className="dashboard-container">
             {/* Sidebar */}
             <div className="sidebar">
+                <a href="#" className="logo">
+                    <img src={logo} alt="logo" />
+                </a>
+               
                 <a
                     href="#"
                     className={`dashboard ${activeTab === 'dashboard' ? 'active' : ''}`}
                     onClick={() => handleTabClick('dashboard')}
                 >
-                    Dashboard
+                    Events
                 </a>
                 <a
                     href="#"
                     className={`reports ${activeTab === 'reports' ? 'active' : ''}`}
                     onClick={() => handleTabClick('reports')}
                 >
-                    Reports
+                    Event Reports
                 </a>
                 <a
                     href="#"
@@ -86,7 +92,7 @@ const EventDirectorDashboard = () => {
 
                 {activeTab === 'dashboard' && (
                     <div className="events">
-                        <h3>Events</h3>
+                        <h3>Active Events</h3>
                         <button className="add_event" onClick={addEventCard}>Add Event</button>
 
                         {/* Event Cards */}
@@ -103,7 +109,7 @@ const EventDirectorDashboard = () => {
 
                         {/* Archive Section */}
                         <div className="archive">
-                            <h3>Archive</h3>
+                            <h3>Archived Events</h3>
                             <div className="event-cards-container">
                                 {archivedEvents.map((event) => (
                                     <div key={event.id} className="event-card">
