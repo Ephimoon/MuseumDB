@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/BuyTickets.css';
+import Background from '../assets/TicketsBackground.png';
+
 
 const BuyTickets = () => {
   const [ticketCounts, setTicketCounts] = useState({
@@ -10,6 +12,7 @@ const BuyTickets = () => {
     child: 0
   });
 
+  
   const prices = {
     adult: 24,
     senior: 20,
