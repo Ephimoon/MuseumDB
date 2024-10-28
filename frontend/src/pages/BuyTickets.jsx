@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/BuyTickets.css';
-import Background from '../assets/TicketsBackground.png';
 
 
 const BuyTickets = () => {
