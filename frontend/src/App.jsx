@@ -41,12 +41,12 @@ const App = () => {
         <Route path='/BuyTickets' element={<BuyTickets />} />
 
         {/* EMPLOYEE DASHBOARDS */}
-        <Route path='/AdminDashboard' element={<AdminDashboard/>} /> // will display employees
+        <Route path='/AdminDashboard' element={<AdminDashboard/>} /> {/* will display employees */}
         <Route path='/admin-report' element={<AdminReport/>} />
 
         <Route path='/StaffDashboard' element={<StaffDashboard/>} />
 
-        <Route path='/EventDirectorDash' element={<EventDirectorDashboard/>} /> // prob change name to EventDirector ?? idk
+        <Route path='/EventDirectorDash' element={<EventDirectorDashboard/>} /> {/* prob change name to EventDirector ?? idk */}
         <Route path='/event-report' element={<EventReport/>} />
 
         <Route path='/curate-art' element={<CurateArt/>} />
