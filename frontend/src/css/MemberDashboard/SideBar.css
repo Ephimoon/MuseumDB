@@ -49,11 +49,17 @@
   margin-bottom: 20px; 
   text-align: center;
 }
-.sidebar .logout a{
+.sidebar .logout-button {
+  background: none;
+  border: none;
   color: red;
+  font-size: 25px;
+  cursor: pointer;
   text-decoration: none;
+  padding: 0;
+  font-family: inherit;
 }
 
-.sidebar .logout a:hover {
-  color: white
+.sidebar .logout-button:hover {
+  color: white;
 }
