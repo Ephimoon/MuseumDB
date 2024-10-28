@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/BuyTickets.css';
-
+import TicketBackground from '../assets/TicketsBackground.png';
 
 const BuyTickets = () => {
   const [ticketCounts, setTicketCounts] = useState({
@@ -10,7 +10,6 @@ const BuyTickets = () => {
     student: 0,
     child: 0
   });
-
   
   const prices = {
     adult: 24,
@@ -41,13 +40,21 @@ const BuyTickets = () => {
 
   const handlePurchase = () => {
     if (calculateTotal() > 0) {
-      // I might need to add some type of  payment processing logic here
+      // I might need to add some type of payment processing logic here
       alert(`Total Purchase: $${calculateTotal()}`);
     }
   };
 
   return (
-    <div className="tickets-container">
+    <div 
+      className="tickets-container"
+      style={{
+        backgroundImage: `linear-gradient(rgba(220, 74, 56, 0.2), rgba(220, 74, 56, 0.2)), url(${TicketBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <HomeNavBar />
       
       <div className="tickets-content">
@@ -94,5 +101,7 @@ const BuyTickets = () => {
     </div>
   );
 };
+
+
 
 export default BuyTickets;
