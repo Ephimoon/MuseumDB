@@ -1,12 +1,14 @@
+// src/pages/Login.jsx
 import React, { useState } from 'react';
-import { Container, Box, Button, TextField, Typography, CssBaseline, InputAdornment } from '@mui/material';
+import { Box, Button, TextField, Typography, InputAdornment, CssBaseline } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
-import HomeNavBar from '../components/HomeNavBar'; // Import HomeNavBar
-import '../css/Auth.module.css'; // Use consistent CSS
+import HomeNavBar from '../components/HomeNavBar';
+import '../css/Auth.module.css'; // Import the updated CSS
+import TicketBackground from '../assets/TicketsBackground.png';
 
-export default function Login() {
+const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
@@ -31,7 +33,6 @@ export default function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
@@ -49,60 +50,75 @@ export default function Login() {
     };
 
     return (
-        <>
-            <HomeNavBar /> {/* Add HomeNavBar */}
-            <Container component="main" maxWidth="xs" className="container">
+        <div
+            className="tickets-container"
+            style={{
+                backgroundImage: `linear-gradient(rgba(220, 74, 56, 0.2), rgba(220, 74, 56, 0.2)), url(${TicketBackground})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+            }}
+        >
+            <HomeNavBar />
+            <div className="tickets-content">
                 <CssBaseline />
-                <Box sx={{ mt: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Typography component="h1" variant="h5" className="h5">Login</Typography>
-                    {errors.server && <Typography color="error">{errors.server}</Typography>}
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="username"
-                            label="Username"
-                            error={!!errors.username}
-                            helperText={errors.username}
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <AccountIcon />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="password"
-                            label="Password"
-                            type="password"
-                            error={!!errors.password}
-                            helperText={errors.password}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <LockIcon />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-                        <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
-                            Login
-                        </Button>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                            Don't have an account? <Link to="/register">Register here</Link>
-                        </Typography>
-                    </Box>
+                <Typography component="h1" variant="h5" className="tickets-title">
+                    Login
+                </Typography>
+                {errors.server && <Typography color="error">{errors.server}</Typography>}
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="username"
+                        label="Username"
+                        error={!!errors.username}
+                        helperText={errors.username}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <AccountIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="password"
+                        label="Password"
+                        type="password"
+                        error={!!errors.password}
+                        helperText={errors.password}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <LockIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        className="purchase-button"
+                    >
+                        Login
+                    </Button>
+                    <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
+                        Don't have an account? <Link to="/register">Register here</Link>
+                    </Typography>
                 </Box>
-            </Container>
-        </>
+            </div>
+        </div>
     );
-}
+};
+
+export default Login;

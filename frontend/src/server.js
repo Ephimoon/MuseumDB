@@ -311,16 +311,21 @@ app.put('/giftshopitems/:id', upload.single('image'), async (req, res) => {
 });
 
 // Delete a gift shop item (Admin only)
-app.delete('/giftshopitems/:id', authenticateAdmin, async (req, res) => {
-    const {id} = req.params;
+app.delete('/giftshopitems/:id/hard-delete', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
 
     try {
         const sql = 'DELETE FROM giftshopitem WHERE item_id = ?';
-        await db.query(sql, [id]);
-        res.status(200).json({message: 'Gift shop item deleted successfully.'});
+        const [result] = await db.query(sql, [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Item not found or already deleted.' });
+        }
+
+        res.status(200).json({ message: 'Gift shop item permanently deleted.' });
     } catch (error) {
-        console.error('Error deleting gift shop item:', error);
-        res.status(500).json({message: 'Server error deleting gift shop item.'});
+        console.error('Error hard deleting gift shop item:', error);
+        res.status(500).json({ message: 'Server error during hard delete.' });
     }
 });
 // Soft delete a gift shop item (Admin only)
