@@ -1,118 +1,125 @@
 .tickets-container {
-    margin-top: 100px;
-    padding: 20px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  
-  .tickets-content {
-    background-color: white;
-    border-radius: 8px;
-    padding: 24px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .tickets-title {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 24px;
-    text-align: center;
-  }
-  
-  .ticket-types {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-  
-  .ticket-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
-  }
-  
-  .ticket-info {
-    flex: 1;
-  }
-  
-  .ticket-type {
-    font-size: 1.2rem;
-    text-transform: capitalize;
-    color: #333;
-    margin: 0;
-  }
-  
-  .ticket-price {
-    color: #666;
-    margin: 4px 0 0 0;
-  }
-  
-  .ticket-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .control-button {
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .control-button:hover {
-    background-color: #e0e0e0;
-  }
-  
-  .control-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .ticket-count {
-    min-width: 24px;
-    text-align: center;
-    font-size: 1.1rem;
-  }
-  
-  .purchase-section {
-    text-align: center;
-    margin-top: 24px;
-  }
-  
-  .total-amount {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 16px;
-  }
-  
-  .purchase-button {
-    background-color: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 12px 24px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .purchase-button:hover {
-    background-color: #1976d2;
-  }
-  
-  .purchase-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  position: relative;
+}
+
+.tickets-content {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-top: 100px;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.tickets-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.ticket-types {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.ticket-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.ticket-info {
+  flex: 1;
+}
+
+.ticket-type {
+  font-size: 1.2rem;
+  text-transform: capitalize;
+  color: #333;
+  margin: 0;
+}
+
+.ticket-price {
+  color: #666;
+  margin: 4px 0 0 0;
+}
+
+.ticket-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.control-button {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-button:hover {
+  background-color: #e0e0e0;
+}
+
+.control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ticket-count {
+  min-width: 24px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.purchase-section {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.total-amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.purchase-button {
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.purchase-button:hover {
+  background-color: #1976d2;
+}
+
+.purchase-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
