@@ -10,7 +10,10 @@ import BuyTickets from './pages/BuyTickets';
 
 import AdminDashboard from './pages/Dashboards/AdminDashboard';
 import AdminReport from './pages/Dashboards/AdminReport';
-
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import VerifyPage from './pages/VerifyPage';
+import LogoutPage from './pages/LogoutPage';
 import StaffDashboard from './pages/Dashboards/StaffDashboard';
 
 import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
@@ -58,7 +61,11 @@ const App = () => {
         {/* MEMBER DASHBOARD */}
         <Route path='/MemberDashboard' element={<MemberDashboard/>} />
         <Route path='/Settings' element={<Settings/>} />
-
+        {/* Authentication routes */}
+        <Route path='/login' element={<LoginPage/>} />
+        <Route path='/register' element={<RegisterPage />} />
+        <Route path='/verify' element={<VerifyPage />} />
+        <Route path="/logout" element={<LogoutPage />} />
       </Routes>
     </BrowserRouter>
   )
