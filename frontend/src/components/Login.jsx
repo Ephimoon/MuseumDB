@@ -19,7 +19,10 @@ export default function Login() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch(`${process.env.API_URL}/login`, {
+            console.log(process.env.REACT_APP_API_URL);
+            const loginUrl = `${process.env.REACT_APP_API_URL}/login`;
+            console.log("Login URL:", loginUrl);
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
