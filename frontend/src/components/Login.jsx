@@ -3,7 +3,6 @@ import { Container, Box, Button, TextField, Typography, CssBaseline, InputAdornm
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
-require('dotenv').config();
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
