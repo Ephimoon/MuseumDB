@@ -19,10 +19,10 @@ export default function Login() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            const response = await fetch(`${process.env.API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
             });
             if (response.ok) {
                 const data = await response.json();
