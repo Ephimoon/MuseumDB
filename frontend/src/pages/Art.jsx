@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
 import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser } from '../components/ArtworkCard';
 import ArtImage from '../assets/art.png';
 import styles from '../css/Art.module.css';
+import axios from 'axios';
+import config from '../config';
 
 const Art = () => {
+    const [artists, setArtists] = useState([]); // store artists data to fetch and display
+
+    // Fetch artists on component mount
+    useEffect(() => {
+        fetchArtist();
+    }, []);
+
+    const fetchArtist = () => {
+        axios.get(`${config.backendUrl}/artists`)
+            .then((response) => setArtists(response.data))
+            .catch(err => console.log(err));
+    };
+
     const artist = [
         { id: 1, image: "https://placehold.jp/500x400.png", name: 'Vincent van Gogh', gender_: 'male', nationality: 'Dutch', birth_year: '1853', death_year: '1890' },
         { id: 2, image: "https://placehold.jp/500x400.png", name: 'Leonardo da Vinci', gender_: 'male', nationality: 'Italian', birth_year: '1452', death_year: '1519' },
