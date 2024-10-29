@@ -1,31 +1,31 @@
-import express from 'express';
-import mysql from 'mysql2';
-import cors from 'cors';
-import multer from 'multer';
-import bcrypt from 'bcrypt'; // Added for password hashing
-
+const express = require('express');
+const mysql = require('mysql2/promise');
+const cors = require('cors');
+const multer = require('multer');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
 const app = express();
-const port = 6000; // Change to 6000 when you push to GitHub
+const port = 5000; // Change to 6000 when you push to GitHub
 app.use(cors({
-    origin: 'http://localhost:3002' // Change to 3002 when you push to GitHub
+    origin: 'http://localhost:3000' // Change to 3002 when you push to GitHub
 }));
 app.use(express.json());
 app.use(express.static('public')); // Allows access to the public folder for images
 
 // ----- DATABASE CONNECTION ----------------------------------------------------------------------
-const db = mysql.createConnection({ // We can add the env file later so this data is not exposed
-    host: 'museumcosc3380.mysql.database.azure.com',
-    user: 'Melanie',
-    password: 'StrongPassword123',
-    database: 'Museum'
+const db = mysql.createPool({ // We can add the env file later so this data is not exposed
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
-db.connect((err) => {
-    if (err) {
-        console.error('Error connecting to the database:', err);
-        return;
-    }
-    console.log('Connected to the MySQL database');
-});
+db.getConnection()
+    .then(() => console.log('Connected to the MySQL database'))
+    .catch((err) => console.error('Error connecting to the database:', err));
 // ------------------------------------------------------------------------------------------------
 
 // ----- MULTER: IMAGE UPLOAD ---------------------------------------------------------------------

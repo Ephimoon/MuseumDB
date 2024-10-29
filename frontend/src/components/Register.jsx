@@ -33,7 +33,7 @@ export default function Register() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch('http://localhost:3001/register', {
+            const response = await fetch('http://localhost:5000/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firstName, lastName, dateOfBirth, username, password, email }),
