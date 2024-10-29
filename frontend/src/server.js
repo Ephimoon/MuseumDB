@@ -5,10 +5,15 @@ const multer = require('multer');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 const app = express();
-const port = 6000; // Change to 6000 when you push to GitHub
+const port = 5000; // Change to 6000 when you push to GitHub
 app.use(cors({
-    origin: 'http://localhost:3002' // Change to 3002 when you push to GitHub
+    origin: [
+        'http://localhost:3000', 
+        'http://localhost:3002', 
+        'https://black-desert-0587dbd10.5.azurestaticapps.net'
+    ]
 }));
+
 app.use(express.json());
 app.use(express.static('public')); // Allows access to the public folder for images
 
