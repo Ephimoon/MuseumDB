@@ -11,9 +11,9 @@ const Navbar = () => {
     // Function to handle the navbar background on scroll
     const handleScroll = () => {
         if (window.scrollY > 50) {
-        setNavBackground('#352F36');
+            setNavBackground('#352F36');
         } else {
-        setNavBackground('transparent');
+            setNavBackground('transparent');
         }
     };
 
@@ -42,14 +42,16 @@ const Navbar = () => {
                         <li><a href="/MFAShop">MFA Shop</a></li>
                     </ul>
                 </div>
-                
+
                 {/* Right Side: Buttons */}
                 <div className="nav-buttons">
-                <a href="/BecomeAMember" className="becomeamember">Become a Member</a>
-                <button onClick={() => navigate('/BuyTickets')} className="btn-outline">Buy Tickets</button>
+                    <a href="/BecomeAMember" className="becomeamember">Become a Member</a>
+                    <button onClick={() => navigate('/BuyTickets')} className="btn-outline">Buy Tickets</button>
+                    <button onClick={() => navigate('/login')} className="btn-outline">Login</button>
+                    <button onClick={() => navigate('/register')} className="btn-outline">Register</button>
                 </div>
             </div>
-            </nav>
+        </nav>
     );
 };
 
