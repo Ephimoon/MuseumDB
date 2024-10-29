@@ -5,25 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/public/routes.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/assets/TicketsBackground.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/assets/ticket.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/css/BuyTickets.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/css/MembershipExpirationAlert.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/MembershipExpirationAlert.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/MemberDashboard/SideBar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MemberDashboard/SideBar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/Settings.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/Settings.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/SideBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/SideBar.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/event_director.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/event_director.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Art.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Art.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BuyTickets.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BuyTickets.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/MemberDashboard/Settings.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/MemberDashboard/Settings.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Visit.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Visit.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/.env" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Login.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Register.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Register.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Verify.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Verify.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -73,7 +60,7 @@
     "Node.js.Register.jsx.executor": "Run",
     "Node.js.server.js.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Merging Anh",
+    "git-widget-placeholder": "Anh",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "E:/Projects/MuseumDB/frontend/package.json",
@@ -94,7 +81,7 @@
       <recent name="E:\Projects\MuseumDB\frontend\src\pages\" />
     </key>
   </component>
-  <component name="RunManager" selected="Compound.Run server + client">
+  <component name="RunManager" selected="Node.js.server.js">
     <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
       <option name="appName" />
       <option name="appServicePlanName" />
@@ -154,11 +141,22 @@
       <workItem from="1730013036729" duration="4227000" />
       <workItem from="1730064938056" duration="16596000" />
       <workItem from="1730154909867" duration="2462000" />
-      <workItem from="1730173828488" duration="5533000" />
+      <workItem from="1730173828488" duration="7113000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/frontend/src/components/Logout.jsx</url>
+          <properties lambdaOrdinal="-1" />
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
