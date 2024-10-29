@@ -18,7 +18,9 @@ export default function Login() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch(`https://cosc3380-g0fbbcejc6f2f3f9.centralus-01.azurewebsites.net/login`, {
+            const loginUrl = `${process.env.REACT_APP_API_URL}/login`;
+            console.log("Login Endpoint URL:", loginUrl);
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
