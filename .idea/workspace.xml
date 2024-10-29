@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/public/routes.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/assets/TicketsBackground.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/assets/ticket.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/BuyTickets.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/MembershipExpirationAlert.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/pages/MembershipExpirationAlert.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MemberDashboard/SideBar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MemberDashboard/SideBar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/Settings.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/Settings.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/SideBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/MemberDashboard/SideBar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/css/event_director.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/event_director.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Art.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Art.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BuyTickets.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BuyTickets.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/MemberDashboard/Settings.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/MemberDashboard/Settings.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Visit.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Visit.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/server.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JSX File" />
+        <option value="CSS File" />
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;leo2971998&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Ephimoon/MuseumDB.git&quot;,
+    &quot;accountId&quot;: &quot;00f8a867-6507-43b0-82ad-48f342da4666&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="2ngMmHmv86bcVYIUFLyKS9H1wUv" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Node.js.HomeNavBar.jsx.executor": "Run",
+    "Node.js.Register.jsx.executor": "Run",
+    "Node.js.server.js.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "Merging Anh",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "E:/Projects/MuseumDB/frontend/package.json",
+    "list.type.of.created.stylesheet": "CSS",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.npm start.executor": "Run",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\Projects\MuseumDB\frontend\" />
+      <recent name="E:\Projects\MuseumDB\frontend\src\pages\" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Compound.Run server + client">
+    <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
+      <option name="appName" />
+      <option name="appServicePlanName" />
+      <option name="appServicePlanResourceGroup" />
+      <option name="appSettingsKey" value="3ac96a00-1fd8-4bfb-ab7b-e01d81a35e58" />
+      <option name="artifact" />
+      <option name="debugOptions" />
+      <option name="deployment" />
+      <option name="deploymentStagingDirectoryPath" />
+      <option name="funcPath" />
+      <option name="functionHostArguments" />
+      <option name="hostJsonPath" />
+      <option name="insightsName" />
+      <option name="instrumentationKey" />
+      <option name="javaVersion" />
+      <option name="localSettingsJsonPath" />
+      <option name="moduleName" />
+      <option name="os" />
+      <option name="pricingTier" />
+      <option name="providerMap">
+        <map />
+      </option>
+      <option name="region" />
+      <option name="resourceGroup" />
+      <option name="stagingFolder" />
+      <option name="subscription" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Compound.Run server + client" />
+      <item itemvalue="Node.js.server.js" />
+      <item itemvalue="npm.npm start" />
+    </list>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="" />
+      <created>1729390425622</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1729390425622</updated>
+      <workItem from="1729390431772" duration="4928000" />
+      <workItem from="1729721588846" duration="1031000" />
+      <workItem from="1729981775513" duration="30000" />
+      <workItem from="1729981831779" duration="6833000" />
+      <workItem from="1730013036729" duration="4227000" />
+      <workItem from="1730064938056" duration="16596000" />
+      <workItem from="1730154909867" duration="2462000" />
+      <workItem from="1730173828488" duration="5533000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
