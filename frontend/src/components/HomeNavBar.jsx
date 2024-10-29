@@ -45,6 +45,7 @@ const Navbar = () => {
                 
                 {/* Right Side: Buttons */}
                 <div className="nav-buttons">
+                <a href="/BecomeAMember" className="becomeamember">Member Login</a>
                 <a href="/BecomeAMember" className="becomeamember">Become a Member</a>
                 <button onClick={() => navigate('/BuyTickets')} className="btn-outline">Buy Tickets</button>
                 </div>
