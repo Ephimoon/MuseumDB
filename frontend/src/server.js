@@ -6,7 +6,14 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 const app = express();
 const port = 5000; // Change to 6000 when you push to GitHub
-app.use(cors());
+app.use(cors({
+    origin: (origin, callback) => {
+        callback(null, true); // Allows any origin
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true // Allows credentials like cookies
+}));
 
 app.use(express.json());
 app.use(express.static('public')); // Allows access to the public folder for images
