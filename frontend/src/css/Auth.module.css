@@ -1,29 +1,21 @@
 /* Auth.module.css */
 
 .container {
-    padding-top: 100px;
+    padding-top: 60px; /* Add top padding to avoid navbar overlap */
     min-height: 100vh;
-    background-color: #fff;  /* White background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 button {
-    background-color: #B71C1C;  /* Dark Red background */
-    color: #fff;  /* White text */
+    background-color: #B71C1C; /* Dark Red background */
+    color: #fff;
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 12px 20px;
+    font-size: 16px;
 }
 
-input {
-    border: 1px solid #B71C1C;  /* Dark Red border */
-    color: #B71C1C;  /* Dark Red text */
-}
-
-a {
-    color: #B71C1C;  /* Dark Red links */
-    text-decoration: none;
-}
-
-h5 {
-    color: #B71C1C;
-    font-weight: bold;
+button:hover {
+    background-color: #8E0000; /* Darker Red */
 }
