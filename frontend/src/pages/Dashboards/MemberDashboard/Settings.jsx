@@ -6,9 +6,9 @@ import Header from '../../../components/MemberDashboard/Header';
 const Settings = () => {
   return (
     <div className="dashboard-container">
-      <Sidebar />  {/* Reuse the Sidebar */}
+      <Sidebar />  
       <div className="header-container">
-        <Header />  {/* Reuse the Header */}
+        <Header />  
         <div className="settings-container">
           <h2>Settings</h2>
             <div className='settings-options'>
