@@ -11,6 +11,8 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         quantity: '',
         image: null
     });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     useEffect(() => {
         if (item) {
@@ -23,6 +25,32 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             });
         }
     }, [item]);
+
+    const confirmDelete = (id) => {
+        setItemToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const cancelDelete = () => {
+        setItemToDelete(null);
+        setShowDeleteModal(false);
+    };
+
+    const handleConfirmDelete = () => {
+        if (itemToDelete) {
+            handleDelete(itemToDelete);
+        }
+        cancelDelete();
+    };
+
+    const handleDelete = (id) => {
+        const role = localStorage.getItem('role');
+        axios.put(`http://localhost:5000/giftshopitems/${id}/soft-delete`, {}, {
+            headers: { role }
+        })
+            .then(() => onClose())
+            .catch(error => console.error('Error soft deleting item:', error));
+    };
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
@@ -126,8 +154,30 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
                         <button type="button" className={styles.formButton} onClick={onClose}>
                             Cancel
                         </button>
+                        {item && item.item_id && (
+                            <button
+                                type="button"
+                                className={styles.formButton}
+                                onClick={() => confirmDelete(item.item_id)}
+                            >
+                                Delete
+                            </button>
+                        )}
                     </div>
                 </form>
+                {showDeleteModal && (
+                    <div className={styles.modal}>
+                        <div className={styles.modal_content}>
+                            <span className={styles.close_button} onClick={cancelDelete}>&times;</span>
+                            <h2>Confirm Deletion</h2>
+                            <p>Are you sure you want to delete this item?</p>
+                            <div className={styles.buttonGroup}>
+                                <button className={styles.formButton} onClick={handleConfirmDelete}>Yes, Delete</button>
+                                <button className={styles.formButton} onClick={cancelDelete}>Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

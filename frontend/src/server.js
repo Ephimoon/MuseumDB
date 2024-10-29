@@ -236,14 +236,23 @@ app.post('/giftshopitems', upload.single('image'), async (req, res) => {
 // Get all gift shop items
 app.get('/giftshopitems', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT item_id, name_, category, price, quantity FROM giftshopitem');
+        const [rows] = await db.query('SELECT item_id, name_, category, price, quantity, is_deleted FROM giftshopitem where is_deleted = 0');
         res.json(rows);
     } catch (error) {
         console.error('Error fetching gift shop items:', error);
         res.status(500).json({ message: 'Server error fetching gift shop items.' });
     }
 });
-
+// Get all gift shop items (Admin only)
+app.get('/giftshopitemsall', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT item_id, name_, category, price, quantity, is_deleted FROM giftshopitem');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching gift shop items:', error);
+        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+    }
+});
 // Get image for a specific gift shop item
 app.get('/giftshopitems/:id/image', async (req, res) => {
     const { id } = req.params;
@@ -272,11 +281,14 @@ app.put('/giftshopitems/:id', upload.single('image'), async (req, res) => {
         const sql = `
             UPDATE giftshopitem
             SET name_ = ?, category = ?, price = ?, quantity = ?, image = ?
-            WHERE item_id = ?
+            WHERE item_id = ? AND is_deleted = 0
         `;
         const values = [name_, category, parseFloat(price), quantity, imageBlob, id];
 
-        await db.query(sql, values);
+        const [result] = await db.query(sql, values);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Item not found or already deleted.' });
+        }
         res.status(200).json({ message: 'Item updated successfully' });
     } catch (error) {
         console.error('Error updating gift shop item:', error);
@@ -297,6 +309,35 @@ app.delete('/giftshopitems/:id', authenticateAdmin, async (req, res) => {
         res.status(500).json({ message: 'Server error deleting gift shop item.' });
     }
 });
+// Soft delete a gift shop item (Admin only)
+app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sql = 'UPDATE giftshopitem SET is_deleted = 1 WHERE item_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'Gift shop item marked as deleted.' });
+    } catch (error) {
+        console.error('Error soft deleting gift shop item:', error);
+        res.status(500).json({ message: 'Server error soft deleting gift shop item.' });
+    }
+});
+// Restore a gift shop item (Admin only)
+app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sql = 'UPDATE giftshopitem SET is_deleted = 0 WHERE item_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'Gift shop item restored successfully.' });
+    } catch (error) {
+        console.error('Error restoring gift shop item:', error);
+        res.status(500).json({ message: 'Server error restoring gift shop item.' });
+    }
+});
+// Update item API
+
+
 // ----- (LEO DONE) --------------------------------------------------------------------------------
 
 // ----- (MUNA) ------------------------------------------------------------------------------------
