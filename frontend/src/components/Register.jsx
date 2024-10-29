@@ -1,15 +1,18 @@
+// src/pages/Register.jsx
 import React, { useState } from 'react';
 import {
-    Box, Button, Container, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Grid,
-    InputAdornment, TextField, Typography
+    Box, Button, TextField, Typography, InputAdornment, Grid, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle
 } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import AccountIcon from '@mui/icons-material/AccountBox';
+import HomeNavBar from '../components/HomeNavBar';
+import '../css/Auth.module.css';
+import TicketBackground from '../assets/TicketsBackground.png'; // Use the same background image
 
-export default function Register() {
+const Register = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
@@ -55,12 +58,23 @@ export default function Register() {
     };
 
     return (
-        <Container component="main" maxWidth="xs">
-            <CssBaseline />
-            <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Typography component="h1" variant="h5">Register</Typography>
+        <div
+            className="tickets-container"
+            style={{
+                backgroundImage: `linear-gradient(rgba(220, 74, 56, 0.2), rgba(220, 74, 56, 0.2)), url(${TicketBackground})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+            }}
+        >
+            <HomeNavBar />
+            <div className="tickets-content">
+                <CssBaseline />
+                <Typography component="h1" variant="h5" className="tickets-title">
+                    Register
+                </Typography>
                 {errors.server && <Typography color="error">{errors.server}</Typography>}
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                             <TextField
@@ -71,9 +85,11 @@ export default function Register() {
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 InputProps={{
-                                    startAdornment: (<InputAdornment position="start">
-                                        <PersonIcon />
-                                    </InputAdornment>),
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <PersonIcon />
+                                        </InputAdornment>
+                                    ),
                                 }}
                             />
                         </Grid>
@@ -86,9 +102,11 @@ export default function Register() {
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 InputProps={{
-                                    startAdornment: (<InputAdornment position="start">
-                                        <PersonIcon />
-                                    </InputAdornment>),
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <PersonIcon />
+                                        </InputAdornment>
+                                    ),
                                 }}
                             />
                         </Grid>
@@ -102,6 +120,7 @@ export default function Register() {
                         value={dateOfBirth}
                         onChange={(e) => setDateOfBirth(e.target.value)}
                         InputLabelProps={{ shrink: true }}
+                        sx={{ mt: 2 }}
                     />
                     <TextField
                         margin="normal"
@@ -114,9 +133,11 @@ export default function Register() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         InputProps={{
-                            startAdornment: (<InputAdornment position="start">
-                                <AccountIcon />
-                            </InputAdornment>),
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <AccountIcon />
+                                </InputAdornment>
+                            ),
                         }}
                     />
                     <TextField
@@ -131,9 +152,11 @@ export default function Register() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         InputProps={{
-                            startAdornment: (<InputAdornment position="start">
-                                <LockIcon />
-                            </InputAdornment>),
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <LockIcon />
+                                </InputAdornment>
+                            ),
                         }}
                     />
                     <TextField
@@ -147,15 +170,22 @@ export default function Register() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         InputProps={{
-                            startAdornment: (<InputAdornment position="start">
-                                <EmailIcon />
-                            </InputAdornment>),
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <EmailIcon />
+                                </InputAdornment>
+                            ),
                         }}
                     />
-                    <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        className="purchase-button"
+                    >
                         Register
                     </Button>
-                    <Typography variant="body2">
+                    <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
                         Already have an account? <Link to="/login">Login here</Link>
                     </Typography>
                 </Box>
@@ -163,10 +193,14 @@ export default function Register() {
                     <DialogTitle>Registration Successful</DialogTitle>
                     <DialogContent>Thank you for registering!</DialogContent>
                     <DialogActions>
-                        <Button onClick={handleDialogClose} color="primary">OK</Button>
+                        <Button onClick={handleDialogClose} color="primary">
+                            OK
+                        </Button>
                     </DialogActions>
                 </Dialog>
-            </Box>
-        </Container>
+            </div>
+        </div>
     );
-}
+};
+
+export default Register;

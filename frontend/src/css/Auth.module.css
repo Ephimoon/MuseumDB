@@ -1,21 +1,93 @@
-/* Auth.module.css */
-
-.container {
-    padding-top: 60px; /* Add top padding to avoid navbar overlap */
+/* src/css/Login.css */
+.tickets-container {
     min-height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    padding: 20px;
+    position: relative;
 }
 
-button {
-    background-color: #B71C1C; /* Dark Red background */
-    color: #fff;
+.tickets-content {
+    background-color: rgba(255, 255, 255, 0.95);
     border-radius: 8px;
-    padding: 12px 20px;
-    font-size: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 100px;
+    max-width: 500px; /* Adjusted width suitable for the login form */
+    width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
-button:hover {
-    background-color: #8E0000; /* Darker Red */
+.tickets-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
 }
+
+.purchase-button {
+    margin-top: 24px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 0;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.purchase-button:hover {
+    background-color: #1976d2;
+}
+
+a {
+    color: #2196f3;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .tickets-content {
+        margin-top: 60px;
+        padding: 16px;
+    }
+}
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.auth-content {
+    max-width: 400px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 80px;
+}
+
+.auth-title {
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.auth-button {
+    background-color: #1976d2;
+    color: white;
+}
+
+.auth-button:hover {
+    background-color: #1565c0;
+}
+

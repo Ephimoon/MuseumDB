@@ -1,11 +1,12 @@
-// src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Box, Button, TextField, Typography, CssBaseline } from '@mui/material';
-import HomeNavBar from '../components/HomeNavBar'; // Import HomeNavBar
-import dayjs from 'dayjs';
-import '../css/Auth.module.css'; // Consistent styling
-
+import {
+    Box, Button, Container, CssBaseline, TextField, Typography
+} from '@mui/material';
+import HomeNavBar from '../components/HomeNavBar';
+import TicketBackground from '../assets/TicketsBackground.png'; // Import background image
+import '../css/Auth.module.css'; // Consistent styling with login and register
+import dayjs from "dayjs";
 const ProfilePage = () => {
     const [userData, setUserData] = useState({
         firstName: '',
@@ -48,12 +49,35 @@ const ProfilePage = () => {
     };
 
     return (
-        <>
-            <HomeNavBar /> {/* Add HomeNavBar */}
-            <Container component="main" maxWidth="xs" className="container">
+        <div
+            className="auth-container"
+            style={{
+                backgroundImage: `url(${TicketBackground})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                minHeight: '100vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <HomeNavBar />
+            <Container component="main" maxWidth="xs" className="auth-content">
                 <CssBaseline />
-                <Box sx={{ mt: 12, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Typography component="h1" variant="h5" className="h5">
+                <Box
+                    sx={{
+                        marginTop: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        padding: '24px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                    }}
+                >
+                    <Typography component="h1" variant="h5" className="auth-title">
                         Your Profile
                     </Typography>
                     {message && <Typography color="success" sx={{ mt: 2 }}>{message}</Typography>}
@@ -110,13 +134,20 @@ const ProfilePage = () => {
                             onChange={handleChange}
                             required
                         />
-                        <Button type="submit" fullWidth variant="contained" color="primary" sx={{ mt: 3, mb: 2 }}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            sx={{ mt: 3, mb: 2 }}
+                            className="auth-button"
+                        >
                             Update Profile
                         </Button>
                     </Box>
                 </Box>
             </Container>
-        </>
+        </div>
     );
 };
 

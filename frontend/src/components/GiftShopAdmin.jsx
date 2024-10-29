@@ -1,4 +1,3 @@
-// src/pages/GiftShopAdmin.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GiftShopFormModal from '../components/GiftShopForm';
@@ -9,7 +8,9 @@ const GiftShopAdmin = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showRestoreModal, setShowRestoreModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [itemToRestore, setItemToRestore] = useState(null);
 
     useEffect(() => {
         fetchItems();
@@ -25,6 +26,7 @@ const GiftShopAdmin = () => {
         return `http://localhost:5000/giftshopitems/${itemId}/image`;
     };
 
+    // Confirm Soft or Hard Delete
     const confirmDelete = (id) => {
         setItemToDelete(id);
         setShowDeleteModal(true);
@@ -35,20 +37,40 @@ const GiftShopAdmin = () => {
         setShowDeleteModal(false);
     };
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = (isHardDelete) => {
         if (itemToDelete) {
-            handleDelete(itemToDelete);
+            isHardDelete ? handleHardDelete(itemToDelete) : handleSoftDelete(itemToDelete);
         }
         cancelDelete();
     };
 
-    const handleDelete = (id) => {
+    const handleSoftDelete = (id) => {
         const role = localStorage.getItem('role');
         axios.put(`http://localhost:5000/giftshopitems/${id}/soft-delete`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())
             .catch(error => console.error('Error soft deleting item:', error));
+    };
+
+    const handleHardDelete = (id) => {
+        const role = localStorage.getItem('role');
+        axios.delete(`http://localhost:5000/giftshopitems/${id}/hard-delete`, {
+            headers: { role }
+        })
+            .then(() => fetchItems())
+            .catch(error => console.error('Error hard deleting item:', error));
+    };
+
+    // Confirm Restore
+    const confirmRestore = (id) => {
+        setItemToRestore(id);
+        setShowRestoreModal(true);
+    };
+
+    const cancelRestore = () => {
+        setItemToRestore(null);
+        setShowRestoreModal(false);
     };
 
     const handleRestore = (id) => {
@@ -58,6 +80,7 @@ const GiftShopAdmin = () => {
         })
             .then(() => fetchItems())
             .catch(error => console.error('Error restoring item:', error));
+        cancelRestore();
     };
 
     const openFormModal = (item = null) => {
@@ -97,7 +120,7 @@ const GiftShopAdmin = () => {
                         <td>{item.category}</td>
                         <td>${parseFloat(item.price).toFixed(2)}</td>
                         <td>{item.quantity}</td>
-                        <td>{Number(item.is_deleted) === 1 ? 'Deleted' : 'Active'}</td> {/* Corrected line */}
+                        <td>{Number(item.is_deleted) === 1 ? 'Deleted' : 'Active'}</td>
                         <td>
                             <img
                                 src={getImageUrl(item.item_id)}
@@ -108,16 +131,18 @@ const GiftShopAdmin = () => {
                         <td>
                             <button className={styles.actionButton} onClick={() => openFormModal(item)}>Edit</button>
                             {Number(item.is_deleted) === 0 ? (
-                                <button
-                                    className={styles.actionButton}
-                                    onClick={() => confirmDelete(item.item_id)}
-                                >
-                                    Delete
-                                </button>
+                                <>
+                                    <button
+                                        className={styles.actionButton}
+                                        onClick={() => confirmDelete(item.item_id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </>
                             ) : (
                                 <button
                                     className={styles.actionButton}
-                                    onClick={() => handleRestore(item.item_id)}
+                                    onClick={() => confirmRestore(item.item_id)}
                                 >
                                     Restore
                                 </button>
@@ -133,15 +158,35 @@ const GiftShopAdmin = () => {
                     onClose={closeFormModal}
                 />
             )}
+            {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div className={styles.modal}>
                     <div className={styles.modal_content}>
                         <span className={styles.close_button} onClick={cancelDelete}>&times;</span>
                         <h2>Confirm Deletion</h2>
-                        <p>Are you sure you want to delete this item?</p>
+                        <p>Do you want to soft delete or permanently delete this item?</p>
                         <div className={styles.buttonGroup}>
-                            <button className={styles.formButton} onClick={handleConfirmDelete}>Yes, Delete</button>
+                            <button className={styles.formButton} onClick={() => handleConfirmDelete(false)}>
+                                Soft Delete
+                            </button>
+                            <button className={styles.formButton} onClick={() => handleConfirmDelete(true)}>
+                                Hard Delete
+                            </button>
                             <button className={styles.formButton} onClick={cancelDelete}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Restore Confirmation Modal */}
+            {showRestoreModal && (
+                <div className={styles.modal}>
+                    <div className={styles.modal_content}>
+                        <span className={styles.close_button} onClick={cancelRestore}>&times;</span>
+                        <h2>Confirm Restore</h2>
+                        <p>Are you sure you want to restore this item?</p>
+                        <div className={styles.buttonGroup}>
+                            <button className={styles.formButton} onClick={() => handleRestore(itemToRestore)}>Yes, Restore</button>
+                            <button className={styles.formButton} onClick={cancelRestore}>Cancel</button>
                         </div>
                     </div>
                 </div>
