@@ -34,7 +34,7 @@ button, a, p, li, span {
 .left-side {
     display: flex;
     align-items: center;
-  }
+}
 
 /* Logo styling */
 .logo {
@@ -84,6 +84,7 @@ button, a, p, li, span {
     font-weight: 400;
     margin-right: 10px;
 }
+
 .nav-buttons .becomeamember:hover {
     text-decoration: underline;
 }
@@ -104,4 +105,55 @@ button, a, p, li, span {
 .nav-buttons .btn-outline:hover {
     background-color: #DC4A38;
     color: #FCFCFC;
+}
+
+.left-side {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    margin-left: 20px;
+}
+
+.nav-links li {
+    margin-right: 20px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #FFFFFF;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.btn-outline {
+    margin-left: 10px;
+    padding: 8px 16px;
+    border: 1px solid #FFFFFF;
+    background: none;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.becomeamember {
+    margin-right: 10px;
+    color: #FFFFFF;
+    text-decoration: none;
+}
+
+.welcome-message {
+    color: #FFFFFF;
+    margin-right: 10px;
+}
+
+.read-only-input {
+    background-color: #f0f0f0;
+    color: #888;
+    cursor: not-allowed;
 }

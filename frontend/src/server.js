@@ -32,8 +32,7 @@ db.getConnection()
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'public/images');
-    },
-    filename: (req, file, cb) => {
+    }, filename: (req, file, cb) => {
         const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
         cb(null, safeFileName);
     }
@@ -49,7 +48,7 @@ const storage = multer.diskStorage({
 app.get('/artwork', (req, res) => {
     const sql = 'SELECT * FROM artwork';
     db.query(sql, (err, result) => {
-        if (err) return res.json({ message: "Error fetching artwork table" });
+        if (err) return res.json({message: "Error fetching artwork table"});
         return res.json(result);
     });
 });
@@ -58,7 +57,7 @@ app.get('/artwork', (req, res) => {
 app.get('/department', (req, res) => {
     const sql = 'SELECT * FROM department';
     db.query(sql, (err, result) => {
-        if (err) return res.json({ message: "Error fetching department table" });
+        if (err) return res.json({message: "Error fetching department table"});
         return res.json(result);
     });
 });
@@ -67,7 +66,7 @@ app.get('/department', (req, res) => {
 app.get('/artist', (req, res) => {
     const sql = 'SELECT * FROM artist';
     db.query(sql, (err, result) => {
-        if (err) return res.json({ message: "Error fetching artist table" });
+        if (err) return res.json({message: "Error fetching artist table"});
         return res.json(result);
     });
 });
@@ -78,7 +77,7 @@ app.get('/artist', (req, res) => {
 
 // User registration
 app.post('/register', async (req, res) => {
-    const { firstName, lastName, dateOfBirth, username, password, email, roleId } = req.body;
+    const {firstName, lastName, dateOfBirth, username, password, email, roleId} = req.body;
 
     const newErrors = {};
     if (!firstName) newErrors.firstName = 'First name is required';
@@ -89,7 +88,7 @@ app.post('/register', async (req, res) => {
     if (!email) newErrors.email = 'Email is required';
 
     if (Object.keys(newErrors).length > 0) {
-        return res.status(400).json({ message: 'Validation error', errors: newErrors });
+        return res.status(400).json({message: 'Validation error', errors: newErrors});
     }
 
     try {
@@ -102,67 +101,79 @@ app.post('/register', async (req, res) => {
         const values = [firstName, lastName, dateOfBirth, username, hashedPassword, email, assignedRoleId];
 
         await db.query(sql, values);
-        res.status(201).json({ message: 'User registered successfully.' });
+        res.status(201).json({message: 'User registered successfully.'});
     } catch (error) {
         console.error('Error during registration:', error);
-        res.status(500).json({ message: 'Server error during registration.' });
+        res.status(500).json({message: 'Server error during registration.'});
     }
 });
 
 // User login
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required.' });
+        return res.status(400).json({message: 'Username and password are required.'});
     }
 
     try {
         const [user] = await db.query(`
             SELECT users.*, roles.role_name
             FROM users
-            JOIN roles ON users.role_id = roles.id
+                     JOIN roles ON users.role_id = roles.id
             WHERE users.username = ?`, [username]);
 
         if (user.length === 0) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         const passwordMatch = await bcrypt.compare(password, user[0].password);
         if (!passwordMatch) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         res.status(200).json({
-            message: 'Login successful!',
-            userId: user[0].id,
-            role: user[0].role_name,
+            message: 'Login successful!', userId: user[0].user_id, role: user[0].role_name, username: user[0].username, // Include username in response if needed
         });
     } catch (error) {
         console.error('Server error during login:', error);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({message: 'Server error.'});
     }
 });
+
 // ----- AUTHENTICATION MIDDLEWARE -----
 function authenticateAdmin(req, res, next) {
-    const { role } = req.headers;
+    const {role} = req.headers;
     if (role === 'admin' || role === 'staff') {
         next();
     } else {
-        res.status(403).json({ message: 'Access denied. Admins only.' });
+        res.status(403).json({message: 'Access denied. Admins only.'});
+    }
+}
+
+function authenticateUser(req, res, next) {
+    const userId = req.headers['user-id'];
+    const role = req.headers['role'];
+
+    if (userId && role) {
+        req.userId = userId;
+        req.userRole = role;
+        next();
+    } else {
+        res.status(401).json({message: 'Unauthorized access.'});
     }
 }
 
 // ----- MULTER CONFIGURATION -----
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({storage: multer.memoryStorage()});
 
 // ----- USER REGISTRATION -----
 app.post('/register', async (req, res) => {
-    const { firstName, lastName, dateOfBirth, username, password, email } = req.body;
+    const {firstName, lastName, dateOfBirth, username, password, email} = req.body;
 
     // Validation (simplified for brevity)
     if (!firstName || !lastName || !dateOfBirth || !username || !password || !email) {
-        return res.status(400).json({ message: 'All fields are required.' });
+        return res.status(400).json({message: 'All fields are required.'});
     }
 
     try {
@@ -174,41 +185,39 @@ app.post('/register', async (req, res) => {
         const values = [firstName, lastName, dateOfBirth, username, hashedPassword, email, 2]; // Default role_id 2 (Customer)
 
         await db.query(sql, values);
-        res.status(201).json({ message: 'User registered successfully.' });
+        res.status(201).json({message: 'User registered successfully.'});
     } catch (error) {
         console.error('Error during registration:', error);
-        res.status(500).json({ message: 'Server error during registration.' });
+        res.status(500).json({message: 'Server error during registration.'});
     }
 });
 
 // ----- USER LOGIN -----
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
 
     try {
         const [user] = await db.query(`
             SELECT users.*, roles.role_name
             FROM users
-            JOIN roles ON users.role_id = roles.id
+                     JOIN roles ON users.role_id = roles.id
             WHERE users.username = ?`, [username]);
 
         if (user.length === 0) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         const passwordMatch = await bcrypt.compare(password, user[0].password);
         if (!passwordMatch) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         res.status(200).json({
-            message: 'Login successful!',
-            userId: user[0].user_id,
-            role: user[0].role_name,
+            message: 'Login successful!', userId: user[0].user_id, role: user[0].role_name,
         });
     } catch (error) {
         console.error('Server error during login:', error);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({message: 'Server error.'});
     }
 });
 
@@ -216,7 +225,7 @@ app.post('/login', async (req, res) => {
 
 // Create item API
 app.post('/giftshopitems', upload.single('image'), async (req, res) => {
-    const { name_, category, price, quantity } = req.body;
+    const {name_, category, price, quantity} = req.body;
     const imageBlob = req.file ? req.file.buffer : null;
 
     try {
@@ -227,10 +236,10 @@ app.post('/giftshopitems', upload.single('image'), async (req, res) => {
         const values = [name_, category, parseFloat(price), quantity, imageBlob];
 
         await db.query(sql, values);
-        res.status(201).json({ message: 'Item created successfully' });
+        res.status(201).json({message: 'Item created successfully'});
     } catch (error) {
         console.error('Error creating gift shop item:', error);
-        res.status(500).json({ error: 'Failed to create gift shop item' });
+        res.status(500).json({error: 'Failed to create gift shop item'});
     }
 });
 // Get all gift shop items
@@ -240,7 +249,7 @@ app.get('/giftshopitems', async (req, res) => {
         res.json(rows);
     } catch (error) {
         console.error('Error fetching gift shop items:', error);
-        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+        res.status(500).json({message: 'Server error fetching gift shop items.'});
     }
 });
 // Get all gift shop items (Admin only)
@@ -250,89 +259,150 @@ app.get('/giftshopitemsall', async (req, res) => {
         res.json(rows);
     } catch (error) {
         console.error('Error fetching gift shop items:', error);
-        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+        res.status(500).json({message: 'Server error fetching gift shop items.'});
     }
 });
 // Get image for a specific gift shop item
 app.get('/giftshopitems/:id/image', async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const [rows] = await db.query('SELECT image FROM giftshopitem WHERE item_id = ?', [id]);
         if (rows.length === 0 || !rows[0].image) {
-            return res.status(404).json({ message: 'Image not found.' });
+            return res.status(404).json({message: 'Image not found.'});
         }
 
         res.set('Content-Type', 'image/jpeg'); // Adjust content type as needed
         res.send(rows[0].image);
     } catch (error) {
         console.error('Error fetching image:', error);
-        res.status(500).json({ message: 'Server error fetching image.' });
+        res.status(500).json({message: 'Server error fetching image.'});
     }
 });
 
 // Update item API in server.js
 app.put('/giftshopitems/:id', upload.single('image'), async (req, res) => {
-    const { id } = req.params;
-    const { name_, category, price, quantity } = req.body;
+    const {id} = req.params;
+    const {name_, category, price, quantity} = req.body;
     const imageBlob = req.file ? req.file.buffer : null;
 
     try {
         const sql = `
             UPDATE giftshopitem
-            SET name_ = ?, category = ?, price = ?, quantity = ?, image = ?
-            WHERE item_id = ? AND is_deleted = 0
+            SET name_    = ?,
+                category = ?,
+                price    = ?,
+                quantity = ?,
+                image    = ?
+            WHERE item_id = ?
+              AND is_deleted = 0
         `;
         const values = [name_, category, parseFloat(price), quantity, imageBlob, id];
 
         const [result] = await db.query(sql, values);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Item not found or already deleted.' });
+            return res.status(404).json({message: 'Item not found or already deleted.'});
         }
-        res.status(200).json({ message: 'Item updated successfully' });
+        res.status(200).json({message: 'Item updated successfully'});
     } catch (error) {
         console.error('Error updating gift shop item:', error);
-        res.status(500).json({ error: 'Failed to update gift shop item' });
+        res.status(500).json({error: 'Failed to update gift shop item'});
     }
 });
 
 // Delete a gift shop item (Admin only)
 app.delete('/giftshopitems/:id', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'DELETE FROM giftshopitem WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item deleted successfully.' });
+        res.status(200).json({message: 'Gift shop item deleted successfully.'});
     } catch (error) {
         console.error('Error deleting gift shop item:', error);
-        res.status(500).json({ message: 'Server error deleting gift shop item.' });
+        res.status(500).json({message: 'Server error deleting gift shop item.'});
     }
 });
 // Soft delete a gift shop item (Admin only)
 app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'UPDATE giftshopitem SET is_deleted = 1 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item marked as deleted.' });
+        res.status(200).json({message: 'Gift shop item marked as deleted.'});
     } catch (error) {
         console.error('Error soft deleting gift shop item:', error);
-        res.status(500).json({ message: 'Server error soft deleting gift shop item.' });
+        res.status(500).json({message: 'Server error soft deleting gift shop item.'});
     }
 });
 // Restore a gift shop item (Admin only)
 app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'UPDATE giftshopitem SET is_deleted = 0 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item restored successfully.' });
+        res.status(200).json({message: 'Gift shop item restored successfully.'});
     } catch (error) {
         console.error('Error restoring gift shop item:', error);
-        res.status(500).json({ message: 'Server error restoring gift shop item.' });
+        res.status(500).json({message: 'Server error restoring gift shop item.'});
+    }
+});
+
+// Get user profile
+app.get('/users/:id', authenticateUser, async (req, res) => {
+    const {id} = req.params;
+
+    // Ensure the user can only access their own profile
+    if (req.userId !== id && req.userRole !== 'admin') {
+        return res.status(403).json({message: 'Access denied.'});
+    }
+
+    try {
+        const [rows] = await db.query(`
+            SELECT first_name AS firstName, last_name AS lastName, date_of_birth AS dateOfBirth, username, email
+            FROM users
+            WHERE user_id = ?
+        `, [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({message: 'User not found.'});
+        }
+
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({message: 'Server error fetching user data.'});
+    }
+});
+
+// Update user profile
+app.put('/users/:id', authenticateUser, async (req, res) => {
+    const {id} = req.params;
+    const {firstName, lastName, dateOfBirth, email} = req.body;
+
+    // Ensure the user can only update their own profile
+    if (req.userId !== id && req.userRole !== 'admin') {
+        return res.status(403).json({message: 'Access denied.'});
+    }
+
+    try {
+        const sql = `
+            UPDATE users
+            SET first_name    = ?,
+                last_name     = ?,
+                date_of_birth = ?,
+                email         = ?
+            WHERE user_id = ?
+        `;
+        const values = [firstName, lastName, dateOfBirth, email, id];
+
+        await db.query(sql, values);
+        res.status(200).json({message: 'Profile updated successfully.'});
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({message: 'Server error updating user profile.'});
     }
 });
 // Update item API
