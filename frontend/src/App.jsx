@@ -15,7 +15,7 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyPage from './pages/VerifyPage';
 import LogoutPage from './pages/LogoutPage';
 import StaffDashboard from './pages/Dashboards/StaffDashboard';
-
+import GiftShopAdmin from './components/GiftShopAdmin';
 import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
 import EventReport from './pages/Dashboards/EventReport';
 
@@ -57,7 +57,8 @@ const App = () => {
 
         <Route path='/MFAShopStaff' element={<MFAShopStaff/>} />
         <Route path='/shop-report' element={<ShopReport/>} />
-
+        {/* GIFT SHOP ADMIN */}
+        <Route path='/giftshop-admin' element={<GiftShopAdmin />} />
         {/* MEMBER DASHBOARD */}
         <Route path='/MemberDashboard' element={<MemberDashboard/>} />
         <Route path='/Settings' element={<Settings/>} />

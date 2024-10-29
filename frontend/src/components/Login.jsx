@@ -24,14 +24,16 @@ export default function Login() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
+
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
 
-                if (data.role === 'admin') navigate('/admin');
-                else if (data.role === 'staff') navigate('/staff');
-                else navigate('/customer');
+                // Role-based redirection
+                if (data.role === 'admin') navigate('/giftshop-admin');
+                else if (data.role === 'staff') navigate('/giftshop-admin'); // Temporary for staff
+                else navigate('/'); // Redirect customer to homepage
             } else {
                 const data = await response.json();
                 setErrors({ server: data.message });

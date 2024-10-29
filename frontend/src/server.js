@@ -38,7 +38,7 @@ const storage = multer.diskStorage({
         cb(null, safeFileName);
     }
 });
-const upload = multer({ storage });
+//const upload = multer({ storage });
 // ------------------------------------------------------------------------------------------------
 
 // ----- API CALLS --------------------------------------------------------------------------------
@@ -143,7 +143,160 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Server error.' });
     }
 });
+// ----- AUTHENTICATION MIDDLEWARE -----
+function authenticateAdmin(req, res, next) {
+    const { role } = req.headers;
+    if (role === 'admin' || role === 'staff') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Access denied. Admins only.' });
+    }
+}
 
+// ----- MULTER CONFIGURATION -----
+const upload = multer({ storage: multer.memoryStorage() });
+
+// ----- USER REGISTRATION -----
+app.post('/register', async (req, res) => {
+    const { firstName, lastName, dateOfBirth, username, password, email } = req.body;
+
+    // Validation (simplified for brevity)
+    if (!firstName || !lastName || !dateOfBirth || !username || !password || !email) {
+        return res.status(400).json({ message: 'All fields are required.' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const sql = `
+            INSERT INTO users (first_name, last_name, date_of_birth, username, password, email, role_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        const values = [firstName, lastName, dateOfBirth, username, hashedPassword, email, 2]; // Default role_id 2 (Customer)
+
+        await db.query(sql, values);
+        res.status(201).json({ message: 'User registered successfully.' });
+    } catch (error) {
+        console.error('Error during registration:', error);
+        res.status(500).json({ message: 'Server error during registration.' });
+    }
+});
+
+// ----- USER LOGIN -----
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const [user] = await db.query(`
+            SELECT users.*, roles.role_name
+            FROM users
+            JOIN roles ON users.role_id = roles.id
+            WHERE users.username = ?`, [username]);
+
+        if (user.length === 0) {
+            return res.status(400).json({ message: 'Invalid username or password.' });
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user[0].password);
+        if (!passwordMatch) {
+            return res.status(400).json({ message: 'Invalid username or password.' });
+        }
+
+        res.status(200).json({
+            message: 'Login successful!',
+            userId: user[0].user_id,
+            role: user[0].role_name,
+        });
+    } catch (error) {
+        console.error('Server error during login:', error);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+// ----- GIFT SHOP ITEMS ENDPOINTS -----
+
+// Create item API
+app.post('/giftshopitems', upload.single('image'), async (req, res) => {
+    const { name_, category, price, quantity } = req.body;
+    const imageBlob = req.file ? req.file.buffer : null;
+
+    try {
+        const sql = `
+            INSERT INTO giftshopitem (name_, category, price, quantity, image)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+        const values = [name_, category, parseFloat(price), quantity, imageBlob];
+
+        await db.query(sql, values);
+        res.status(201).json({ message: 'Item created successfully' });
+    } catch (error) {
+        console.error('Error creating gift shop item:', error);
+        res.status(500).json({ error: 'Failed to create gift shop item' });
+    }
+});
+// Get all gift shop items
+app.get('/giftshopitems', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT item_id, name_, category, price, quantity FROM giftshopitem');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching gift shop items:', error);
+        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+    }
+});
+
+// Get image for a specific gift shop item
+app.get('/giftshopitems/:id/image', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [rows] = await db.query('SELECT image FROM giftshopitem WHERE item_id = ?', [id]);
+        if (rows.length === 0 || !rows[0].image) {
+            return res.status(404).json({ message: 'Image not found.' });
+        }
+
+        res.set('Content-Type', 'image/jpeg'); // Adjust content type as needed
+        res.send(rows[0].image);
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).json({ message: 'Server error fetching image.' });
+    }
+});
+
+// Update item API in server.js
+app.put('/giftshopitems/:id', upload.single('image'), async (req, res) => {
+    const { id } = req.params;
+    const { name_, category, price, quantity } = req.body;
+    const imageBlob = req.file ? req.file.buffer : null;
+
+    try {
+        const sql = `
+            UPDATE giftshopitem
+            SET name_ = ?, category = ?, price = ?, quantity = ?, image = ?
+            WHERE item_id = ?
+        `;
+        const values = [name_, category, parseFloat(price), quantity, imageBlob, id];
+
+        await db.query(sql, values);
+        res.status(200).json({ message: 'Item updated successfully' });
+    } catch (error) {
+        console.error('Error updating gift shop item:', error);
+        res.status(500).json({ error: 'Failed to update gift shop item' });
+    }
+});
+
+// Delete a gift shop item (Admin only)
+app.delete('/giftshopitems/:id', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sql = 'DELETE FROM giftshopitem WHERE item_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'Gift shop item deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting gift shop item:', error);
+        res.status(500).json({ message: 'Server error deleting gift shop item.' });
+    }
+});
 // ----- (LEO DONE) --------------------------------------------------------------------------------
 
 // ----- (MUNA) ------------------------------------------------------------------------------------

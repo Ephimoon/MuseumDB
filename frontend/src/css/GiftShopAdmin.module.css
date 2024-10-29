@@ -1,0 +1,84 @@
+/* src/css/GiftShopAdmin.module.css */
+
+/* Main container */
+.adminContainer {
+    padding-top: 100px;
+    min-height: 100vh;
+    background-color: #fcfcfc;
+    text-align: center;
+}
+
+/* Title styling */
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 48px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin-bottom: 20px;
+}
+
+/* Add button */
+.addButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.addButton:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Table styling */
+.itemTable {
+    width: 90%;
+    margin: 0 auto 40px;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.itemTable th, .itemTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.itemTable th {
+    background-color: #BD2859;
+    color: #fcfcfc;
+    font-weight: bold;
+}
+
+.itemTable tr:hover {
+    background-color: #f1f1f1;
+}
+
+.itemImage {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+/* Action buttons */
+.actionButton {
+    padding: 8px 12px;
+    margin-right: 5px;
+    font-size: 14px;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.actionButton:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}

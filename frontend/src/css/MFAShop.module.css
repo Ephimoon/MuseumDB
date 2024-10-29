@@ -98,43 +98,6 @@
     background-color: #fcfcfc;
 }
 
-/* Tag Section */
-.tagContainer {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.tagContainer span {
-    background-color: #D7D5D7;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    display: flex;
-}
-
-.tagContainer button {
-    background: none;
-    border: none;
-    color: #352F36;
-    cursor: pointer;
-    margin-left: 5px;
-}
-
-/* Sort Section */
-.sortSection {
-    display: flex;
-}
-
-.sortSection select {
-    padding: 10px;
-    font-size: 1rem;
-    color: #352F36;
-    border: 1px solid #D7D5D7;
-    border-radius: 5px;
-    background-color: #fcfcfc;
-}
-
 /* --------------------------- SHOP ITEM CARDS --------------------------- */
 .cards {
     display: flex;
@@ -152,6 +115,9 @@
     text-align: center;
     padding: 15px;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     transition: transform 0.3s ease;
 }
 
@@ -164,13 +130,13 @@
     height: 180px;
     object-fit: cover;
     border-radius: 8px 8px 0 0;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .card h1 {
     font-size: 1.2rem;
     color: #352F36;
-    margin: 10px 0;
+    margin: 10px 0 5px;
     font-weight: bold;
 }
 
@@ -180,13 +146,11 @@
     margin: 5px 0;
 }
 
+/* Add to Cart Button */
 .button {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
+    width: 100%;
     padding: 10px;
+    margin-top: 10px;
     font-size: 1rem;
     font-weight: bold;
     color: #FFFFFF;
