@@ -13,7 +13,7 @@
         flex-direction: column;   
         height: 100vh;               
         width: 250px;    
-        background-color: #d34a4a;     
+        background-color: black;     
         padding: 20px;
         align-items: center;
         box-sizing: border-box;           
@@ -35,7 +35,7 @@
     }
 
     .sidebar a:hover {
-        color: rgb(218, 56, 56);
+        color: #d34a4a;
     }
 
     /* Styling for the logout button */
@@ -119,4 +119,7 @@
         color: red;
     }
 
+    button {
+        cursor: pointer;
+    }
     

@@ -17,6 +17,10 @@ const EventDirectorDashboard = () => {
         }
     };
 
+    const removeEventCard = (id) => {
+        setEventCards(eventCards.filter(event => event.id !== id));
+    };
+
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
@@ -54,7 +58,7 @@ const EventDirectorDashboard = () => {
         <div className="dashboard-container">
             {/* Sidebar */}
             <div className="sidebar">
-                <a href="#" className="logo">
+                <a href="/" className="logo">
                     <img src={logo} alt="logo" />
                 </a>
                
@@ -73,7 +77,7 @@ const EventDirectorDashboard = () => {
                     Event Reports
                 </a>
                 <a
-                    href="#"
+                    href="/"
                     className={`logout ${activeTab === 'logout' ? 'active' : ''}`}
                     onClick={() => handleTabClick('logout')}
                 >
@@ -101,7 +105,7 @@ const EventDirectorDashboard = () => {
                                 <div key={event.id} className="event-card">
                                     {/*<p>{event.name}</p>*/}
                                     <button>Edit</button>
-                                    <button className="Remove">Remove</button>
+                                    <button onClick = {() => removeEventCard(event.id)} className="Remove">Remove</button>
                                     <button>View Members</button>
                                 </div>
                             ))}
@@ -114,7 +118,7 @@ const EventDirectorDashboard = () => {
                                 {archivedEvents.map((event) => (
                                     <div key={event.id} className="event-card">
                                         <p>Archived Event Date: {event.date.toDateString()}</p>
-                                        <button className="Remove">Remove</button>
+                                        <button onClick = {() => removeEventCard(event.id)} className="Remove">Remove</button>
                                     </div>
                                 ))}
                             </div>
