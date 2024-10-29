@@ -17,6 +17,39 @@ const EventDirectorDashboard = () => {
         }
     };
 
+    const openEditModal = (event) => {
+        setSelectedEventId(event);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSelectedEventId({ ...selectedEventId, [name]: value });
+    }
+
+    const saveEventChanges = async () => {
+        try {
+            const response = await fetch(`/api/events/${selectedEventId.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(selectedEventId),
+            });
+    
+
+            if (response.ok) {
+                setEventCards(eventCards.map(event => event.id === selectedEventId.id ? selectedEventId : event));
+                setSelectedEventId(null);
+            }
+            else {
+                console.error('Failed to update event');
+            }
+        } 
+        catch (error) {
+            console.error('Error updating event: ', error);
+        }
+    };
+
     const removeEventCard = (id) => {
         setEventCards(eventCards.filter(event => event.id !== id));
     };
@@ -104,12 +137,58 @@ const EventDirectorDashboard = () => {
                             {activeEvents.map((event) => (
                                 <div key={event.id} className="event-card">
                                     {/*<p>{event.name}</p>*/}
-                                    <button>Edit</button>
+                                    <button onClick={() => openEditModal(event)}>Edit</button>
                                     <button onClick = {() => removeEventCard(event.id)} className="Remove">Remove</button>
                                     <button>View Members</button>
                                 </div>
                             ))}
                         </div>
+
+                        {/* Edit Modal */}
+                        {selectedEventId && (
+                            <div className="modal">
+                                <div className="modal-content">
+                                    <h3>Edit Event</h3>
+                                    <label>
+                                        Name:
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={selectedEventId.name}
+                                            onChange={handleInputChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Description:
+                                        <textarea
+                                            name="description"
+                                            value={selectedEventId.description}
+                                            onChange={handleInputChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Location:
+                                        <input
+                                            type="text"
+                                            name="location"
+                                            value={selectedEventId.location}
+                                            onChange={handleInputChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        Status:
+                                        <input
+                                            type="text"
+                                            name="status"
+                                            value={selectedEventId.status}
+                                            onChange={handleInputChange}
+                                        />
+                                    </label>
+                                    <button onClick={saveEventChanges}>Save Changes</button>
+                                    <button onClick={() => setSelectedEventId(null)}>Cancel</button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Archive Section */}
                         <div className="archive">
