@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../../css/event_director.css'
 import logo from '../../assets/LOGO.png';
+import axios from 'axios';
 
 
 const EventDirectorDashboard = () => {
@@ -9,6 +10,8 @@ const EventDirectorDashboard = () => {
     const [userName, setUserName] = useState('User');
     const [selectedEventId, setSelectedEventId] = useState('');
     const [reportData, setReportData] = useState(null); // State to store report data
+    const [membersList, setMembersList] = useState([]); // State to store members list
+    const [isMembersModalOpen, setIsMembersModalOpen] = useState(false); // State to control members modal
 
     const addEventCard = () => {
         const eventDate = prompt("Enter event date (YYYY-MM-DD):");
@@ -57,6 +60,29 @@ const EventDirectorDashboard = () => {
     const handleTabClick = (tab) => {
         setActiveTab(tab);
     };
+
+    const viewMembers = async (eventId) => {
+        try {
+            const response = await axios.get(`/api/events/${eventId}/members`);
+            if (response.ok) {
+                setMembersList(response.data);
+            }
+            else {
+                console.error('Failed to fetch members');
+                setMembersList([]);
+            }
+        }
+        catch (error) {
+            console.error('Error fetching members: ', error);
+            setMembersList([]);
+        }
+        setIsMembersModalOpen(true);
+    };
+
+    const handleCloseMembersModal = () => {
+        setIsMembersModalOpen(false);
+        setMembersList([]);
+    }
 
     // Get current date
     const currentDate = new Date();
@@ -139,7 +165,7 @@ const EventDirectorDashboard = () => {
                                     {/*<p>{event.name}</p>*/}
                                     <button onClick={() => openEditModal(event)}>Edit</button>
                                     <button onClick = {() => removeEventCard(event.id)} className="Remove">Remove</button>
-                                    <button>View Members</button>
+                                    <button onClick={() => viewMembers(event.id)}>View Members</button>
                                 </div>
                             ))}
                         </div>
@@ -201,6 +227,25 @@ const EventDirectorDashboard = () => {
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Members Modal */}
+                {isMembersModalOpen && (
+                    <div className="modal">
+                        <div className="modal-content">
+                            <h3>Members Signed Up for Event</h3>
+                            <ul>
+                                {membersList.length > 0 ? (
+                                    membersList.map(member => (
+                                        <li key={member.id}>{member.name}</li>
+                                    ))
+                                ) : (
+                                    <p>No members signed up.</p>
+                                )}
+                            </ul>
+                            <button onClick={handleCloseMembersModal}>Close</button>
                         </div>
                     </div>
                 )}
