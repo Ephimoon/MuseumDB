@@ -4,10 +4,10 @@ import { Box, Button, TextField, Typography, InputAdornment, CssBaseline } from 
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
+export default function Login() {
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css'; // Import the updated CSS
 import TicketBackground from '../assets/TicketsBackground.png';
-
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -25,10 +25,12 @@ const Login = () => {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch('http://localhost:5000/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            const loginUrl = `${process.env.REACT_APP_API_URL}/login`;
+            console.log("Login Endpoint URL:", loginUrl);
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
             });
 
             if (response.ok) {

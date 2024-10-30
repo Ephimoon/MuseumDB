@@ -6,9 +6,23 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 const app = express();
 const port = 5000; // Change to 6000 when you push to GitHub
+const allowedOrigins = [
+    'http://localhost:3000', // Local development frontend
+    'http://localhost:3002', // Updated localhost port if needed
+    'https://black-desert-0587dbd10.5.azurestaticapps.net/' // Replace with your Azure Static Web App URL
+];
+
 app.use(cors({
-    origin: 'http://localhost:3000' // Change to 3002 when you push to GitHub
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true // Enables credentials if you plan on using them
 }));
+
 app.use(express.json());
 app.use(express.static('public')); // Allows access to the public folder for images
 
