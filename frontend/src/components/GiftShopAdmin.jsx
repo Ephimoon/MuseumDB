@@ -17,13 +17,13 @@ const GiftShopAdmin = () => {
     }, []);
 
     const fetchItems = () => {
-        axios.get('http://${process.env.REACT_APP_API_URL}/giftshopitemsall')
+        axios.get('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitemsall')
             .then(response => setItems(response.data))
             .catch(error => console.error('Error fetching items:', error));
     };
 
     const getImageUrl = (itemId) => {
-        return `http://${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
+        return `http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${itemId}/image`;
     };
 
     // Confirm Soft or Hard Delete
@@ -46,7 +46,7 @@ const GiftShopAdmin = () => {
 
     const handleSoftDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`, {}, {
+        axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/soft-delete`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -55,7 +55,7 @@ const GiftShopAdmin = () => {
 
     const handleHardDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.delete(`http://${process.env.REACT_APP_API_URL}/giftshopitems/${id}/hard-delete`, {
+        axios.delete(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/hard-delete`, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -75,7 +75,7 @@ const GiftShopAdmin = () => {
 
     const handleRestore = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://${process.env.REACT_APP_API_URL}/giftshopitems/${id}/restore`, {}, {
+        axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/restore`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())

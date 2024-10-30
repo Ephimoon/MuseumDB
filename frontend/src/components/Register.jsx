@@ -36,7 +36,7 @@ const Register = () => {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch('http://${process.env.REACT_APP_API_URL}/register', {
+            const response = await fetch('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firstName, lastName, dateOfBirth, username, password, email }),

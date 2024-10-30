@@ -15,7 +15,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         // Fetch dashboard statistics
-        axios.get('http://${process.env.REACT_APP_API_URL}/admin/stats', {
+        axios.get('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/admin/stats', {
             headers: { 'user-id': userId, role },
         })
             .then(response => setStats(response.data))

@@ -15,7 +15,7 @@ const MFAShop = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        fetch('http://${process.env.REACT_APP_API_URL}/giftshopitems')
+        fetch('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems')
             .then(response => response.json())
             .then(data => setShopItems(data))
             .catch(error => console.error('Error fetching shop items:', error));
