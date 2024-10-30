@@ -1,23 +1,25 @@
-import React, { useState } from 'react';
+// src/pages/MFAShop.jsx
+import React, { useState, useEffect } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
-import { MFAShopCard, MFAShopModalUser } from '../components/MFAShopCard';
+import MFAShopCard from '../components/MFAShopCard';
+import MFAShopModalUser from '../components/MFAShopModalUser';
 import ShopImage from '../assets/art.png';
 import styles from '../css/MFAShop.module.css';
 
 const MFAShop = () => {
-    const shopItems = [
-        { id: 1, image: "https://placehold.jp/500x400.png", name: 'Museum T-Shirt', category: 'Apparel', price: '$25.00', description: 'Soft cotton t-shirt with museum logo' },
-        { id: 2, image: "https://placehold.jp/500x400.png", name: 'Coffee Mug', category: 'Home Goods', price: '$15.00', description: 'Ceramic mug with museum print' },
-        { id: 3, image: "https://placehold.jp/500x400.png", name: 'Art Book', category: 'Books', price: '$50.00', description: 'Hardcover book with art collections' },
-        { id: 4, image: "https://placehold.jp/500x400.png", name: 'Poster', category: 'Prints', price: '$20.00', description: 'High-quality art print' },
-        { id: 5, image: "https://placehold.jp/500x400.png", name: 'Museum Hat', category: 'Apparel', price: '$18.00', description: 'Museum logo baseball cap' }
-    ];
-
+    const [shopItems, setShopItems] = useState([]);
     const [query, setQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [sortOption, setSortOption] = useState('name_asc');
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        fetch('http://localhost:5000/giftshopitems')
+            .then(response => response.json())
+            .then(data => setShopItems(data))
+            .catch(error => console.error('Error fetching shop items:', error));
+    }, []);
 
     // Handle card click to show modal
     const handleCardClick = (item) => {
@@ -33,16 +35,16 @@ const MFAShop = () => {
     const filteredItems = shopItems
         .filter((item) => {
             return (
-                item.name.toLowerCase().includes(query.toLowerCase()) &&
+                item.name_.toLowerCase().includes(query.toLowerCase()) &&
                 (!selectedCategory || item.category === selectedCategory)
             );
         })
         .sort((a, b) => {
             switch (sortOption) {
-                case 'name_asc': return a.name.localeCompare(b.name);
-                case 'name_desc': return b.name.localeCompare(a.name);
-                case 'price_asc': return parseFloat(a.price.slice(1)) - parseFloat(b.price.slice(1));
-                case 'price_desc': return parseFloat(b.price.slice(1)) - parseFloat(a.price.slice(1));
+                case 'name_asc': return a.name_.localeCompare(b.name_);
+                case 'name_desc': return b.name_.localeCompare(a.name_);
+                case 'price_asc': return a.price - b.price;
+                case 'price_desc': return b.price - a.price;
                 default: return 0;
             }
         });

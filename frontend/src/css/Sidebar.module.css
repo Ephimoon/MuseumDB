@@ -1,0 +1,36 @@
+/* src/css/Sidebar.module.css */
+.sidebar {
+    width: 200px;
+    background-color: #352F36;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 60px; /* Adjust if you have a fixed header */
+    overflow-y: auto;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar li {
+    margin: 10px 0;
+}
+
+.sidebar a {
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 10px 20px;
+    display: block;
+}
+
+.sidebar a:hover {
+    background-color: #454054;
+}
+
+.activeLink {
+    background-color: #454054;
+}
