@@ -4,7 +4,7 @@ import styles from '../css/MFAShop.module.css';
 
 const MFAShopModalUser = ({ item, onClose }) => {
     const getImageUrl = (itemId) => {
-        return `http://localhost:5000/giftshopitems/${itemId}/image`;
+        return `http://${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
     };
 
     // Ensure price is a number before formatting

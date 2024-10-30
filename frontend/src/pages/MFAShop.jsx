@@ -15,7 +15,7 @@ const MFAShop = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
-        fetch('http://localhost:5000/giftshopitems')
+        fetch('http://${process.env.REACT_APP_API_URL}/giftshopitems')
             .then(response => response.json())
             .then(data => setShopItems(data))
             .catch(error => console.error('Error fetching shop items:', error));
