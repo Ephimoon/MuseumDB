@@ -86,7 +86,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
                 .then(() => onClose())
                 .catch(error => console.error('Error updating item:', error));
         } else {
-            axios.post('${process.env.REACT_APP_API_URL}/giftshopitems', data, config)
+            axios.post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
                 .then(() => onClose())
                 .catch(error => console.error('Error creating item:', error));
         }
