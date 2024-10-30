@@ -17,7 +17,7 @@ const GiftShopAdmin = () => {
     }, []);
 
     const fetchItems = () => {
-        axios.get('${process.env.REACT_APP_API_URL}/giftshopitemsall')
+        axios.get(`${process.env.REACT_APP_API_URL}/giftshopitemsall`)
             .then(response => setItems(response.data))
             .catch(error => console.error('Error fetching items:', error));
     };
@@ -114,7 +114,7 @@ const GiftShopAdmin = () => {
                 </thead>
 
                 <tbody>
-                {items.map(item => (
+                {Array.isArray(items) && items.map(item => (
                     <tr key={item.item_id}>
                         <td>{item.name_}</td>
                         <td>{item.category}</td>
