@@ -22,7 +22,7 @@ export default function Verify() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/verify', {
+            const response = await fetch('${process.env.REACT_APP_API_URL}/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

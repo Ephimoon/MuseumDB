@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Updated server.js">
+    <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/azure-static-web-apps-black-desert-0587dbd10.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/azure-static-web-apps-black-desert-0587dbd10.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopForm.jsx" afterDir="false" />
@@ -71,29 +72,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Node.js.HomeNavBar.jsx.executor": "Run",
-    "Node.js.Register.jsx.executor": "Run",
-    "Node.js.server.js.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "E:/Projects/MuseumDB/frontend/package.json",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "npm.npm start.executor": "Run",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\IntelliJ IDEA 2023.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Node.js.HomeNavBar.jsx.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.Register.jsx.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.server.js.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Projects/MuseumDB/frontend/package.json&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.npm start.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\IntelliJ IDEA 2023.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="E:\Projects\MuseumDB\frontend\" />
@@ -162,7 +163,8 @@
       <workItem from="1730154909867" duration="2462000" />
       <workItem from="1730173828488" duration="12189000" />
       <workItem from="1730232149375" duration="3398000" />
-      <workItem from="1730257006877" duration="1513000" />
+      <workItem from="1730257006877" duration="4239000" />
+      <workItem from="1730329647832" duration="1028000" />
     </task>
     <task id="LOCAL-00001" summary="Updated server.js">
       <option name="closed" value="true" />
@@ -172,7 +174,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730190575521</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Update api url">
+      <option name="closed" value="true" />
+      <created>1730261657195</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1730261657195</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -180,7 +190,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Updated server.js" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updated server.js" />
+    <MESSAGE value="Update api url" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update api url" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
