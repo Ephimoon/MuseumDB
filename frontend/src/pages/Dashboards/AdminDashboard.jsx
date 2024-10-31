@@ -15,7 +15,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         // Fetch dashboard statistics
-        axios.get('http://localhost:5000/admin/stats', {
+        axios.get('${process.env.REACT_APP_API_URL}/admin/stats', {
             headers: { 'user-id': userId, role },
         })
             .then(response => setStats(response.data))

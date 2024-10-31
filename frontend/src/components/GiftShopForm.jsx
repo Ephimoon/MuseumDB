@@ -39,7 +39,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
 
             // Fetch the existing image as a Blob
             axios
-                .get(`http://localhost:5000/giftshopitems/${item.item_id}/image`, {
+                .get(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`, {
                     responseType: 'blob',
                 })
                 .then((response) => {
@@ -99,12 +99,12 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
 
         if (item && item.item_id) {
             axios
-                .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
+                .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error updating item:', error));
         } else {
             axios
-                .post(`http://localhost:5000/giftshopitems`, data, config)
+                .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error creating item:', error));
         }
@@ -128,7 +128,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         const role = localStorage.getItem('role');
         axios
             .put(
-                `http://localhost:5000/giftshopitems/${id}/soft-delete`,
+                `${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`,
                 {},
                 {
                     headers: { role },
