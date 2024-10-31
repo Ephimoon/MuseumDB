@@ -434,6 +434,62 @@ app.put('/users/:id', authenticateUser, async (req, res) => {
 // ----- (MUNA DONE) ------------------------------------------------------------------------------
 
 // ----- (TYLER) ----------------------------------------------------------------------------------
+// Add a new event
+app.post('/api/events', async (req, res) => {
+    const {name, description, location, status} = req.body;
+    try {
+        const [result] = await db.query(
+            'INSERT INTO event_ (name_, description_, location, status) VALUES (?, ?, ?, ?)',
+            [name, description, location, status]
+        )
+        res.json({id: result.insertId, message: 'Event added successfully.'});
+    } catch (error) {
+        console.error('Error adding event:', error);
+        res.status(500).json({message: 'Server error adding event.'});
+    }
+})
+
+
+// Update event information
+app.put('/api/events/:id', async (req, res) => {
+    const {id} = req.params;
+    const {name, description, location, status} = req.body;
+
+    const allowedStatuses = ['upcoming', 'ongoing', 'completed'];
+    if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({message: 'Invalid status value.'});
+    }
+
+    try {
+        const [result] = await db.query(
+            'UPDATE event_ SET name_ = ?, description_ = ?, location = ?, status = ? WHERE event_id = ?',
+            [name, description, location, status, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({message: 'Event not found.'});
+        }
+        res.json({message: 'Event updated successfully.'});
+    }
+    catch (error) {
+        console.error('Error updating event:', error);
+        res.status(500).json({message: 'Server error updating event.'});
+    }
+})
+
+// Fetch the total number of members that signed up for an event
+app.get('/api/events/:id/members', (req, res) => {
+    const eventId = req.params.id;
+    const query = 'SELECT * FROM membership WHERE event_id = ?';
+    db.query(query, [eventId], (err, result) => {
+        if (err) {
+            console.error('Error fetching members:', err);
+            return res.status(500).json({message: 'Server error fetching members.'});
+        }
+        res.json(result);
+    });
+       
+});
 
 // ----- (TYLER DONE) -----------------------------------------------------------------------------
 

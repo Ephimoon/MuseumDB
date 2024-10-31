@@ -3,68 +3,56 @@
     padding-top: 100px;
     min-height: 100vh;
     background-color: #fcfcfc;
-}
-
-/* Image Container */
-.ImageContainer {
-    width: 100%;
-    position: relative;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    overflow: hidden;
-    padding-bottom: 20px;
 }
 
-.HalfBackgroundImage {
-    width: 100%;
-    max-width: 1200px;
-    height: auto;
-    object-fit: cover;
-    border-radius: 10px;
-    position: relative;
-    margin: 0 auto;
-}
-
-.overlay {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
+/* Title */
 .title {
     font-family: 'Rosarivo', serif;
-    font-size: 80px;
+    font-size: 2.5rem;
     font-style: italic;
     font-weight: 400;
-    color: #fcfcfc;
-    text-align: center;
-}
-
-/* --------------------------- SEARCH BAR --------------------------- */
-.search {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin: 20px 0;
-}
-
-.search input {
-    width: 50%;
-    max-width: 600px;
-    padding: 10px 15px;
-    border: 1px solid #D7D5D7;
     color: #352F36;
-    border-radius: 6px;
-    font-size: 1.2rem;
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Main Content Layout */
+.mainContent {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Sidebar Filter Section */
+.sidebar {
+    flex: 1 1 250px;
+    padding: 20px;
     background-color: #fcfcfc;
-    transition: border-color 0.3s ease;
+    border-radius: 8px;
+    margin-right: 20px;
+    box-sizing: border-box;
+}
+
+.sidebar h2 {
+    font-size: 1.2rem;
+    color: #352F36;
+    margin-bottom: 10px;
+}
+
+.sidebar select, .search input {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #D7D5D7;
+    border-radius: 5px;
+    color: #352F36;
+    background-color: #fcfcfc;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
 .search input:focus {
@@ -72,100 +60,111 @@
     outline: none;
 }
 
-/* Filter Container */
-.FilterContainer {
+/* Right Content Section */
+.rightContent {
+    flex: 3 1 700px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    max-width: 1200px;
-    margin: 20px auto;
-    gap: 20px;
+    align-items: stretch;
+    box-sizing: border-box;
 }
 
-/* Filter Dropdowns */
-.filterSection {
+/* Sort Section */
+.sortSection {
     display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
 }
 
-.filterSection select {
-    padding: 10px;
+.sortSection label {
+    font-weight: bold;
+    color: #352F36;
+    margin-right: 10px;
+}
+
+.sortDropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.sortDropdown select {
+    appearance: none;
+    padding: 8px;
     font-size: 1rem;
     border: 1px solid #D7D5D7;
     border-radius: 5px;
     color: #352F36;
     background-color: #fcfcfc;
+    padding-right: 30px;
 }
 
-/* --------------------------- SHOP ITEM CARDS --------------------------- */
-.cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
+.dropdownArrow {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #352F36;
+}
+
+/* Carousel Container */
+.carouselContainer {
+    width: 100%;
     margin-top: 20px;
 }
 
+.carouselContainer .slick-slide {
+    padding: 0 10px;
+}
+
+.carouselContainer .slick-list {
+    margin: 0 -10px;
+}
+
+/* Card Styling */
 .card {
-    width: 250px;
-    background: #FFFFFF;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
+    background-color: #fff;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
     padding: 15px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.3s ease;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .image {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
-    border-radius: 8px 8px 0 0;
-    margin-bottom: 10px;
-}
-
-.card h1 {
-    font-size: 1.2rem;
-    color: #352F36;
-    margin: 10px 0 5px;
-    font-weight: bold;
-}
-
-.card p {
-    font-size: 1rem;
-    color: #5D595E;
-    margin: 5px 0;
+    border-radius: 5px;
 }
 
 /* Add to Cart Button */
 .button {
     width: 100%;
     padding: 10px;
-    margin-top: 10px;
     font-size: 1rem;
     font-weight: bold;
     color: #FFFFFF;
-    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    background: #352F36;
     border: none;
     border-radius: 7px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
 }
 
 .button:hover {
-    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+    background: #5D595E;
+    transform: scale(1.05);
 }
 
-/* --------------------------- MODAL STYLING --------------------------- */
+/* Modal Styling */
 .modal {
     position: fixed;
     top: 0;
@@ -177,20 +176,23 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    padding: 20px;
 }
 
 .modal_content {
     background: #FFFFFF;
     padding: 20px;
-    width: 450px;
+    max-width: 450px;
+    width: 90%;
     border-radius: 10px;
     text-align: center;
     position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .modal_image {
     width: 100%;
-    height: 200px;
+    height: auto;
     object-fit: cover;
     border-radius: 10px;
     margin-bottom: 20px;
@@ -203,4 +205,30 @@
     font-size: 24px;
     cursor: pointer;
     color: #352F36;
+}
+
+/* Search Input */
+.search input {
+    margin-top: 10px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .mainContent {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .sortSection {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sortSection label {
+        margin-bottom: 5px;
+    }
 }

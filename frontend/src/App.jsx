@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
 import Home from './pages/Home';
@@ -19,59 +19,62 @@ import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
 import EventReport from './pages/Dashboards/EventReport';
 import CurateArt from './pages/Dashboards/CurateArt';
 import CurateExhibitions from './pages/Dashboards/CurateExhibitions';
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from './pages/ProfilePage';
 import MFAShopStaff from './pages/Dashboards/MFAShopStaff';
 import ShopReport from './pages/Dashboards/ShopReport';
-
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 import MemberDashboard from './pages/Dashboards/MemberDashboard/MemberDashboard';
 import Settings from './pages/Dashboards/MemberDashboard/Settings';
 
 const App = () => {
+    const isAuthenticated = Boolean(localStorage.getItem('username')); // Check if a user is logged in
+
     return (<BrowserRouter>
-            <Routes>
+        <Routes>
+            {/* Public Routes - Accessible to all users */}
+            <Route path="/" element={<Home/>}/>
+            <Route path="/Visit" element={<Visit/>}/>
+            <Route path="/ExhibitionsAndEvents" element={<ExhibitionsAndEvents/>}/>
+            <Route path="/Art" element={<Art/>}/>
+            <Route path="/MFAShop" element={<MFAShop/>}/>
+            <Route path="/shop" element={<MFAShop/>}/>
+            <Route path="/cart" element={<Cart/>}/>
+            <Route path="/checkout" element={<Checkout/>}/>
+            <Route path="/BecomeAMember" element={<BecomeAMember/>}/>
+            <Route path="/BuyTickets" element={<BuyTickets/>}/>
 
-                {/* PAGES ANY USER CAN VIEW (LOGGED OUT) */}
-                <Route path='/' element={<Home/>}/>
-                <Route path='/Visit' element={<Visit/>}/>
-                <Route path='/ExhibitionsAndEvents' element={<ExhibitionsAndEvents/>}/>
-                <Route path='/Art' element={<Art/>}/>
-                <Route path='/MFAShop' element={<MFAShop/>}/>
-                {/* add any additional pages, probably will for mfa shop */}
-                <Route path='/BecomeAMember' element={<BecomeAMember/>}/>
-                <Route path='/BuyTickets' element={<BuyTickets/>}/>
+            {/* Authentication Routes */}
+            <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/register" element={<RegisterPage/>}/>
+            <Route path="/verify" element={<VerifyPage/>}/>
+            <Route path="/logout" element={<LogoutPage/>}/>
 
-                {/* EMPLOYEE DASHBOARDS */}
-                <Route path='/admin-report' element={<AdminReport/>}/>
+            {/* Member Routes - Accessible to logged-in members */}
+            <Route element={<PrivateRoute roles={['customer']}/>}>
+                <Route path="/MemberDashboard" element={<MemberDashboard/>}/>
+                <Route path="/Settings" element={<Settings/>}/>
+                <Route path="/profile" element={<ProfilePage/>}/>
+            </Route>
 
-                <Route path='/StaffDashboard' element={<StaffDashboard/>}/>
+            {/* Admin Routes - Accessible to admin users only */}
+            <Route element={<PrivateRoute roles={['admin']}/>}>
+                <Route path="/admin-report" element={<AdminReport/>}/>
+                <Route path="/giftshop-admin" element={<GiftShopAdmin/>}/>
+            </Route>
 
-                <Route path='/EventDirectorDash'
-                       element={<EventDirectorDashboard/>}/> {/* prob change name to EventDirector ?? idk */}
-                <Route path='/event-report' element={<EventReport/>}/>
+            {/* Staff and Admin Dashboard Routes */}
+            <Route element={<PrivateRoute roles={['admin', 'staff']}/>}>
+                <Route path="/StaffDashboard" element={<StaffDashboard/>}/>
+                <Route path="/EventDirectorDash" element={<EventDirectorDashboard/>}/>
+                <Route path="/event-report" element={<EventReport/>}/>
+                <Route path="/curate-art" element={<CurateArt/>}/>
+                <Route path="/curate-exhibitions" element={<CurateExhibitions/>}/>
+                <Route path="/MFAShopStaff" element={<MFAShopStaff/>}/>
+                <Route path="/shop-report" element={<ShopReport/>}/>
+            </Route>
+        </Routes>
+    </BrowserRouter>);
+};
 
-                <Route path='/curate-art' element={<CurateArt/>}/>
-                <Route path='/curate-exhibitions' element={<CurateExhibitions/>}/>
-
-                <Route path='/MFAShopStaff' element={<MFAShopStaff/>}/>
-                <Route path='/shop-report' element={<ShopReport/>}/>
-                {/* MEMBER DASHBOARD */}
-                <Route path='/MemberDashboard' element={<MemberDashboard/>}/>
-                <Route path='/Settings' element={<Settings/>}/>
-                {/* Authentication routes */}
-                <Route path='/login' element={<LoginPage/>}/>
-                <Route path='/register' element={<RegisterPage/>}/>
-                <Route path='/verify' element={<VerifyPage/>}/>
-                <Route path="/logout" element={<LogoutPage/>}/>
-                {/* Private routes */}
-                <Route element={<PrivateRoute roles={['admin', 'staff', 'customer']} />}>
-                    <Route path="/profile" element={<ProfilePage />} />
-                </Route>
-                <Route element={<PrivateRoute roles={['admin']} />}>
-                    <Route path="/giftshop-admin" element={<GiftShopAdmin />} />
-                </Route>
-            </Routes>
-        </BrowserRouter>)
-}
-
-export default App
-
+export default App;
