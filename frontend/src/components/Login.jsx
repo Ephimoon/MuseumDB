@@ -24,7 +24,7 @@ const Login = () => {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const loginUrl = `http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/login`;
+            const loginUrl = `${process.env.REACT_APP_API_URL}/login`;
             console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',

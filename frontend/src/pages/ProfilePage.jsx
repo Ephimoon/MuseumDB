@@ -21,7 +21,7 @@ const ProfilePage = () => {
     const role = localStorage.getItem('role');
 
     useEffect(() => {
-        axios.get(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/users/${userId}`, {
+        axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
             headers: { 'user-id': userId, role },
         })
             .then(response => {
@@ -41,7 +41,7 @@ const ProfilePage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/users/${userId}`, userData, {
+        axios.put(`${process.env.REACT_APP_API_URL}/users/${userId}`, userData, {
             headers: { 'user-id': userId, role },
         })
             .then(response => setMessage('Profile updated successfully!'))

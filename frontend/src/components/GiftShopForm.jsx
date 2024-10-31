@@ -45,7 +45,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
 
     const handleDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/soft-delete`, {}, {
+        axios.put(`${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`, {}, {
             headers: { role }
         })
             .then(() => onClose())
@@ -82,11 +82,11 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         };
 
         if (item && item.item_id) {
-            axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${item.item_id}`, data, config)
+            axios.put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
                 .then(() => onClose())
                 .catch(error => console.error('Error updating item:', error));
         } else {
-            axios.post('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems', data, config)
+            axios.post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
                 .then(() => onClose())
                 .catch(error => console.error('Error creating item:', error));
         }

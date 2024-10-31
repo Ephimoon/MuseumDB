@@ -17,13 +17,13 @@ const GiftShopAdmin = () => {
     }, []);
 
     const fetchItems = () => {
-        axios.get('http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitemsall')
+        axios.get(`${process.env.REACT_APP_API_URL}/giftshopitemsall`)
             .then(response => setItems(response.data))
             .catch(error => console.error('Error fetching items:', error));
     };
 
     const getImageUrl = (itemId) => {
-        return `http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${itemId}/image`;
+        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
     };
 
     // Confirm Soft or Hard Delete
@@ -46,7 +46,7 @@ const GiftShopAdmin = () => {
 
     const handleSoftDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/soft-delete`, {}, {
+        axios.put(`${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -55,7 +55,7 @@ const GiftShopAdmin = () => {
 
     const handleHardDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.delete(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/hard-delete`, {
+        axios.delete(`${process.env.REACT_APP_API_URL}/giftshopitems/${id}/hard-delete`, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -75,7 +75,7 @@ const GiftShopAdmin = () => {
 
     const handleRestore = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${id}/restore`, {}, {
+        axios.put(`${process.env.REACT_APP_API_URL}/giftshopitems/${id}/restore`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -114,7 +114,7 @@ const GiftShopAdmin = () => {
                 </thead>
 
                 <tbody>
-                {items.map(item => (
+                {Array.isArray(items) && items.map(item => (
                     <tr key={item.item_id}>
                         <td>{item.name_}</td>
                         <td>{item.category}</td>

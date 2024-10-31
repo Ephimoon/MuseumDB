@@ -4,7 +4,7 @@ import styles from '../css/MFAShop.module.css';
 
 const MFAShopModalUser = ({ item, onClose }) => {
     const getImageUrl = (itemId) => {
-        return `http://cosc3380museum-api-gsd9hhaygpcze8eu.centralus-01.azurewebsites.net/giftshopitems/${itemId}/image`;
+        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
     };
 
     // Ensure price is a number before formatting
