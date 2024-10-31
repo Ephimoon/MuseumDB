@@ -1,32 +1,68 @@
 // src/components/MFAShopModalUser.jsx
-import React from 'react';
-import styles from '../css/MFAShop.module.css';
+import React, { useContext } from 'react';
+import { Modal, Box, Typography, Button } from '@mui/material';
+import { styled } from '@mui/system';
+import { CartContext } from './CartContext';
+
+const StyledButton = styled(Button)({
+    padding: '8px 12px',
+    marginRight: '5px',
+    fontSize: '14px',
+    color: '#FFFFFF',
+    background: 'linear-gradient(90deg, #BD2859 0%, #D22D36 100%)',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    transition: 'background 0.3s ease',
+    '&:hover': {
+        background: 'linear-gradient(90deg, #D22D36 0%, #BD2859 100%)',
+    },
+});
 
 const MFAShopModalUser = ({ item, onClose }) => {
+    const { addToCart } = useContext(CartContext);
+
     const getImageUrl = (itemId) => {
-        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
+        return `http://localhost:5000/giftshopitems/${itemId}/image`;
     };
 
-    // Ensure price is a number before formatting
     const formattedPrice = item.price ? `$${parseFloat(item.price).toFixed(2)}` : 'N/A';
 
     return (
-        <div className={styles.modal}>
-            <div className={styles.modal_content}>
-                <span className={styles.close_button} onClick={onClose}>&times;</span>
+        <Modal open={true} onClose={onClose}>
+            <Box sx={modalStyle}>
                 <img
                     src={getImageUrl(item.item_id)}
                     alt={item.name_}
-                    className={styles.modal_image}
+                    style={{ width: '100%', borderRadius: '10px', marginBottom: '20px' }}
                 />
-                <h2>{item.name_}</h2>
-                <p><strong>Price:</strong> {formattedPrice}</p>
-                <p><strong>Category:</strong> {item.category || 'N/A'}</p>
-                <p><strong>Description:</strong> {item.description || 'No description available.'}</p>
-                <button className={styles.button}>Add to Cart</button>
-            </div>
-        </div>
+                <Typography variant="h5" gutterBottom>{item.name_}</Typography>
+                <Typography variant="body1" gutterBottom><strong>Price:</strong> {formattedPrice}</Typography>
+                <Typography variant="body1" gutterBottom><strong>Category:</strong> {item.category || 'N/A'}</Typography>
+                <Typography variant="body2" gutterBottom>{item.description || 'No description available.'}</Typography>
+                <StyledButton
+                    onClick={() => addToCart(item)}
+                    sx={{ marginTop: '20px' }}
+                >
+                    Add to Cart
+                </StyledButton>
+            </Box>
+        </Modal>
     );
+};
+
+const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '90%',
+    maxWidth: 450,
+    bgcolor: 'background.paper',
+    borderRadius: '10px',
+    boxShadow: 24,
+    p: 4,
+    textAlign: 'center',
 };
 
 export default MFAShopModalUser;

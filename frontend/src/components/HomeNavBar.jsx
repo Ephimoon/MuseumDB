@@ -1,12 +1,15 @@
 // src/components/Navbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../css/HomeNavBar.css';
 import logo from '../assets/LOGO.png';
+import { CartContext } from './CartContext'; // Import CartContext for cart state
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Import MUI cart icon
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { cartItems } = useContext(CartContext); // Get cart items from context
     const [navBackground, setNavBackground] = useState('transparent');
 
     const role = localStorage.getItem('role');
@@ -55,7 +58,7 @@ const Navbar = () => {
                     </ul>
                 </div>
 
-                {/* Right Side: Buttons */}
+                {/* Right Side: Buttons and Cart Icon */}
                 <div className="nav-buttons">
                     {role ? (
                         <>
@@ -70,6 +73,13 @@ const Navbar = () => {
                             <button onClick={() => navigate('/login')} className="btn-outline">Login</button>
                             <button onClick={() => navigate('/register')} className="btn-outline">Register</button>
                         </>
+                    )}
+                    {/* Conditionally show the cart icon on certain pages */}
+                    {location.pathname !== '/checkout' && (
+                        <div className="cart-icon" onClick={() => navigate('/cart')}>
+                            <ShoppingCartIcon fontSize="large" style={{ color: '#FFFFFF' }} />
+                            {cartItems.length > 0 && <span className="cart-count">{cartItems.length}</span>}
+                        </div>
                     )}
                 </div>
             </div>

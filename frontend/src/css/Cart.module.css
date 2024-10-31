@@ -1,0 +1,90 @@
+/* Main Container for Cart Page */
+.cartContainer {
+    padding-top: 100px;
+    max-width: 1000px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Cart Title */
+.cartContainer h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #352F36;
+    margin-bottom: 20px;
+}
+
+/* Cart Table */
+.cartTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cartTable th, .cartTable td {
+    padding: 15px;
+    border-bottom: 1px solid #D7D5D7;
+    text-align: center;
+    color: #352F36;
+}
+
+.cartTable th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+}
+
+.cartTable td img {
+    width: 60px;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Quantity Input */
+.cartTable input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #D7D5D7;
+    border-radius: 5px;
+}
+
+/* Cart Summary Section */
+.cartSummary {
+    margin-top: 30px;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    background-color: #FFFFFF;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+
+.cartSummary h2 {
+    font-size: 1.5rem;
+    color: #352F36;
+    margin-bottom: 10px;
+}
+
+.cartSummary button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+}
+
+.cartSummary button:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
