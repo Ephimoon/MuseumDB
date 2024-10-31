@@ -434,6 +434,22 @@ app.put('/users/:id', authenticateUser, async (req, res) => {
 // ----- (MUNA DONE) ------------------------------------------------------------------------------
 
 // ----- (TYLER) ----------------------------------------------------------------------------------
+// Add a new event
+app.post('/api/events', async (req, res) => {
+    const {name, description, location, status} = req.body;
+    try {
+        const [result] = await db.query(
+            'INSERT INTO event_ (name_, description_, location, status) VALUES (?, ?, ?, ?)',
+            [name, description, location, status]
+        )
+        res.json({id: result.insertId, message: 'Event added successfully.'});
+    } catch (error) {
+        console.error('Error adding event:', error);
+        res.status(500).json({message: 'Server error adding event.'});
+    }
+})
+
+
 // Update event information
 app.put('/api/events/:id', async (req, res) => {
     const {id} = req.params;
@@ -445,7 +461,7 @@ app.put('/api/events/:id', async (req, res) => {
     }
 
     try {
-        const result = await db.query(
+        const [result] = await db.query(
             'UPDATE event_ SET name_ = ?, description_ = ?, location = ?, status = ? WHERE event_id = ?',
             [name, description, location, status, id]
         );
