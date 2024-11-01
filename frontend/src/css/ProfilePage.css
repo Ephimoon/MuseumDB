@@ -32,6 +32,7 @@ input {
     border: 1px solid #ccc;
     border-radius: 4px;
     width: 100%;
+    background-color: white; /* Default background for editable fields */
 }
 
 input:focus {
@@ -40,8 +41,9 @@ input:focus {
 }
 
 .read-only-input {
-    background-color: #e9ecef;
+    background-color: #e9ecef; /* Gray background for read-only fields */
     cursor: not-allowed;
+    color: #6c757d; /* Lighter text color to indicate it is not editable */
 }
 
 .submit-button {
