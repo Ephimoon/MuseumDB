@@ -28,35 +28,35 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
-  if (item && item.item_id) {
-    // Set form data
-    setFormData({
-      name_: item.name_ || '',
-      category: item.category || '',
-      price: item.price || '',
-      quantity: item.quantity || '',
-    });
+        if (item && item.item_id) {
+            // Set form data
+            setFormData({
+                name_: item.name_ || '',
+                category: item.category || '',
+                price: item.price || '',
+                quantity: item.quantity || '',
+            });
 
-    // Set the image file using the URL
-    setImageFile([
-      {
-        source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
-        options: {
-          type: 'remote', // Indicate that the source is a remote URL
-        },
-      },
-    ]);
-  } else {
-    // Reset form data
-    setFormData({
-      name_: '',
-      category: '',
-      price: '',
-      quantity: '',
-    });
-    setImageFile([]);
-  }
-}, [item]);
+            // Set the image file using the URL
+            setImageFile([
+                {
+                    source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
+                    options: {
+                        type: 'remote', // Indicate that the source is a remote URL
+                    },
+                },
+            ]);
+        } else {
+            // Reset form data
+            setFormData({
+                name_: '',
+                category: '',
+                price: '',
+                quantity: '',
+            });
+            setImageFile([]);
+        }
+    }, [item]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
