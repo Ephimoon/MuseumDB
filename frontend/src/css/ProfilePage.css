@@ -32,7 +32,7 @@ input {
     border: 1px solid #ccc;
     border-radius: 4px;
     width: 100%;
-    background-color: white; /* Default background for editable fields */
+    background-color: #ffffff; /* White background for editable fields */
 }
 
 input:focus {
@@ -41,9 +41,11 @@ input:focus {
 }
 
 .read-only-input {
-    background-color: #e9ecef; /* Gray background for read-only fields */
-    cursor: not-allowed;
-    color: #6c757d; /* Lighter text color to indicate it is not editable */
+    background-color: #f0f0f0; /* Light gray for read-only field */
+    color: #6c757d; /* Muted text color */
+    cursor: default; /* No cursor change on hover */
+    pointer-events: none; /* Prevent interaction */
+    border: 1px solid #d0d0d0; /* Softer border for read-only */
 }
 
 .submit-button {
