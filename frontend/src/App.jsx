@@ -54,7 +54,6 @@ const App = () => {
             <Route element={<PrivateRoute roles={['customer']}/>}>
                 <Route path="/MemberDashboard" element={<MemberDashboard/>}/>
                 <Route path="/Settings" element={<Settings/>}/>
-                <Route path="/profile" element={<ProfilePage/>}/>
             </Route>
 
             {/* Admin Routes - Accessible to admin users only */}
@@ -72,6 +71,11 @@ const App = () => {
                 <Route path="/curate-exhibitions" element={<CurateExhibitions/>}/>
                 <Route path="/MFAShopStaff" element={<MFAShopStaff/>}/>
                 <Route path="/shop-report" element={<ShopReport/>}/>
+            </Route>
+
+            {/* Profile Page - Accessible to all logged-in users */}
+            <Route element={<PrivateRoute roles={['admin', 'staff', 'customer']}/>}>
+                <Route path="/profile" element={<ProfilePage/>}/>
             </Route>
         </Routes>
     </BrowserRouter>);
