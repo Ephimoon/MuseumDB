@@ -41,6 +41,9 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             axios
                 .get(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`, {
                     responseType: 'blob',
+                    headers: {
+                      'Access-Control-Allow-Origin': '*',
+                    },
                 })
                 .then((response) => {
                     const file = new File([response.data], `${item.name_}.jpg`, {
