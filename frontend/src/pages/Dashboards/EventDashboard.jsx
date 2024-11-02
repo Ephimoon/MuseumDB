@@ -18,9 +18,17 @@ const EventDirectorDashboard = () => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/events');
+                const response = await axios.get('http://localhost:5000/api/events'); // replace with http://${process.env.REACT_APP_API_URL}/api/events
                 if (response.status === 200) {
-                    setEventCards(response.data);
+                    const formattedEvents = response.data.map(event => ({
+                        id: event.event_id,
+                        name: event.name_,
+                        description: event.description_,
+                        location: event.location,
+                        status: event.status,
+                        date: event.date
+                    }));
+                    setEventCards(formattedEvents);
                 } 
             } catch (error) {
                 console.error('Error fetching events: ', error);
@@ -48,7 +56,7 @@ const EventDirectorDashboard = () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
-                const response = await axios.put(`http://${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
+                //const response = await axios.put(`http://${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
                 const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
@@ -57,7 +65,7 @@ const EventDirectorDashboard = () => {
                 }
             } else {
                 // Add new event
-                const response = await axios.post('http://${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
+                //const response = await axios.post('http://${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
                 const response = await axios.post('http://localhost:5000/api/events', selectedEvent);
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
@@ -82,7 +90,7 @@ const EventDirectorDashboard = () => {
 
     const viewMembers = async (eventId) => {
         try {
-            const response = await axios.get(`http://${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
+            //const response = await axios.get(`http://${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
             const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
             if (response.status === 200) {
                 setMembersList(response.data);
@@ -107,8 +115,8 @@ const EventDirectorDashboard = () => {
     const currentDate = new Date();
 
     // Separate active and archived events
-    const activeEvents = eventCards.filter(event => event.date >= currentDate);
-    const archivedEvents = eventCards.filter(event => event.date < currentDate);
+    const activeEvents = eventCards.filter(event => new Date(event.date) >= currentDate);
+    const archivedEvents = eventCards.filter(event => new Date(event.date) < currentDate);
 
     // Handle event selection for reports
     const handleEventSelection = (e) => {
@@ -199,7 +207,7 @@ const EventDirectorDashboard = () => {
                                         <input
                                             type="text"
                                             name="name"
-                                            value={selectedEvent.name}
+                                            value={selectedEvent.name || ''}
                                             onChange={handleInputChange}
                                         />
                                     </label>
@@ -207,7 +215,7 @@ const EventDirectorDashboard = () => {
                                         Description:
                                         <textarea
                                             name="description"
-                                            value={selectedEvent.description}
+                                            value={selectedEvent.description || ''}
                                             onChange={handleInputChange}
                                         />
                                     </label>
@@ -216,7 +224,7 @@ const EventDirectorDashboard = () => {
                                         <input
                                             type="text"
                                             name="location"
-                                            value={selectedEvent.location}
+                                            value={selectedEvent.location || ''}
                                             onChange={handleInputChange}
                                         />
                                     </label>
@@ -225,7 +233,7 @@ const EventDirectorDashboard = () => {
                                         <input
                                             type="text"
                                             name="status"
-                                            value={selectedEvent.status}
+                                            value={selectedEvent.status || ''}
                                             onChange={handleInputChange}
                                         />
                                     </label>
@@ -241,7 +249,7 @@ const EventDirectorDashboard = () => {
                             <div className="event-cards-container">
                                 {archivedEvents.map((event) => (
                                     <div key={event.id} className="event-card">
-                                        <p>Archived Event Date: {event.date.toDateString()}</p>
+                                        <p>Archived Event Date: {new Date(event.date).toDateString()}</p>
                                         <button onClick={() => removeEventCard(event.id)} className="Remove">Remove</button>
                                     </div>
                                 ))}
@@ -279,7 +287,7 @@ const EventDirectorDashboard = () => {
                             <option value="">-- Select an Event --</option>
                             {eventCards.map(event => (
                                 <option key={event.id} value={event.id}>
-                                    {event.name} (Date: {event.date.toDateString()})
+                                    {event.name} (Date: {new Date(event.date).toDateString()})
                                 </option>
                             ))}
                         </select>
