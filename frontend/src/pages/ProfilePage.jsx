@@ -4,9 +4,10 @@ import {
     Box, Button, Container, CssBaseline, TextField, Typography
 } from '@mui/material';
 import HomeNavBar from '../components/HomeNavBar';
-import TicketBackground from '../assets/TicketsBackground.png'; // Import background image
-import '../css/Auth.module.css'; // Consistent styling with login and register
+import TicketBackground from '../assets/TicketsBackground.png';
+import '../css/ProfilePage.css'; // Import updated CSS file
 import dayjs from "dayjs";
+
 const ProfilePage = () => {
     const [userData, setUserData] = useState({
         firstName: '',
@@ -21,7 +22,7 @@ const ProfilePage = () => {
     const role = localStorage.getItem('role');
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/users/${userId}`, {
+        axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
             headers: { 'user-id': userId, role },
         })
             .then(response => {
@@ -41,7 +42,7 @@ const ProfilePage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.put(`http://localhost:5000/users/${userId}`, userData, {
+        axios.put(`${process.env.REACT_APP_API_URL}/users/${userId}`, userData, {
             headers: { 'user-id': userId, role },
         })
             .then(response => setMessage('Profile updated successfully!'))
@@ -90,7 +91,7 @@ const ProfilePage = () => {
                             name="username"
                             value={userData.username}
                             InputProps={{ readOnly: true }}
-                            className="read-only-input"
+                            className="read-only-input" // Apply gray style to read-only field
                         />
                         <TextField
                             margin="normal"

@@ -23,7 +23,7 @@ const Checkout = () => {
         };
 
         // Send data to backend
-        fetch('http://localhost:5000/transactions', {
+        fetch('${process.env.REACT_APP_API_URL}/transactions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

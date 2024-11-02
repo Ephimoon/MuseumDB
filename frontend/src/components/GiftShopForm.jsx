@@ -37,28 +37,15 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
                 quantity: item.quantity || '',
             });
 
-            // Fetch the existing image as a Blob
-            axios
-                .get(`http://localhost:5000/giftshopitems/${item.item_id}/image`, {
-                    responseType: 'blob',
-                })
-                .then((response) => {
-                    const file = new File([response.data], `${item.name_}.jpg`, {
-                        type: response.data.type,
-                    });
-                    setImageFile([
-                        {
-                            source: file,
-                            options: {
-                                type: 'local',
-                            },
-                        },
-                    ]);
-                })
-                .catch((error) => {
-                    console.error('Error fetching image:', error);
-                    setImageFile([]); // Ensure imageFile is empty if there's an error
-                });
+            // Set the image file using the URL
+            setImageFile([
+                {
+                    source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
+                    options: {
+                        type: 'remote', // Indicate that the source is a remote URL
+                    },
+                },
+            ]);
         } else {
             // Reset form data
             setFormData({
@@ -99,12 +86,12 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
 
         if (item && item.item_id) {
             axios
-                .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
+                .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error updating item:', error));
         } else {
             axios
-                .post(`http://localhost:5000/giftshopitems`, data, config)
+                .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error creating item:', error));
         }
@@ -128,7 +115,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         const role = localStorage.getItem('role');
         axios
             .put(
-                `http://localhost:5000/giftshopitems/${id}/soft-delete`,
+                `${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`,
                 {},
                 {
                     headers: { role },
