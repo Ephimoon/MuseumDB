@@ -477,6 +477,17 @@ app.put('/api/events/:id', async (req, res) => {
     }
 })
 
+// Fetch all events from the database
+app.get('/api/events', async (req, res) => {
+    try {
+        const [result] = await db.query('SELECT * FROM event_');
+        res.json(result);
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({message: 'Server error fetching events.'});
+    }
+})
+
 // Fetch the total number of members that signed up for an event
 app.get('/api/events/:id/members', (req, res) => {
     const eventId = req.params.id;
