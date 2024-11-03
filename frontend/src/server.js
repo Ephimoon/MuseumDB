@@ -5,7 +5,7 @@ const multer = require('multer');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 const app = express();
-const port = 5000; // Change to 6000 when you push to GitHub
+const port = 8080; // safe local port not blocked by other services
 const allowedOrigins = [
     'http://localhost:3000', // Local development frontend
     'http://localhost:3002', // Updated localhost port if needed
@@ -58,31 +58,35 @@ const storage = multer.diskStorage({
 
 // ----- (MELANIE) --------------------------------------------------------------------------------
 
-// Query artwork table
-app.get('/artwork', (req, res) => {
-    const sql = 'SELECT * FROM artwork';
-    db.query(sql, (err, result) => {
-        if (err) return res.json({message: "Error fetching artwork table"});
-        return res.json(result);
-    });
+
+app.get('/artwork', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM artwork');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artwork table:', error);
+        res.status(500).json({message: 'Server error fetching artwork table.'});
+    }
 });
 
-// Query departments table
-app.get('/department', (req, res) => {
-    const sql = 'SELECT * FROM department';
-    db.query(sql, (err, result) => {
-        if (err) return res.json({message: "Error fetching department table"});
-        return res.json(result);
-    });
+app.get('/department', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM department');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching department table:', error);
+        res.status(500).json({message: 'Server error fetching department table.'});
+    }
 });
 
-// Query artist table
-app.get('/artist', (req, res) => {
-    const sql = 'SELECT * FROM artist';
-    db.query(sql, (err, result) => {
-        if (err) return res.json({message: "Error fetching artist table"});
-        return res.json(result);
-    });
+app.get('/artist', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM artist');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artist table:', error);
+        res.status(500).json({message: 'Server error fetching artist table.'});
+    }
 });
 
 // ----- (MELANIE DONE) ---------------------------------------------------------------------------

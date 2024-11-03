@@ -40,7 +40,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             // Set the image file using the URL
             setImageFile([
                 {
-                    source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
+                    source: `http://localhost:8080/giftshopitems/${item.item_id}/image`,
                     options: {
                         type: 'remote', // Indicate that the source is a remote URL
                     },
@@ -86,12 +86,12 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
 
         if (item && item.item_id) {
             axios
-                .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
+                .put(`http://localhost:8080/giftshopitems/${item.item_id}`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error updating item:', error));
         } else {
             axios
-                .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
+                .post(`http://localhost:8080/giftshopitems`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error creating item:', error));
         }
@@ -115,7 +115,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         const role = localStorage.getItem('role');
         axios
             .put(
-                `${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`,
+                `http://localhost:8080/giftshopitems/${id}/soft-delete`,
                 {},
                 {
                     headers: { role },

@@ -22,7 +22,7 @@ const ProfilePage = () => {
     const role = localStorage.getItem('role');
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
+        axios.get(`http://localhost:8080/users/${userId}`, {
             headers: { 'user-id': userId, role },
         })
             .then(response => {
@@ -42,7 +42,7 @@ const ProfilePage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.put(`${process.env.REACT_APP_API_URL}/users/${userId}`, userData, {
+        axios.put(`http://localhost:8080/users/${userId}`, userData, {
             headers: { 'user-id': userId, role },
         })
             .then(response => setMessage('Profile updated successfully!'))

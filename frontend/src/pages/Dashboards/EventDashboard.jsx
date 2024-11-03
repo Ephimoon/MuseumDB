@@ -18,7 +18,7 @@ const EventDirectorDashboard = () => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/events'); // replace with http://${process.env.REACT_APP_API_URL}/api/events
+                const response = await axios.get('http://localhost:5000/api/events'); // replace with http://http://localhost:8080/api/events
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,
@@ -56,7 +56,7 @@ const EventDirectorDashboard = () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
-                //const response = await axios.put(`http://${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
+                //const response = await axios.put(`http://http://localhost:8080/api/events/${selectedEvent.id}`, selectedEvent);
                 const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
@@ -65,7 +65,7 @@ const EventDirectorDashboard = () => {
                 }
             } else {
                 // Add new event
-                //const response = await axios.post('http://${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
+                //const response = await axios.post('http://http://localhost:8080/api/events', selectedEvent);
                 const response = await axios.post('http://localhost:5000/api/events', selectedEvent);
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
@@ -82,7 +82,7 @@ const EventDirectorDashboard = () => {
 
     const removeEventCard = async (id) => {
         try {
-            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://${process.env.REACT_APP_API_URL}/api/events/${id}
+            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://http://localhost:8080/api/events/${id}
             if (response.status === 200) {
                 setEventCards(eventCards.filter(event => event.id !== id));
             } 
@@ -101,7 +101,7 @@ const EventDirectorDashboard = () => {
 
     const viewMembers = async (eventId) => {
         try {
-            //const response = await axios.get(`http://${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
+            //const response = await axios.get(`http://http://localhost:8080/api/events/${eventId}/members`);
             const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
             if (response.status === 200) {
                 setMembersList(response.data);

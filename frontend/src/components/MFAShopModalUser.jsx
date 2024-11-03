@@ -23,7 +23,7 @@ const MFAShopModalUser = ({ item, onClose }) => {
     const { addToCart } = useContext(CartContext);
 
     const getImageUrl = (itemId) => {
-        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
+        return `http://localhost:8080/giftshopitems/${itemId}/image`;
     };
 
     const formattedPrice = item.price ? `$${parseFloat(item.price).toFixed(2)}` : 'N/A';
