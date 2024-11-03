@@ -1,9 +1,12 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, './.env') });
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+//require('dotenv').config();
 const app = express();
 const port = 8080; // safe local port not blocked by other services
 const allowedOrigins = [
