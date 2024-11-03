@@ -80,8 +80,19 @@ const EventDirectorDashboard = () => {
         }
     };
 
-    const removeEventCard = (id) => {
-        setEventCards(eventCards.filter(event => event.id !== id));
+    const removeEventCard = async (id) => {
+        try {
+            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://${process.env.REACT_APP_API_URL}/api/events/${id}
+            if (response.status === 200) {
+                setEventCards(eventCards.filter(event => event.id !== id));
+            } 
+            else {
+                console.error('Failed to delete event');
+            } 
+        }
+        catch (error) {
+            console.error('Error deleting event: ', error);
+        }
     };
 
     const handleTabClick = (tab) => {

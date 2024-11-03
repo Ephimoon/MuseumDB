@@ -477,10 +477,25 @@ app.put('/api/events/:id', async (req, res) => {
     }
 })
 
-// Fetch all events from the database
+// soft delete an event
+app.delete('/api/events/:id', async (req, res) => {
+    const eventId = req.params.id;
+    try {
+        const [result] = await db.query('UPDATE event_ SET is_deleted = TRUE WHERE event_id = ?', [eventId]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({message: 'Event not found.'});
+        }
+        res.json({message: 'Event deleted successfully.'});
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({message: 'Server error deleting event.'});
+    }
+})
+
+// Fetch all non-deleted events from the database
 app.get('/api/events', async (req, res) => {
     try {
-        const [result] = await db.query('SELECT * FROM event_');
+        const [result] = await db.query('SELECT * FROM event_ WHERE is_deleted = FALSE');
         res.json(result);
     } catch (error) {
         console.error('Error fetching events:', error);
