@@ -55,6 +55,9 @@ const Navbar = () => {
                         {role === 'admin' && (
                             <li><a href="/giftshop-admin">Manage Gift Shop</a></li>
                         )}
+                        {['admin', 'staff'].includes(role) && ( // Conditionally render Reports link
+                            <li><a href="/reports">Reports</a></li>
+                        )}
                     </ul>
                 </div>
 

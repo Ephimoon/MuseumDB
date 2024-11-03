@@ -31,7 +31,7 @@ const MFAShopCard = ({ item, onCardClick }) => {
     const { addToCart } = useContext(CartContext);
 
     const getImageUrl = (itemId) => {
-        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
+        return `http://localhost:5000/giftshopitems/${itemId}/image`;
     };
 
     return (
