@@ -1,8 +1,6 @@
-// process_emails.js
 const mysql = require('mysql2/promise');
 const nodemailer = require('nodemailer');
 
-// Database configuration
 const dbConfig = {
     host: 'museumcosc3380.mysql.database.azure.com',
     user: 'Dennis',
@@ -18,7 +16,7 @@ const emailConfig = {
         secure: false,
         auth: {
             user: 'museumgiftshop123@gmail.com',
-            pass: 'tqxo woip lctq fvzk'  // Your app password
+            pass: 'tqxo woip lctq fvzk'  // google app password
         }
     },
     from: {
