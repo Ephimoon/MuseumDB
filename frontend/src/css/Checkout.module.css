@@ -1,93 +1,150 @@
+/* src/css/Checkout.module.css */
+
 /* Main Container for Checkout Page */
 .checkoutContainer {
-    padding-top: 100px;
-    max-width: 800px;
+    padding: 20px;
+    width: 100%; /* Ensure full width */
+    max-width: 2000px; /* Adjust as needed */
     margin: 0 auto;
     min-height: 100vh;
     background-color: #fcfcfc;
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-sizing: border-box;
+    padding-top: 120px; /* Adjust to prevent overlay by navbar */
 }
 
 /* Checkout Title */
 .checkoutContainer h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: bold;
     color: #352F36;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    text-align: center;
 }
 
 /* Order Summary Section */
 .orderSummary {
     width: 100%;
     background: #FFFFFF;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-sizing: border-box;
+}
+
+/* Order Summary Title */
+.orderSummary h2 {
+    font-size: 1.8rem;
+    color: #352F36;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #D7D5D7;
+    padding-bottom: 10px;
+}
+
+/* Order Summary Table */
+.orderTable {
+    width: 100%;
+    border-collapse: collapse;
     margin-bottom: 20px;
 }
 
-.orderSummary h2 {
-    font-size: 1.5rem;
-    color: #352F36;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.orderSummary ul {
-    list-style-type: none;
-    padding: 0;
-    color: #5D595E;
-}
-
-.orderSummary ul li {
-    padding: 10px;
+.orderTable th, .orderTable td {
+    padding: 12px;
     border-bottom: 1px solid #D7D5D7;
-    display: flex;
-    justify-content: space-between;
+    text-align: center;
+    color: #352F36;
+}
+
+.orderTable th {
+    background-color: #f8f8f8;
+    font-weight: bold;
     font-size: 1rem;
 }
 
-.orderSummary ul li:last-child {
-    border-bottom: none;
+.orderTable td {
+    font-size: 1rem;
 }
 
-.orderSummary .totalAmount {
-    font-weight: bold;
-    color: #352F36;
-    font-size: 1.2rem;
-    margin-top: 15px;
-    text-align: center;
-}
-
-/* Confirm Purchase Button */
-.confirmButton {
+/* Financials (Subtotal, Tax, Total) */
+.financials {
     width: 100%;
-    padding: 12px;
+    margin-top: 20px;
+}
+
+.financialRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 1.1rem;
+    color: #352F36;
+}
+
+.financialRow:nth-child(3) {
+    font-weight: bold;
+    border-top: 2px solid #D7D5D7;
+    padding-top: 15px;
+}
+
+/* Button Group */
+.buttonGroup {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px; /* Space between buttons */
+}
+
+/* Confirm Purchase Button (Using clearCartButton styles) */
+.clearCartButton {
+    flex: 1 1 48%; /* Adjust width as needed */
+    padding: 15px;
     font-size: 1.2rem;
     font-weight: bold;
     color: #FFFFFF;
-    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    background: linear-gradient(90deg, #FF8C00 0%, #FF5722 100%); /* Vibrant orange to deep amber */
     border: none;
-    border-radius: 10px;
+    border-radius: 7px;
     cursor: pointer;
     transition: background 0.3s ease;
-    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.confirmButton:hover {
-    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+.clearCartButton:hover {
+    background: linear-gradient(90deg, #FF5722 0%, #FF8C00 100%);
+}
+
+/* Go Back Button */
+.goBackButton {
+    flex: 1 1 48%; /* Adjust width as needed */
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #1E90FF 0%, #00688B 100%); /* Teal to navy blue */
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.goBackButton:hover {
+    background: linear-gradient(90deg, #00688B 0%, #1E90FF 100%);
 }
 
 /* Success and Error Messages */
 .successMessage, .errorMessage {
     width: 100%;
-    padding: 15px;
-    font-size: 1rem;
+    padding: 20px;
+    font-size: 1.1rem;
     text-align: center;
-    border-radius: 10px;
-    margin-top: 20px;
+    border-radius: 8px;
+    margin-top: 30px;
+    box-sizing: border-box;
 }
 
 .successMessage {
@@ -98,4 +155,21 @@
 .errorMessage {
     background-color: #FFBABA;
     color: #D8000C;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .orderTable th, .orderTable td {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .financialRow {
+        font-size: 1rem;
+    }
+
+    .clearCartButton, .goBackButton {
+        flex: 1 1 100%; /* Stack buttons vertically on small screens */
+        margin-bottom: 10px;
+    }
 }

@@ -26,7 +26,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import MemberDashboard from './pages/Dashboards/MemberDashboard/MemberDashboard';
 import Settings from './pages/Dashboards/MemberDashboard/Settings';
-
+import Report from './pages/Report';
 const App = () => {
     const isAuthenticated = Boolean(localStorage.getItem('username')); // Check if a user is logged in
 
@@ -71,6 +71,7 @@ const App = () => {
                 <Route path="/curate-exhibitions" element={<CurateExhibitions/>}/>
                 <Route path="/MFAShopStaff" element={<MFAShopStaff/>}/>
                 <Route path="/shop-report" element={<ShopReport/>}/>
+                <Route path="/reports" element={<Report />} />
             </Route>
 
             {/* Profile Page - Accessible to all logged-in users */}
