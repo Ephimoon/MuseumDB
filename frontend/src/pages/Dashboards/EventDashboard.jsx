@@ -122,33 +122,28 @@ const EventDirectorDashboard = () => {
         setMembersList([]);
     };
 
-    // Get current date
-    const currentDate = new Date();
-
-    // Separate active and archived events
-    const activeEvents = eventCards.filter(event => new Date(event.date) >= currentDate);
-    const archivedEvents = eventCards.filter(event => new Date(event.date) < currentDate);
-
     // Handle event selection for reports
     const handleEventSelection = (e) => {
         setSelectedEventId(e.target.value);
     };
 
     // Simulate fetching report data for a specific event
-    const fetchReport = (eventId) => {
+    const fetchReport = async (eventId) => {
         if (!eventId) {
             alert('Please select an event.');
             return;
         }
 
-        // Dummy report data
-        const dummyReportData = {
-            totalMembers: Math.floor(Math.random() * 100),
-            totalRevenue: (Math.random() * 10000).toFixed(2)
-        };
-
-        // Simulate report data fetching
-        setReportData(dummyReportData);
+        try {
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/report`); 
+            if (response.status === 200) {
+                setReportData(response.data);
+            } else {
+                console.error('Failed to fetch report');
+            }
+        } catch (error) {
+            console.error('Error fetching report: ', error);
+        }
     };
 
     return (
@@ -253,19 +248,6 @@ const EventDirectorDashboard = () => {
                                 </div>
                             </div>
                         )}
-
-                        {/* Archive Section */}
-                        <div className="archive">
-                            <h3>Archived Events</h3>
-                            <div className="event-cards-container">
-                                {archivedEvents.map((event) => (
-                                    <div key={event.id} className="event-card">
-                                        <p>Archived Event Date: {new Date(event.date).toDateString()}</p>
-                                        <button onClick={() => removeEventCard(event.id)} className="Remove">Remove</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                     </div>
                 )}
 
@@ -298,7 +280,7 @@ const EventDirectorDashboard = () => {
                             <option value="">-- Select an Event --</option>
                             {eventCards.map(event => (
                                 <option key={event.id} value={event.id}>
-                                    {event.name} (Date: {new Date(event.date).toDateString()})
+                                    {event.name} 
                                 </option>
                             ))}
                         </select>
@@ -310,8 +292,8 @@ const EventDirectorDashboard = () => {
                         {reportData && (
                             <div className="report">
                                 <h4>Report for Event:</h4>
-                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembers}</p>
-                                <p><strong>Total Revenue Generated:</strong> ${reportData.totalRevenue}</p>
+                                <p><strong>Total Members Signed Up:</strong> {reportData.TotalMembersSignedUp}</p>
+                                <p><strong>Total Revenue Generated:</strong> ${reportData.TotalCashRevenue}</p>
                             </div>
                         )}
                     </div>
