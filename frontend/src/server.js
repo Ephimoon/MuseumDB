@@ -394,7 +394,42 @@ app.put('/users/:id', authenticateUser, async (req, res) => {
 });
 
 // ----- CHECKOUT ENDPOINT ------------------------------------------------------------------------
+app.put('/users/:id/change-password', authenticateUser, async (req, res) => {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
 
+    // Ensure the user can only change their own password or admin can change any
+    if (req.userId !== id && req.userRole !== 'admin') {
+        return res.status(403).json({ message: 'Access denied. You can only change your own password.' });
+    }
+
+    try {
+        const [rows] = await db.query('SELECT password FROM users WHERE user_id = ?', [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        const user = rows[0];
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Current password is incorrect.' });
+        }
+
+        // Additional Validation: Check if newPassword meets criteria (e.g., length)
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'New password must be at least 6 characters long.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await db.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, id]);
+
+        res.status(200).json({ message: 'Password updated successfully!' });
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).json({ message: 'Server error updating password.' });
+    }
+});
 app.post('/checkout', authenticateUser, async (req, res) => {
     const { payment_method, items } = req.body;
     const user_id = req.userId; // Retrieved from the authenticateUser middleware

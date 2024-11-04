@@ -7,6 +7,7 @@ import HomeNavBar from '../components/HomeNavBar';
 import TicketBackground from '../assets/TicketsBackground.png';
 import '../css/ProfilePage.css'; // Import updated CSS file
 import dayjs from "dayjs";
+import ChangePasswordModal from '../components/ChangePasswordModal'; // Import the new modal
 
 const ProfilePage = () => {
     const [userData, setUserData] = useState({
@@ -17,6 +18,7 @@ const ProfilePage = () => {
         email: '',
     });
     const [message, setMessage] = useState('');
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false); // State to control modal
 
     const userId = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
@@ -32,7 +34,10 @@ const ProfilePage = () => {
                     dateOfBirth: dayjs(data.dateOfBirth).format('YYYY-MM-DD'),
                 });
             })
-            .catch(error => console.error('Error fetching user data:', error));
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                setMessage('Error fetching user data.');
+            });
     }, [userId, role]);
 
     const handleChange = (e) => {
@@ -46,7 +51,18 @@ const ProfilePage = () => {
             headers: { 'user-id': userId, role },
         })
             .then(response => setMessage('Profile updated successfully!'))
-            .catch(error => console.error('Error updating profile:', error));
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                setMessage('Error updating profile.');
+            });
+    };
+
+    const handleOpenPasswordModal = () => {
+        setIsPasswordModalOpen(true);
+    };
+
+    const handleClosePasswordModal = () => {
+        setIsPasswordModalOpen(false);
     };
 
     return (
@@ -145,11 +161,29 @@ const ProfilePage = () => {
                         >
                             Update Profile
                         </Button>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handleOpenPasswordModal}
+                            sx={{ mb: 2 }}
+                        >
+                            Change Password
+                        </Button>
                     </Box>
                 </Box>
             </Container>
+
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                open={isPasswordModalOpen}
+                onClose={handleClosePasswordModal}
+                userId={userId}
+                role={role}
+            />
         </div>
     );
+
 };
 
 export default ProfilePage;
