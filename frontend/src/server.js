@@ -807,6 +807,23 @@ app.get('/api/events/:id/members', async (req, res) => {
     }
 });
 
+// Fetch report data for a specific event
+app.get('/api/events/:id/report', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query('SELECT EventName, TotalMembersSignedUp, TotalCashRevenue FROM EventReport WHERE EventID = ?', 
+            [id]);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Report not found for the specified event.' });
+        }
+        res.json(result[0]);
+    }
+    catch (error){
+        console.error('Error fetching event report:', error);
+        res.status(500).json({ message: 'Server error fetching event report.' });
+    }
+})
+
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
 // ----- (DENNIS) ---------------------------------------------------------------------------------
