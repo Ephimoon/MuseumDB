@@ -1,0 +1,22 @@
+/* src/css/AnnouncementDisplay.module.css */
+
+.announcementsContainer {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 2rem;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .announcementsContainer {
+        padding: 10px;
+    }
+}

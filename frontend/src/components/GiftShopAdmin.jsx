@@ -27,16 +27,13 @@ const GiftShopAdmin = () => {
     const [filterQuantity, setFilterQuantity] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
 
-    // Sort state variables
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-
     useEffect(() => {
         fetchItems();
     }, []);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [items, filterName, filterCategory, filterPriceMin, filterPriceMax, filterQuantity, filterStatus, sortConfig]);
+    }, [items, filterName, filterCategory, filterPriceMin, filterPriceMax, filterQuantity, filterStatus]);
 
     const fetchItems = () => {
         axios.get(`http://localhost:5000/giftshopitemsall`)
@@ -116,14 +113,6 @@ const GiftShopAdmin = () => {
         fetchItems();
     };
 
-    const handleSort = (columnKey) => {
-        let direction = 'asc';
-        if (sortConfig.key === columnKey && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key: columnKey, direction });
-    };
-
     // Filter items based on filter criteria
     const filteredItems = items.filter(item => {
         const matchesName = item.name_.toLowerCase().includes(filterName.toLowerCase());
@@ -135,37 +124,11 @@ const GiftShopAdmin = () => {
         return matchesName && matchesCategory && matchesPriceMin && matchesPriceMax && matchesQuantity && matchesStatus;
     });
 
-    // Apply sorting
-    const sortedItems = React.useMemo(() => {
-        if (sortConfig.key) {
-            const sorted = [...filteredItems].sort((a, b) => {
-                let aValue = a[sortConfig.key];
-                let bValue = b[sortConfig.key];
-
-                // Handle different data types
-                if (typeof aValue === 'string') {
-                    aValue = aValue.toLowerCase();
-                    bValue = bValue.toLowerCase();
-                }
-
-                if (aValue < bValue) {
-                    return sortConfig.direction === 'asc' ? -1 : 1;
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'asc' ? 1 : -1;
-                }
-                return 0;
-            });
-            return sorted;
-        }
-        return filteredItems;
-    }, [filteredItems, sortConfig]);
-
-    // Calculate total pages and current items based on sortedItems
-    const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+    // Calculate total pages and current items
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = sortedItems.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
     // Extract unique categories for filter dropdown
     const uniqueCategories = [...new Set(items.map(item => item.category))];
@@ -265,84 +228,53 @@ const GiftShopAdmin = () => {
             <table className={styles.itemTable}>
                 <thead>
                 <tr>
-                    <th onClick={() => handleSort('name_')}>
-                        Name
-                        <span className={styles.sortArrow}>
-                                {sortConfig.key === 'name_' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                            </span>
-                    </th>
-                    <th onClick={() => handleSort('category')}>
-                        Category
-                        <span className={styles.sortArrow}>
-                                {sortConfig.key === 'category' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                            </span>
-                    </th>
-                    <th onClick={() => handleSort('price')}>
-                        Price
-                        <span className={styles.sortArrow}>
-                                {sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                            </span>
-                    </th>
-                    <th onClick={() => handleSort('quantity')}>
-                        Quantity
-                        <span className={styles.sortArrow}>
-                                {sortConfig.key === 'quantity' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                            </span>
-                    </th>
-                    <th onClick={() => handleSort('is_deleted')}>
-                        Status
-                        <span className={styles.sortArrow}>
-                                {sortConfig.key === 'is_deleted' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : ''}
-                            </span>
-                    </th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
                     <th>Image</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
 
                 <tbody>
-                {Array.isArray(currentItems) && currentItems.length > 0 ? (
-                    currentItems.map(item => (
-                        <tr key={item.item_id}>
-                            <td>{item.name_}</td>
-                            <td>{item.category}</td>
-                            <td>${parseFloat(item.price).toFixed(2)}</td>
-                            <td>{item.quantity}</td>
-                            <td>{Number(item.is_deleted) === 1 ? 'Deleted' : 'Active'}</td>
-                            <td>
-                                <img
-                                    src={getImageUrl(item.item_id)}
-                                    alt={item.name_}
-                                    className={styles.itemImage}
-                                />
-                            </td>
-                            <td>
-                                <button className={styles.actionButton} onClick={() => openFormModal(item)}>Edit</button>
-                                {Number(item.is_deleted) === 0 ? (
-                                    <>
-                                        <button
-                                            className={styles.actionButton}
-                                            onClick={() => confirmDelete(item.item_id)}
-                                        >
-                                            Delete
-                                        </button>
-                                    </>
-                                ) : (
+                {Array.isArray(currentItems) && currentItems.map(item => (
+                    <tr key={item.item_id}>
+                        <td>{item.name_}</td>
+                        <td>{item.category}</td>
+                        <td>${parseFloat(item.price).toFixed(2)}</td>
+                        <td>{item.quantity}</td>
+                        <td>{Number(item.is_deleted) === 1 ? 'Deleted' : 'Active'}</td>
+                        <td>
+                            <img
+                                src={getImageUrl(item.item_id)}
+                                alt={item.name_}
+                                className={styles.itemImage}
+                            />
+                        </td>
+                        <td>
+                            <button className={styles.actionButton} onClick={() => openFormModal(item)}>Edit</button>
+                            {Number(item.is_deleted) === 0 ? (
+                                <>
                                     <button
                                         className={styles.actionButton}
-                                        onClick={() => confirmRestore(item.item_id)}
+                                        onClick={() => confirmDelete(item.item_id)}
                                     >
-                                        Restore
+                                        Delete
                                     </button>
-                                )}
-                            </td>
-                        </tr>
-                    ))
-                ) : (
-                    <tr>
-                        <td colSpan="7">No items found.</td>
+                                </>
+                            ) : (
+                                <button
+                                    className={styles.actionButton}
+                                    onClick={() => confirmRestore(item.item_id)}
+                                >
+                                    Restore
+                                </button>
+                            )}
+                        </td>
                     </tr>
-                )}
+                ))}
                 </tbody>
             </table>
 
@@ -402,7 +334,6 @@ const GiftShopAdmin = () => {
             )}
         </div>
     );
-
 };
 
 export default GiftShopAdmin;

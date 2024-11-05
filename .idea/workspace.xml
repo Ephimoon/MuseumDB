@@ -5,13 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/ChangePasswordModal.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementCard.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementDisplay.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementFormModal.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementModal.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/AdminDashBoard.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/AnnouncementFormModal.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/AnnouncementModal.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/AnnouncementsDisplay.module.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/GiftShopAdmin.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/GiftShopAdmin.module.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/ProfilePage.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/ProfilePage.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MFAShop.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MFAShop.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/HomeNavBar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/HomeNavBar.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Login.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Register.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Register.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/css/HomeNavBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/HomeNavBar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Home.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Home.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -24,8 +39,8 @@
       <list>
         <option value="JavaScript File" />
         <option value="TypeScript JSX File" />
-        <option value="CSS File" />
         <option value="JSX File" />
+        <option value="CSS File" />
       </list>
     </option>
   </component>
@@ -103,7 +118,7 @@
       <recent name="E:\Projects\MuseumDB\frontend\src\pages\" />
     </key>
   </component>
-  <component name="RunManager" selected="Compound.Run server + client">
+  <component name="RunManager" selected="Node.js.server.js">
     <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
       <option name="appName" />
       <option name="appServicePlanName" />
@@ -172,6 +187,8 @@
       <workItem from="1730609990511" duration="13250000" />
       <workItem from="1730696054431" duration="3950000" />
       <workItem from="1730761207686" duration="896000" />
+      <workItem from="1730781467559" duration="11615000" />
+      <workItem from="1730794665528" duration="489000" />
     </task>
     <task id="LOCAL-00001" summary="Updated server.js">
       <option name="closed" value="true" />

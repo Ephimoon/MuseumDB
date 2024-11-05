@@ -68,6 +68,64 @@ button, a, p, li, span {
     text-decoration: underline;
 }
 
+/* "For Employee" dropdown menu */
+.employee-menu {
+    display: flex;
+    position: relative;
+    margin: 0; /* Remove any default margins */
+    padding: 0; /* Remove any default padding */
+}
+
+.employee-menu-title {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #FCFCFC;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 0; /* Ensure no padding on the title */
+    margin: 0; /* Ensure no margin on the title */
+}
+
+.dropdown-icon {
+    margin-left: 5px;
+    font-size: 20px;
+    vertical-align: middle; /* Aligns icon vertically with text */
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu {
+    position: absolute;
+    top: 100%; /* Align directly below */
+    left: 0;
+    background-color: #352F36;
+    min-width: 200px; /* Increase the width for longer text */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 4px;
+    padding: 8px 0;
+    list-style-type: none; /* Remove bullet points */
+}
+
+.dropdown-menu li {
+    padding: 8px 16px;
+    margin: 0; /* Remove any default margins for precise alignment */
+
+}
+
+.dropdown-menu li a {
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 14px;
+    display: block; /* Make link fill the li */
+    text-align: left;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #BD2859;
+    color: #FFFFFF;
+}
+
 /* Buttons for "Become a Member" and "Buy Tickets" */
 .nav-buttons {
     display: flex;
@@ -112,19 +170,15 @@ button, a, p, li, span {
     align-items: center;
 }
 
-.nav-links {
+.nav-links, .employee-menu {
+    align-items: center; /* Ensures alignment across all nav links */
     display: flex;
-    list-style: none;
-    margin-left: 20px;
+    padding: 0;
+    margin: 0;
 }
 
 .nav-links li {
     margin-right: 20px;
-}
-
-.nav-links a {
-    text-decoration: none;
-    color: #FFFFFF;
 }
 
 .nav-buttons {
@@ -157,6 +211,7 @@ button, a, p, li, span {
     color: #888;
     cursor: not-allowed;
 }
+
 .cart-icon {
     position: relative;
     cursor: pointer;
@@ -179,4 +234,3 @@ button, a, p, li, span {
     align-items: center;
     justify-content: center;
 }
-

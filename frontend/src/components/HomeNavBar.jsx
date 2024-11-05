@@ -1,16 +1,20 @@
 // src/components/Navbar.jsx
+
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../css/HomeNavBar.css';
 import logo from '../assets/LOGO.png';
 import { CartContext } from './CartContext'; // Import CartContext for cart state
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'; // Import MUI cart icon
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { cartItems } = useContext(CartContext); // Get cart items from context
     const [navBackground, setNavBackground] = useState('transparent');
+    const [employeeMenuOpen, setEmployeeMenuOpen] = useState(false);
 
     const role = localStorage.getItem('role');
     const username = localStorage.getItem('username');
@@ -32,7 +36,7 @@ const Navbar = () => {
                 window.removeEventListener('scroll', handleScroll);
             };
         } else {
-            setNavBackground('#352F36'); // Set navbar to black for non-home pages
+            setNavBackground('#352F36'); // Set navbar to dark for non-home pages
         }
     }, [location.pathname]);
 
@@ -40,6 +44,23 @@ const Navbar = () => {
         localStorage.clear();
         navigate('/login');
     };
+
+    const toggleEmployeeMenu = () => {
+        setEmployeeMenuOpen(!employeeMenuOpen);
+    };
+
+    // Close the employee menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!event.target.closest('.employee-menu')) {
+                setEmployeeMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     return (
         <nav style={{ backgroundColor: navBackground }} className="navbar">
@@ -52,11 +73,21 @@ const Navbar = () => {
                         <li><a href="/ExhibitionsAndEvents">Exhibitions and Events</a></li>
                         <li><a href="/Art">Art</a></li>
                         <li><a href="/MFAShop">MFA Shop</a></li>
-                        {role === 'admin' && (
-                            <li><a href="/giftshop-admin">Manage Gift Shop</a></li>
-                        )}
-                        {['admin', 'staff'].includes(role) && ( // Conditionally render Reports link
-                            <li><a href="/reports">Reports</a></li>
+                        {(['admin', 'staff'].includes(role)) && (
+                            <li className="employee-menu">
+                                <span onClick={toggleEmployeeMenu} className="employee-menu-title">
+                                    For Employee
+                                    {employeeMenuOpen ? <ExpandLessIcon className="dropdown-icon" /> : <ExpandMoreIcon className="dropdown-icon" />}
+                                </span>
+                                {employeeMenuOpen && (
+                                    <ul className="dropdown-menu">
+                                        {role === 'admin' && (
+                                            <li><a href="/giftshop-admin">Manage Gift Shop</a></li>
+                                        )}
+                                        <li><a href="/reports">Reports</a></li>
+                                    </ul>
+                                )}
+                            </li>
                         )}
                     </ul>
                 </div>
@@ -88,6 +119,7 @@ const Navbar = () => {
             </div>
         </nav>
     );
+
 };
 
 export default Navbar;

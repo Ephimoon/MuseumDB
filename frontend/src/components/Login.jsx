@@ -1,11 +1,14 @@
+// src/pages/Login.jsx
+
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, InputAdornment, CssBaseline } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
-import HomeNavBar from '../components/HomeNavBar'; // Move this import to the top
-import '../css/Auth.module.css'; // Import the updated CSS
+import HomeNavBar from '../components/HomeNavBar';
+import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -21,11 +24,14 @@ const Login = () => {
         if (!password) newErrors.password = 'Password is required';
         setErrors(newErrors);
 
-        if (Object.keys(newErrors).length > 0) return;
+        if (Object.keys(newErrors).length > 0) {
+            // Display validation errors using toast
+            Object.values(newErrors).forEach((error) => toast.error(error));
+            return;
+        }
 
         try {
             const loginUrl = `http://localhost:5000/login`;
-            console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -38,15 +44,21 @@ const Login = () => {
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
 
-                if (data.role === 'admin') navigate('/');
-                else if (data.role === 'staff') navigate('/giftshop-admin');
-                else navigate('/');
+                toast.success('Login successful!');
+                // Redirect based on role
+                if (data.role === 'admin') navigate('/AdminDashBoard'); // Adjust route as needed
+                else if (data.role === 'staff') navigate('/StaffDashboard');
+                else if (data.role === 'customer') navigate('/'); // Or any other customer-specific page
+                else if (data.role === 'member') navigate('/MemberDashboard');
+                else navigate('/'); // Default route
             } else {
-                const data = await response.json();
-                setErrors({ server: data.message });
+                // Always show a generic error message
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Incorrect username or password.');
             }
         } catch (error) {
-            setErrors({ server: 'Error logging in.' });
+            console.error('Error logging in:', error);
+            toast.error('Error logging in.');
         }
     };
 
@@ -66,7 +78,6 @@ const Login = () => {
                 <Typography component="h1" variant="h5" className="tickets-title">
                     Login
                 </Typography>
-                {errors.server && <Typography color="error">{errors.server}</Typography>}
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
                     <TextField
                         margin="normal"
@@ -110,6 +121,7 @@ const Login = () => {
                         fullWidth
                         variant="contained"
                         className="purchase-button"
+                        sx={{ mt: 3, mb: 2 }}
                     >
                         Login
                     </Button>

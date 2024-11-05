@@ -4,7 +4,7 @@ import HomeNavBar from '../components/HomeNavBar';
 import HomeImage from '../assets/home.png';
 import HomeCard from '../components/HomeCard';
 import '../css/Home.css'; // Import your CSS file
-
+import AnnouncementDisplay from "../components/AnnouncementDisplay";
 const Home = () => {
     const navigate = useNavigate();
     return (
@@ -12,7 +12,7 @@ const Home = () => {
             <HomeNavBar />
             {/* Background Image */}
             <img src={HomeImage} alt="MFAH Landing Page Image" className="HomeBackgroundImage" />
-            
+
             {/* Overlayed content */}
             <div className="home-content">
                 <h1 className="heading-title">The Museum of Fine Arts, Houston</h1>
@@ -21,11 +21,7 @@ const Home = () => {
 
             {/* after the image */}
             <div className='bottom-background'>
-                {/* exhibition card */}
-                <HomeCard/>
-
-                {/* event card */}
-                <HomeCard/>
+                <AnnouncementDisplay/>
             </div>
         </div>
     );
