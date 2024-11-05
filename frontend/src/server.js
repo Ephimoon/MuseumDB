@@ -144,7 +144,8 @@ app.post('/login', async (req, res) => {
 
     try {
         const [user] = await db.query(`
-            SELECT users.*, roles.role_name
+            SELECT users.*, roles.role_name,
+            (users.role_id = 4) as is_member
             FROM users
             JOIN roles ON users.role_id = roles.id
             WHERE users.username = ?
@@ -157,13 +158,42 @@ app.post('/login', async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, user[0].password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid username or password.' });
+        DennisNew
+        }
+
+        // Update the updated_at timestamp
+        await db.query(
+            'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            [user[0].user_id]
+        );
+
+        // Check membership warning ONLY if user is a member
+        let membershipInfo = null;
+        if (user[0].is_member) {
+            const [warning] = await db.query(
+                `SELECT expiration_warning, expire_date 
+                 FROM membership 
+                 WHERE user_id = ? 
+                 AND expire_date >= CURRENT_TIMESTAMP
+                 ORDER BY expire_date ASC 
+                 LIMIT 1`,
+                [user[0].user_id]
+            );
+            membershipInfo = warning[0]
+          main
         }
 
         res.status(200).json({
             message: 'Login successful!',
             userId: user[0].user_id,
             role: user[0].role_name,
+            DennisNew
+            username: user[0].username,
+            membershipWarning: membershipInfo?.expiration_warning === 1,
+            expireDate: membershipInfo?.expire_date
+
             username: user[0].username, // Include username in response if needed
+          main
         });
     } catch (error) {
         console.error('Server error during login:', error);
@@ -827,7 +857,15 @@ app.get('/api/events/:id/report', async (req, res) => {
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
 // ----- (DENNIS) ---------------------------------------------------------------------------------
+ 
 
+
+
+DennisNew
+// Altered Leo's login backend to accomodate for membership expiration alert trigger
+
+
+ main
 // (Assuming DENNIS's endpoints are already correctly implemented)
 // ----- (DENNIS DONE) ----------------------------------------------------------------------------
 
@@ -835,3 +873,4 @@ app.get('/api/events/:id/report', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server Running on http://localhost:${port}`);
 });
+
