@@ -158,6 +158,7 @@ app.post('/login', async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, user[0].password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid username or password.' });
+        DennisNew
         }
 
         // Update the updated_at timestamp
@@ -178,16 +179,21 @@ app.post('/login', async (req, res) => {
                  LIMIT 1`,
                 [user[0].user_id]
             );
-            membershipInfo = warning[0];
+            membershipInfo = warning[0]
+          main
         }
 
         res.status(200).json({
             message: 'Login successful!',
             userId: user[0].user_id,
             role: user[0].role_name,
+            DennisNew
             username: user[0].username,
             membershipWarning: membershipInfo?.expiration_warning === 1,
             expireDate: membershipInfo?.expire_date
+
+            username: user[0].username, // Include username in response if needed
+          main
         });
     } catch (error) {
         console.error('Server error during login:', error);
@@ -851,7 +857,15 @@ app.get('/api/events/:id/report', async (req, res) => {
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
 // ----- (DENNIS) ---------------------------------------------------------------------------------
+ 
+
+
+
+DennisNew
 // Altered Leo's login backend to accomodate for membership expiration alert trigger
+
+
+ main
 // (Assuming DENNIS's endpoints are already correctly implemented)
 // ----- (DENNIS DONE) ----------------------------------------------------------------------------
 
