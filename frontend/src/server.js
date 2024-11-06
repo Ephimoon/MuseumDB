@@ -61,14 +61,32 @@ const storage = multer.diskStorage({
 
 // ----- (MELANIE) --------------------------------------------------------------------------------
 
+// artwork images
+// const artworkStorage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//       cb(null, path.join(__dirname, 'assets/artworks')); // Save to frontend/src/assets/artworks
+//     },
+//     filename: (req, file, cb) => {
+//       const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+//       cb(null, safeFileName);
+//     }
+//   });
+  
+//   const uploadArtworkImage = multer({ storage: artworkStorage });
 
 app.get('/artwork', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM artwork');
+        const [rows] = await db.query(`
+            SELECT 
+                artwork.*, 
+                artist.name_ AS artist_name
+            FROM artwork
+            LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+        `);
         res.json(rows);
     } catch (error) {
-        console.error('Error fetching artwork table:', error);
-        res.status(500).json({message: 'Server error fetching artwork table.'});
+        console.error('Error fetching artwork with artist name:', error);
+        res.status(500).json({ message: 'Server error fetching artwork.' });
     }
 });
 
@@ -82,6 +100,21 @@ app.get('/department', async (req, res) => {
     }
 });
 
+// artist images
+app.use('/assets/artists', express.static(path.join(__dirname, 'assets/artists')));
+
+const artistStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
+    },
+    filename: (req, file, cb) => {
+      const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      cb(null, safeFileName);
+    }
+});
+  
+const uploadArtistImage = multer({ storage: artistStorage });
+
 app.get('/artist', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM artist');
@@ -91,6 +124,143 @@ app.get('/artist', async (req, res) => {
         res.status(500).json({message: 'Server error fetching artist table.'});
     }
 });
+
+app.get('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT * FROM artist WHERE ArtistID = ?', [artistId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Artist not found' });
+        }
+        res.json(rows[0]); // Return the single artist object
+    } catch (error) {
+        console.error('Error fetching artist by ID:', error);
+        res.status(500).json({ message: 'Server error fetching artist.' });
+    }
+});
+
+// get nationalities
+app.get('/api/nationalities', async (req, res) => {
+    try {
+      const [rows] = await db.query(`
+        SHOW COLUMNS FROM artist LIKE 'nationality'
+      `);
+      
+      // Extract the enum values from the `Type` column
+      const enumValues = rows[0].Type.match(/enum\((.*)\)/)[1]
+        .replace(/'/g, '') // Remove single quotes
+        .split(','); // Split by comma to get individual nationalities
+  
+      res.json(enumValues);
+    } catch (error) {
+      console.error('Error fetching nationalities:', error);
+      res.status(500).json({ message: 'Server error fetching nationalities.' });
+    }
+});
+  
+
+// Artist creation route with image upload
+app.post('/artist', uploadArtistImage.single('image'), async (req, res) => {
+    try {
+        const { name, gender, nationality, birthYear, description } = req.body;
+        let deathYear = req.body.deathYear ? parseInt(req.body.deathYear) : null;
+        if (isNaN(deathYear)) {
+            deathYear = null;
+        }
+        const image = req.file ? req.file.filename : null;
+
+        console.log("Received data:", { name, gender, nationality, birthYear, description, deathYear, image });
+
+        if (!name || !gender || !nationality || !birthYear || !description) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        const [result] = await db.query(
+            `INSERT INTO artist (name_, image, description, gender, nationality, birth_year, death_year) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [name, image, description, gender, nationality, birthYear, deathYear]
+        );
+
+        res.status(201).json({ message: 'Artist added successfully', artistId: result.insertId });
+    } catch (error) {
+        console.error('Error inserting artist:', error);
+        res.status(500).json({ message: 'Failed to add artist' });
+    }
+});
+
+app.patch('/artist/:id', uploadArtistImage.single('image'), async (req, res) => {
+    const artistId = req.params.id;
+    const { name, nationality, birthYear, deathYear, description, gender } = req.body;
+    const image = req.file ? req.file.filename : null; // Get the uploaded file, if available
+
+    // Handle deathYear - convert to null if it's empty or invalid
+    const parsedDeathYear = deathYear ? parseInt(deathYear) : null;
+    const finalDeathYear = isNaN(parsedDeathYear) ? null : parsedDeathYear;
+
+    // Build the SQL query dynamically based on provided fields
+    const fields = [];
+    const values = [];
+
+    if (name) {
+        fields.push('name_ = ?');
+        values.push(name);
+    }
+    if (gender) {
+        fields.push('gender = ?');
+        values.push(gender);
+    }
+    if (nationality) {
+        fields.push('nationality = ?');
+        values.push(nationality);
+    }
+    if (birthYear) {
+        fields.push('birth_year = ?');
+        values.push(birthYear);
+    }
+    if (finalDeathYear !== undefined) { // Use finalDeathYear to handle null values
+        fields.push('death_year = ?');
+        values.push(finalDeathYear);
+    }
+    if (description) {
+        fields.push('description = ?');
+        values.push(description);
+    }
+    if (image) { // Only update the image if a new one is provided
+        fields.push('image = ?');
+        values.push(image);
+    }
+
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+
+    // Add the artistId to the end of values array for the WHERE clause
+    values.push(artistId);
+
+    const query = `UPDATE artist SET ${fields.join(', ')} WHERE ArtistID = ?`;
+
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Artist updated successfully.' });
+    } catch (error) {
+        console.error('Error updating artist:', error);
+        res.status(500).json({ message: 'Server error updating artist.' });
+    }
+});
+
+
+app.delete('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+    try {
+      await db.query('DELETE FROM artist WHERE ArtistID = ?', [artistId]);
+      res.status(200).json({ message: 'Artist deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting artist:', error);
+      res.status(500).json({ message: 'Server error deleting artist' });
+    }
+});
+
 
 // ----- (MELANIE DONE) ---------------------------------------------------------------------------
 
