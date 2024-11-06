@@ -1,0 +1,146 @@
+/* src/css/Report.module.css */
+
+/* Main container */
+.reportContainer {
+    padding-top: 100px;
+    min-height: 100vh;
+    background-color: #fcfcfc;
+    text-align: center;
+}
+
+/* Title styling */
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 48px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin-bottom: 20px;
+}
+
+/* Filter container */
+.filterContainer {
+    width: 90%;
+    margin: 0 auto 20px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+/* Form group styling */
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.formGroup label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #352F36;
+}
+
+.formGroup input,
+.formGroup select {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Generate button */
+.generateButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+.generateButton:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Error message */
+.errorMessage {
+    color: red;
+    margin-top: 10px;
+}
+
+/* Style for the report table */
+.reportTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.reportTable th, .reportTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.reportTable th {
+    background-color: #f2f2f2;
+}
+
+.reportTable tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.reportTable tr:hover {
+    background-color: #eaeaea;
+}
+
+.tableContainer {
+    overflow-x: auto;
+}
+/* src/css/Report.module.css */
+
+/* ... existing styles ... */
+
+.buttonGroup {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.toggleButton {
+    padding: 8px 16px;
+    background-color: #007bff; /* Blue color for unselected buttons */
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
+    color: #fff;
+    transition: background-color 0.3s ease;
+}
+
+.toggleButton:hover {
+    background-color: #0056b3;
+}
+
+.activeButton {
+    background-color: #28a745; /* Green color for selected button */
+    color: #fff;
+}
+
+.activeButton:hover {
+    background-color: #218838;
+}
+/* Style for the DatePicker component */
+.datePicker {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-top: 5px;
+}
