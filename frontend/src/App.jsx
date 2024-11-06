@@ -19,6 +19,7 @@ import VerifyPage from './pages/VerifyPage';
 import LogoutPage from './pages/LogoutPage';
 import StaffDashboard from './pages/Dashboards/StaffDashboard';
 import GiftShopAdmin from './components/GiftShopAdmin';
+import ManageUsers from './components/ManageUsers'; // Imported ManageUsers
 import EventDirectorDashboard from './pages/Dashboards/EventDashboard';
 import EventReport from './pages/Dashboards/EventReport';
 import CurateArt from './pages/Dashboards/CurateArt';
@@ -68,6 +69,7 @@ const App = () => {
                 <Route element={<PrivateRoute roles={['admin']} />}>
                     <Route path="/AdminDashBoard" element={<AdminDashBoard />} />
                     <Route path="/giftshop-admin" element={<GiftShopAdmin />} />
+                    <Route path="/manage-users" element={<ManageUsers />} /> {/* New Route */}
                 </Route>
 
                 {/* Staff and Admin Dashboard Routes */}

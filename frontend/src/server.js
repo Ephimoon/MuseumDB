@@ -151,8 +151,6 @@ app.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Server error during registration.' });
     }
 });
-
-// User login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -162,7 +160,7 @@ app.post('/login', async (req, res) => {
 
     try {
         const [userRows] = await db.query(`
-            SELECT user_id, username, password, role_id
+            SELECT user_id, username, password, role_id, is_deleted
             FROM users
             WHERE username = ?
         `, [username]);
@@ -172,6 +170,12 @@ app.post('/login', async (req, res) => {
         }
 
         const user = userRows[0];
+
+        // Check if user is deleted
+        if (user.is_deleted === 1) {
+            return res.status(403).json({ message: 'Account has been deactivated. Please contact support.' });
+        }
+
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid username or password.' });
@@ -184,14 +188,13 @@ app.post('/login', async (req, res) => {
             message: 'Login successful!',
             userId: user.user_id,
             role: roleName,
-            username: user.username, // Include username in response if needed
+            username: user.username,
         });
     } catch (error) {
         console.error('Server error during login:', error);
         res.status(500).json({ message: 'Server error.' });
     }
 });
-
 // ----- AUTHENTICATION MIDDLEWARE -----
 
 // Authenticate Admin and Staff Middleware
@@ -204,18 +207,29 @@ function authenticateAdmin(req, res, next) {
     }
 }
 
-function authenticateUser(req, res, next) {
+async function authenticateUser(req, res, next) {
     const userId = req.headers['user-id'];
     const role = req.headers['role'];
 
     if (userId && role) {
-        req.userId = userId;
-        req.userRole = role;
-        next();
+        try {
+            const [rows] = await db.query('SELECT is_deleted FROM users WHERE user_id = ?', [userId]);
+            if (rows.length > 0 && rows[0].is_deleted === 0) {
+                req.userId = userId;
+                req.userRole = role;
+                next();
+            } else {
+                res.status(403).json({ message: 'Access denied. User is deleted.' });
+            }
+        } catch (error) {
+            console.error('Error in authenticateUser middleware:', error);
+            res.status(500).json({ message: 'Server error during authentication.' });
+        }
     } else {
         res.status(401).json({ message: 'Unauthorized access.' });
     }
 }
+
 
 // ----- MULTER CONFIGURATION -----
 const uploadMulter = multer({ storage: multer.memoryStorage() });
@@ -387,6 +401,27 @@ app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
     }
 });
 
+/// Get all users (Admin only)
+app.get('/users', authenticateAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT user_id, first_name, last_name, username, email, role_id, is_deleted,
+                   DATE_FORMAT(date_of_birth, '%Y-%m-%d') AS date_of_birth
+            FROM users
+        `);
+
+        // Map role_id to role_name
+        const users = rows.map(user => ({
+            ...user,
+            role_name: roleMappings[user.role_id],
+        }));
+
+        res.status(200).json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ message: 'Server error fetching users.' });
+    }
+});
 // Get user profile
 app.get('/users/:id', authenticateUser, async (req, res) => {
     const { id } = req.params;
@@ -400,7 +435,7 @@ app.get('/users/:id', authenticateUser, async (req, res) => {
         const [rows] = await db.query(`
             SELECT first_name AS firstName, last_name AS lastName, date_of_birth AS dateOfBirth, username, email
             FROM users
-            WHERE user_id = ?
+            WHERE user_id = ? AND is_deleted = 0
         `, [id]);
 
         if (rows.length === 0) {
@@ -413,16 +448,10 @@ app.get('/users/:id', authenticateUser, async (req, res) => {
         res.status(500).json({ message: 'Server error fetching user data.' });
     }
 });
-
-// Update user profile
-app.put('/users/:id', authenticateUser, async (req, res) => {
+// Update user (Admin only)
+app.put('/users/:id', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
-    const { firstName, lastName, dateOfBirth, email } = req.body;
-
-    // Ensure the user can only update their own profile or admin can update any
-    if (req.userId !== id && req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied.' });
-    }
+    const { firstName, lastName, dateOfBirth, email, roleId } = req.body;
 
     try {
         const sql = `
@@ -430,16 +459,59 @@ app.put('/users/:id', authenticateUser, async (req, res) => {
             SET first_name = ?,
                 last_name = ?,
                 date_of_birth = ?,
-                email = ?
+                email = ?,
+                role_id = ?
             WHERE user_id = ?
         `;
-        const values = [firstName, lastName, dateOfBirth, email, id];
+        const values = [firstName, lastName, dateOfBirth, email, roleId, id];
 
         await db.query(sql, values);
-        res.status(200).json({ message: 'Profile updated successfully.' });
+        res.status(200).json({ message: 'User updated successfully.' });
     } catch (error) {
-        console.error('Error updating user profile:', error);
-        res.status(500).json({ message: 'Server error updating user profile.' });
+        console.error('Error updating user:', error);
+        res.status(500).json({ message: 'Server error updating user.' });
+    }
+});
+
+// Soft delete user (Admin only)
+app.put('/users/:id/soft-delete', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sql = 'UPDATE users SET is_deleted = 1 WHERE user_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'User soft deleted successfully.' });
+    } catch (error) {
+        console.error('Error soft deleting user:', error);
+        res.status(500).json({ message: 'Server error soft deleting user.' });
+    }
+});
+
+// Hard delete user (Admin only)
+app.delete('/users/:id', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sql = 'DELETE FROM users WHERE user_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'User hard deleted successfully.' });
+    } catch (error) {
+        console.error('Error hard deleting user:', error);
+        res.status(500).json({ message: 'Server error hard deleting user.' });
+    }
+});
+
+// Restore user (Admin only)
+app.put('/users/:id/restore', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sql = 'UPDATE users SET is_deleted = 0 WHERE user_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'User restored successfully.' });
+    } catch (error) {
+        console.error('Error restoring user:', error);
+        res.status(500).json({ message: 'Server error restoring user.' });
     }
 });
 

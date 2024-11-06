@@ -4,7 +4,7 @@ import HomeNavBar from '../components/HomeNavBar';
 import HomeImage from '../assets/home.png';
 import HomeCard from '../components/HomeCard';
 import '../css/Home.css'; // Import your CSS file
-import AnnouncementDisplay from "../components/AnnouncementDisplay";
+
 const Home = () => {
     const navigate = useNavigate();
     return (
@@ -21,7 +21,11 @@ const Home = () => {
 
             {/* after the image */}
             <div className='bottom-background'>
-                <AnnouncementDisplay/>
+                {/* exhibition card */}
+                <HomeCard/>
+
+                {/* event card */}
+                <HomeCard/>
             </div>
         </div>
     );

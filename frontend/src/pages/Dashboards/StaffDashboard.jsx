@@ -1,12 +1,18 @@
-import React from 'react'
-import DashboardNavBar from '../../components/DashboardNavBar'
+// src/pages/Dashboard/StaffDashboard.jsx
+
+import React from 'react';
+import HomeNavBar from '../../components/HomeNavBar';
+import AnnouncementDisplay from '../../components/AnnouncementDisplay';
 
 const StaffDashboard = () => {
-  return (
-    <div>
-      <DashboardNavBar />
-    </div>
-  )
-}
+    return (
+        <div>
+            <HomeNavBar />
+            <div style={{ paddingTop: '80px' }}>
+                <AnnouncementDisplay />
+            </div>
+        </div>
+    );
+};
 
-export default StaffDashboard
+export default StaffDashboard;

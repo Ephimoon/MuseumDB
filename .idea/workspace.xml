@@ -5,29 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementCard.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementDisplay.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementFormModal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementModal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/css/AdminDashBoard.module.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/css/AnnouncementFormModal.module.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/css/AnnouncementModal.module.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/css/AnnouncementsDisplay.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/ManageUsers.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/ManageUsers.module.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/css/UserFormModal.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/npm_start.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/npm_start.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/server_js.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/server_js.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/HomeNavBar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/HomeNavBar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Login.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Register.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Register.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/HomeNavBar.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/HomeNavBar.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/StaffDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/StaffDashboard.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/Home.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Home.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,7 +68,6 @@
 }</component>
   <component name="PackageJsonUpdateNotifier">
     <dismissed value="$PROJECT_DIR$/frontend/package.json" />
-    <dismissed value="$PROJECT_DIR$/package.json" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
@@ -99,7 +90,7 @@
     &quot;git-widget-placeholder&quot;: &quot;Anh&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/Projects/MuseumDB/frontend/package.json&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/nanht/OneDrive/Desktop/MuseumDB/frontend/package.json&quot;,
     &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -108,17 +99,19 @@
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;npm.npm start.executor&quot;: &quot;Run&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\IntelliJ IDEA 2023.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\IntelliJ IDEA 2023.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\nanht\OneDrive\Desktop\MuseumDB\frontend\src" />
+      <recent name="C:\Users\nanht\OneDrive\Desktop\MuseumDB\frontend" />
       <recent name="E:\Projects\MuseumDB\frontend\" />
       <recent name="E:\Projects\MuseumDB\frontend\src\pages\" />
     </key>
   </component>
-  <component name="RunManager" selected="Node.js.server.js">
+  <component name="RunManager" selected="Compound.Run server + client">
     <configuration default="true" type="AZURE_FUNCTION_SUPPORT" factoryName="Run Functions">
       <option name="appName" />
       <option name="appServicePlanName" />
@@ -189,6 +182,9 @@
       <workItem from="1730761207686" duration="896000" />
       <workItem from="1730781467559" duration="11615000" />
       <workItem from="1730794665528" duration="489000" />
+      <workItem from="1730835007512" duration="6818000" />
+      <workItem from="1730848420240" duration="76000" />
+      <workItem from="1730849013073" duration="7000" />
     </task>
     <task id="LOCAL-00001" summary="Updated server.js">
       <option name="closed" value="true" />
