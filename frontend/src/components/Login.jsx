@@ -29,7 +29,7 @@ const Login = () => {
     
         try {
             const loginUrl = `http://localhost:5000/login`;
-            DennisNew
+            
             console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',

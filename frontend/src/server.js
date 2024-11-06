@@ -180,20 +180,19 @@ app.post('/login', async (req, res) => {
                 [user[0].user_id]
             );
             membershipInfo = warning[0]
-          main
+          
         }
 
         res.status(200).json({
             message: 'Login successful!',
             userId: user[0].user_id,
             role: user[0].role_name,
-            DennisNew
+            
             username: user[0].username,
             membershipWarning: membershipInfo?.expiration_warning === 1,
             expireDate: membershipInfo?.expire_date
 
-            username: user[0].username, // Include username in response if needed
-          main
+          
         });
     } catch (error) {
         console.error('Server error during login:', error);
@@ -861,11 +860,10 @@ app.get('/api/events/:id/report', async (req, res) => {
 
 
 
-DennisNew
 // Altered Leo's login backend to accomodate for membership expiration alert trigger
 
 
- main
+ 
 // (Assuming DENNIS's endpoints are already correctly implemented)
 // ----- (DENNIS DONE) ----------------------------------------------------------------------------
 
