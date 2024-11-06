@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
+import config from '../config';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -28,7 +29,7 @@ const Login = () => {
         if (Object.keys(newErrors).length > 0) return;
     
         try {
-            const loginUrl = `http://localhost:8080/login`;
+            const loginUrl = `${config.backendUrl}/login`;
             console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',

@@ -4,6 +4,7 @@ import { CartContext } from '../components/CartContext';
 import HomeNavBar from '../components/HomeNavBar';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import styles from '../css/Checkout.module.css'; // Import Checkout-specific styles
+import config from '../config';
 
 const Checkout = () => {
     const { cartItems, clearCart, updateQuantity } = useContext(CartContext);
@@ -39,7 +40,7 @@ const Checkout = () => {
         }
 
         // Send data to backend
-        fetch('http://localhost:8080/checkout', { // Ensure this endpoint matches your backend
+        fetch(`${config.backendUrl}/checkout`, { // Ensure this endpoint matches your backend
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -7,6 +7,7 @@ import HomeNavBar from '../components/HomeNavBar';
 import TicketBackground from '../assets/TicketsBackground.png';
 import '../css/ProfilePage.css'; // Import updated CSS file
 import dayjs from "dayjs";
+import config from '../config';
 
 const ProfilePage = () => {
     const [userData, setUserData] = useState({
@@ -22,7 +23,7 @@ const ProfilePage = () => {
     const role = localStorage.getItem('role');
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/users/${userId}`, {
+        axios.get(`${config.backendUrl}/users/${userId}`, {
             headers: { 'user-id': userId, role },
         })
             .then(response => {
@@ -42,7 +43,7 @@ const ProfilePage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.put(`http://localhost:8080/users/${userId}`, userData, {
+        axios.put(`${config.backendUrl}/users/${userId}`, userData, {
             headers: { 'user-id': userId, role },
         })
             .then(response => setMessage('Profile updated successfully!'))

@@ -14,6 +14,7 @@ import {
 import HomeNavBar from '../components/HomeNavBar';
 import MFAShopCard from '../components/MFAShopCard';
 import MFAShopModalUser from '../components/MFAShopModalUser';
+import config from '../config';
 
 const MFAShop = () => {
     const [shopItems, setShopItems] = useState([]);
@@ -27,7 +28,7 @@ const MFAShop = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`http://localhost:8080/giftshopitems`)
+        fetch(`${config.backendUrl}/giftshopitems`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch shop items');

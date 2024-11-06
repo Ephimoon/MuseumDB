@@ -3,6 +3,8 @@ import axios from 'axios';
 import GiftShopFormModal from '../components/GiftShopForm';
 import styles from '../css/GiftShopAdmin.module.css';
 import HomeNavBar from "./HomeNavBar";
+import config from '../config';
+
 const GiftShopAdmin = () => {
     const [items, setItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -17,13 +19,13 @@ const GiftShopAdmin = () => {
     }, []);
 
     const fetchItems = () => {
-        axios.get(`http://localhost:8080/giftshopitemsall`)
+        axios.get(`${config.backendUrl}/giftshopitemsall`)
             .then(response => setItems(response.data))
             .catch(error => console.error('Error fetching items:', error));
     };
 
     const getImageUrl = (itemId) => {
-        return `http://localhost:8080/giftshopitems/${itemId}/image`;
+        return `${config.backendUrl}/giftshopitems/${itemId}/image`;
     };
 
     // Confirm Soft or Hard Delete
@@ -46,7 +48,7 @@ const GiftShopAdmin = () => {
 
     const handleSoftDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://localhost:8080/giftshopitems/${id}/soft-delete`, {}, {
+        axios.put(`${config.backendUrl}/giftshopitems/${id}/soft-delete`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -55,7 +57,7 @@ const GiftShopAdmin = () => {
 
     const handleHardDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.delete(`http://localhost:8080/giftshopitems/${id}/hard-delete`, {
+        axios.delete(`${config.backendUrl}/giftshopitems/${id}/hard-delete`, {
             headers: { role }
         })
             .then(() => fetchItems())
@@ -75,7 +77,7 @@ const GiftShopAdmin = () => {
 
     const handleRestore = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://localhost:8080/giftshopitems/${id}/restore`, {}, {
+        axios.put(`${config.backendUrl}/giftshopitems/${id}/restore`, {}, {
             headers: { role }
         })
             .then(() => fetchItems())
