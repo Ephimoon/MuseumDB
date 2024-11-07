@@ -995,7 +995,10 @@ app.get('/api/events', async (req, res) => {
 app.get('/api/events/:id/members', async (req, res) => {
     const eventId = req.params.id;
     try {
-        const [result] = await db.query('SELECT * FROM membership WHERE event_id = ?', [eventId]);
+        const [result] = await db.query(`SELECT DISTINCT membership.fname, membership.lname 
+                                        FROM events_transaction 
+                                        JOIN membership ON events_transaction.membership_id = membership.membership_id
+                                        WHERE event_id = ?`, [eventId]);
         res.json(result);
     } catch (error) {
         console.error('Error fetching members:', error);
@@ -1007,7 +1010,7 @@ app.get('/api/events/:id/members', async (req, res) => {
 app.get('/api/events/:id/report', async (req, res) => {
     const { id } = req.params;
     try {
-        const [result] = await db.query('SELECT EventName, TotalMembersSignedUp, TotalCashRevenue FROM EventReport WHERE EventID = ?', 
+        const [result] = await db.query('SELECT eventName, totalMembersSignedUp, totalRevenue FROM EventReport WHERE eventID = ?', 
             [id]);
         if (result.length === 0) {
             return res.status(404).json({ message: 'Report not found for the specified event.' });

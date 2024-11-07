@@ -27,7 +27,7 @@ const EventDirectorDashboard = () => {
                         description: event.description_,
                         location: event.location,
                         status: event.status,
-                        date: event.date
+                        //date: event.date
                     }));
                     setEventCards(formattedEvents);
                 }
@@ -105,6 +105,7 @@ const EventDirectorDashboard = () => {
             //const response = await axios.get(`http://http://localhost:8080/api/events/${eventId}/members`);
             const response = await axios.get(`${config.backendUrl}/api/events/${eventId}/members`);
             if (response.status === 200) {
+                console.log('Members: ', response.data);
                 setMembersList(response.data);
             } else {
                 console.error('Failed to fetch members');
@@ -134,6 +135,7 @@ const EventDirectorDashboard = () => {
             alert('Please select an event.');
             return;
         }
+        console.log('Fetching report for event: ', eventId);
 
         try {
             const response = await axios.get(`${config.backendUrl}/api/events/${eventId}/report`); 
@@ -260,7 +262,7 @@ const EventDirectorDashboard = () => {
                             <ul>
                                 {membersList.length > 0 ? (
                                     membersList.map(member => (
-                                        <li key={member.id}>{member.name}</li>
+                                        <li key={member.id}>{member.fname} {member.lname}</li>
                                     ))
                                 ) : (
                                     <p>No members signed up.</p>
@@ -293,8 +295,8 @@ const EventDirectorDashboard = () => {
                         {reportData && (
                             <div className="report">
                                 <h4>Report for Event:</h4>
-                                <p><strong>Total Members Signed Up:</strong> {reportData.TotalMembersSignedUp}</p>
-                                <p><strong>Total Revenue Generated:</strong> ${reportData.TotalCashRevenue}</p>
+                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembersSignedUp}</p>
+                                <p><strong>Total Revenue Generated:</strong> ${reportData.totalRevenue}</p>
                             </div>
                         )}
                     </div>
