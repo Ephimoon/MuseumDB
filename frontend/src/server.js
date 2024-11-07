@@ -1028,7 +1028,96 @@ app.get('/api/events/:id/report', async (req, res) => {
 // ----- (DENNIS) ---------------------------------------------------------------------------------
  
 
+// Membership registration endpoint
+app.post('/membership-registration', async (req, res) => {
+    console.log('Received membership registration request:', req.body);
+    
+    const {
+        first_name,
+        last_name,
+        username,
+        type_of_membership
+    } = req.body;
 
+    try {
+        // Start transaction
+        await db.query('START TRANSACTION');
+
+        // Check if user exists and get their role_id
+        const [existingUser] = await db.query(
+            'SELECT user_id, role_id FROM users WHERE username = ?',
+            [username]
+        );
+        
+        console.log('Existing user data:', existingUser);
+
+        if (existingUser.length === 0) {
+            await db.query('ROLLBACK');
+            console.log('User not found:', username);
+            return res.status(404).json({ error: 'User not found. Please register as a user first.' });
+        }
+
+        const user = existingUser[0];
+        console.log('User role_id:', user.role_id);
+
+        // Check if user already has a membership
+        const [existingMembership] = await db.query(
+            'SELECT * FROM membership WHERE user_id = ?',
+            [user.user_id]
+        );
+        
+        console.log('Existing membership:', existingMembership);
+
+        if (existingMembership.length > 0) {
+            await db.query('ROLLBACK');
+            console.log('User already has membership');
+            return res.status(400).json({ error: 'User already has a membership' });
+        }
+
+        if (user.role_id !== 3) {
+            await db.query('ROLLBACK');
+            console.log('Invalid role_id:', user.role_id);
+            return res.status(403).json({ 
+                error: user.role_id === 4 
+                    ? 'User already has an active membership' 
+                    : 'User must have role_id 3 to register for membership'
+            });
+        }
+
+        // Calculate expiration date (1 month from now)
+        const expirationDate = new Date();
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
+
+        // Create membership record with correct column names (fname and lname)
+        const membershipResult = await db.query(
+            `INSERT INTO membership 
+            (user_id, type_of_membership, expire_date, expiration_warning, fname, lname)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [user.user_id, type_of_membership.toLowerCase(), expirationDate, 0, first_name, last_name]
+        );
+        
+        console.log('Membership creation result:', membershipResult);
+
+        // Update user's role_id to 4
+        const userUpdateResult = await db.query(
+            'UPDATE users SET role_id = 4 WHERE user_id = ?',
+            [user.user_id]
+        );
+        
+        console.log('User role update result:', userUpdateResult);
+
+        // Commit transaction
+        await db.query('COMMIT');
+        console.log('Transaction committed successfully');
+        res.status(201).json({ message: 'Membership registration successful' });
+
+    } catch (error) {
+        // Rollback transaction on error
+        await db.query('ROLLBACK');
+        console.error('Error in membership registration:', error);
+        res.status(500).json({ error: 'Internal server error during membership registration: ' + error.message });
+    }
+});
 
 // Altered Leo's login backend to accomodate for membership expiration alert trigger
 
