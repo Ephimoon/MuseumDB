@@ -51,6 +51,9 @@ const Navbar = () => {
                         <li><a href="/Visit">Visit</a></li>
                         <li><a href="/ExhibitionsAndEvents">Exhibitions and Events</a></li>
                         <li><a href="/Art">Art</a></li>
+                        {(role === 'admin' || role === 'staff') && (
+                            <li><a href="/curate-art">Curate Art</a></li>
+                        )}
                         <li><a href="/MFAShop">MFA Shop</a></li>
                         {role === 'admin' && (
                             <li><a href="/giftshop-admin">Manage Gift Shop</a></li>

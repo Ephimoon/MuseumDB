@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { CartContext } from './CartContext';
+import config from '../config';
 
 const StyledButton = styled(Button)({
     padding: '8px 12px',
@@ -31,7 +32,7 @@ const MFAShopCard = ({ item, onCardClick }) => {
     const { addToCart } = useContext(CartContext);
 
     const getImageUrl = (itemId) => {
-        return `http://localhost:5000/giftshopitems/${itemId}/image`;
+        return `${config.backendUrl}/giftshopitems/${itemId}/image`;
     };
 
     return (

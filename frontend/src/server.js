@@ -1,12 +1,14 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, './.env') });
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+//require('dotenv').config();
 const app = express();
-const port = 5000; // Change to 6000 when you push to GitHub
-
+const port = 8080; // safe local port not blocked by other services
 const allowedOrigins = [
     'http://localhost:3000', // Local development frontend
     'http://localhost:3002', // Updated localhost port if needed
@@ -61,41 +63,206 @@ const upload = multer({ storage });
 
 // ----- (MELANIE) --------------------------------------------------------------------------------
 
-// Query artwork table
+// artwork images
+// const artworkStorage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//       cb(null, path.join(__dirname, 'assets/artworks')); // Save to frontend/src/assets/artworks
+//     },
+//     filename: (req, file, cb) => {
+//       const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+//       cb(null, safeFileName);
+//     }
+//   });
+  
+//   const uploadArtworkImage = multer({ storage: artworkStorage });
+
 app.get('/artwork', async (req, res) => {
-    const sql = 'SELECT * FROM artwork';
     try {
-        const [result] = await db.query(sql);
-        res.json(result);
-    } catch (err) {
-        console.error('Error fetching artwork:', err);
-        res.status(500).json({ message: "Error fetching artwork table" });
+        const [rows] = await db.query(`
+            SELECT 
+                artwork.*, 
+                artist.name_ AS artist_name
+            FROM artwork
+            LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artwork with artist name:', error);
+        res.status(500).json({ message: 'Server error fetching artwork.' });
     }
 });
 
-// Query departments table
 app.get('/department', async (req, res) => {
-    const sql = 'SELECT * FROM department';
     try {
-        const [result] = await db.query(sql);
-        res.json(result);
-    } catch (err) {
-        console.error('Error fetching department:', err);
-        res.status(500).json({ message: "Error fetching department table" });
+        const [rows] = await db.query('SELECT * FROM department');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching department table:', error);
+        res.status(500).json({message: 'Server error fetching department table.'});
     }
 });
 
-// Query artist table
-app.get('/artist', async (req, res) => {
-    const sql = 'SELECT * FROM artist';
-    try {
-        const [result] = await db.query(sql);
-        res.json(result);
-    } catch (err) {
-        console.error('Error fetching artist:', err);
-        res.status(500).json({ message: "Error fetching artist table" });
+// artist images
+app.use('/assets/artists', express.static(path.join(__dirname, 'assets/artists')));
+
+const artistStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
+    },
+    filename: (req, file, cb) => {
+      const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      cb(null, safeFileName);
     }
 });
+  
+const uploadArtistImage = multer({ storage: artistStorage });
+
+app.get('/artist', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM artist');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artist table:', error);
+        res.status(500).json({message: 'Server error fetching artist table.'});
+    }
+});
+
+app.get('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT * FROM artist WHERE ArtistID = ?', [artistId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Artist not found' });
+        }
+        res.json(rows[0]); // Return the single artist object
+    } catch (error) {
+        console.error('Error fetching artist by ID:', error);
+        res.status(500).json({ message: 'Server error fetching artist.' });
+    }
+});
+
+// get nationalities
+app.get('/api/nationalities', async (req, res) => {
+    try {
+      const [rows] = await db.query(`
+        SHOW COLUMNS FROM artist LIKE 'nationality'
+      `);
+      
+      // Extract the enum values from the `Type` column
+      const enumValues = rows[0].Type.match(/enum\((.*)\)/)[1]
+        .replace(/'/g, '') // Remove single quotes
+        .split(','); // Split by comma to get individual nationalities
+  
+      res.json(enumValues);
+    } catch (error) {
+      console.error('Error fetching nationalities:', error);
+      res.status(500).json({ message: 'Server error fetching nationalities.' });
+    }
+});
+  
+
+// Artist creation route with image upload
+app.post('/artist', uploadArtistImage.single('image'), async (req, res) => {
+    try {
+        const { name, gender, nationality, birthYear, description } = req.body;
+        let deathYear = req.body.deathYear ? parseInt(req.body.deathYear) : null;
+        if (isNaN(deathYear)) {
+            deathYear = null;
+        }
+        const image = req.file ? req.file.filename : null;
+
+        console.log("Received data:", { name, gender, nationality, birthYear, description, deathYear, image });
+
+        if (!name || !gender || !nationality || !birthYear || !description) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        const [result] = await db.query(
+            `INSERT INTO artist (name_, image, description, gender, nationality, birth_year, death_year) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [name, image, description, gender, nationality, birthYear, deathYear]
+        );
+
+        res.status(201).json({ message: 'Artist added successfully', artistId: result.insertId });
+    } catch (error) {
+        console.error('Error inserting artist:', error);
+        res.status(500).json({ message: 'Failed to add artist' });
+    }
+});
+
+app.patch('/artist/:id', uploadArtistImage.single('image'), async (req, res) => {
+    const artistId = req.params.id;
+    const { name, nationality, birthYear, deathYear, description, gender } = req.body;
+    const image = req.file ? req.file.filename : null; // Get the uploaded file, if available
+
+    // Handle deathYear - convert to null if it's empty or invalid
+    const parsedDeathYear = deathYear ? parseInt(deathYear) : null;
+    const finalDeathYear = isNaN(parsedDeathYear) ? null : parsedDeathYear;
+
+    // Build the SQL query dynamically based on provided fields
+    const fields = [];
+    const values = [];
+
+    if (name) {
+        fields.push('name_ = ?');
+        values.push(name);
+    }
+    if (gender) {
+        fields.push('gender = ?');
+        values.push(gender);
+    }
+    if (nationality) {
+        fields.push('nationality = ?');
+        values.push(nationality);
+    }
+    if (birthYear) {
+        fields.push('birth_year = ?');
+        values.push(birthYear);
+    }
+    if (finalDeathYear !== undefined) { // Use finalDeathYear to handle null values
+        fields.push('death_year = ?');
+        values.push(finalDeathYear);
+    }
+    if (description) {
+        fields.push('description = ?');
+        values.push(description);
+    }
+    if (image) { // Only update the image if a new one is provided
+        fields.push('image = ?');
+        values.push(image);
+    }
+
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+
+    // Add the artistId to the end of values array for the WHERE clause
+    values.push(artistId);
+
+    const query = `UPDATE artist SET ${fields.join(', ')} WHERE ArtistID = ?`;
+
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Artist updated successfully.' });
+    } catch (error) {
+        console.error('Error updating artist:', error);
+        res.status(500).json({ message: 'Server error updating artist.' });
+    }
+});
+
+
+app.delete('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+    try {
+      await db.query('DELETE FROM artist WHERE ArtistID = ?', [artistId]);
+      res.status(200).json({ message: 'Artist deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting artist:', error);
+      res.status(500).json({ message: 'Server error deleting artist' });
+    }
+});
+
 
 // ----- (MELANIE DONE) ---------------------------------------------------------------------------
 
@@ -144,7 +311,8 @@ app.post('/login', async (req, res) => {
 
     try {
         const [user] = await db.query(`
-            SELECT users.*, roles.role_name
+            SELECT users.*, roles.role_name,
+            (users.role_id = 4) as is_member
             FROM users
             JOIN roles ON users.role_id = roles.id
             WHERE users.username = ?
@@ -157,13 +325,41 @@ app.post('/login', async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, user[0].password);
         if (!passwordMatch) {
             return res.status(400).json({ message: 'Invalid username or password.' });
+        DennisNew
+        }
+
+        // Update the updated_at timestamp
+        await db.query(
+            'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            [user[0].user_id]
+        );
+
+        // Check membership warning ONLY if user is a member
+        let membershipInfo = null;
+        if (user[0].is_member) {
+            const [warning] = await db.query(
+                `SELECT expiration_warning, expire_date 
+                 FROM membership 
+                 WHERE user_id = ? 
+                 AND expire_date >= CURRENT_TIMESTAMP
+                 ORDER BY expire_date ASC 
+                 LIMIT 1`,
+                [user[0].user_id]
+            );
+            membershipInfo = warning[0]
+          
         }
 
         res.status(200).json({
             message: 'Login successful!',
             userId: user[0].user_id,
             role: user[0].role_name,
-            username: user[0].username, // Include username in response if needed
+            
+            username: user[0].username,
+            membershipWarning: membershipInfo?.expiration_warning === 1,
+            expireDate: membershipInfo?.expire_date
+
+          
         });
     } catch (error) {
         console.error('Server error during login:', error);
@@ -846,7 +1042,103 @@ app.get('/api/events/:id/report', async (req, res) => {
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
 // ----- (DENNIS) ---------------------------------------------------------------------------------
+ 
 
+// Membership registration endpoint
+app.post('/membership-registration', async (req, res) => {
+    console.log('Received membership registration request:', req.body);
+    
+    const {
+        first_name,
+        last_name,
+        username,
+        type_of_membership
+    } = req.body;
+
+    try {
+        // Start transaction
+        await db.query('START TRANSACTION');
+
+        // Check if user exists and get their role_id
+        const [existingUser] = await db.query(
+            'SELECT user_id, role_id FROM users WHERE username = ?',
+            [username]
+        );
+        
+        console.log('Existing user data:', existingUser);
+
+        if (existingUser.length === 0) {
+            await db.query('ROLLBACK');
+            console.log('User not found:', username);
+            return res.status(404).json({ error: 'User not found. Please register as a user first.' });
+        }
+
+        const user = existingUser[0];
+        console.log('User role_id:', user.role_id);
+
+        // Check if user already has a membership
+        const [existingMembership] = await db.query(
+            'SELECT * FROM membership WHERE user_id = ?',
+            [user.user_id]
+        );
+        
+        console.log('Existing membership:', existingMembership);
+
+        if (existingMembership.length > 0) {
+            await db.query('ROLLBACK');
+            console.log('User already has membership');
+            return res.status(400).json({ error: 'User already has a membership' });
+        }
+
+        if (user.role_id !== 3) {
+            await db.query('ROLLBACK');
+            console.log('Invalid role_id:', user.role_id);
+            return res.status(403).json({ 
+                error: user.role_id === 4 
+                    ? 'User already has an active membership' 
+                    : 'User must have role_id 3 to register for membership'
+            });
+        }
+
+        // Calculate expiration date (1 month from now)
+        const expirationDate = new Date();
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
+
+        // Create membership record with correct column names (fname and lname)
+        const membershipResult = await db.query(
+            `INSERT INTO membership 
+            (user_id, type_of_membership, expire_date, expiration_warning, fname, lname)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [user.user_id, type_of_membership.toLowerCase(), expirationDate, 0, first_name, last_name]
+        );
+        
+        console.log('Membership creation result:', membershipResult);
+
+        // Update user's role_id to 4
+        const userUpdateResult = await db.query(
+            'UPDATE users SET role_id = 4 WHERE user_id = ?',
+            [user.user_id]
+        );
+        
+        console.log('User role update result:', userUpdateResult);
+
+        // Commit transaction
+        await db.query('COMMIT');
+        console.log('Transaction committed successfully');
+        res.status(201).json({ message: 'Membership registration successful' });
+
+    } catch (error) {
+        // Rollback transaction on error
+        await db.query('ROLLBACK');
+        console.error('Error in membership registration:', error);
+        res.status(500).json({ error: 'Internal server error during membership registration: ' + error.message });
+    }
+});
+
+// Altered Leo's login backend to accomodate for membership expiration alert trigger
+
+
+ 
 // (Assuming DENNIS's endpoints are already correctly implemented)
 // ----- (DENNIS DONE) ----------------------------------------------------------------------------
 
@@ -854,3 +1146,4 @@ app.get('/api/events/:id/report', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server Running on http://localhost:${port}`);
 });
+

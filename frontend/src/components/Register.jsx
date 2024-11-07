@@ -11,6 +11,7 @@ import AccountIcon from '@mui/icons-material/AccountBox';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png'; // Use the same background image
+import config from '../config';
 
 const Register = () => {
     const [firstName, setFirstName] = useState('');
@@ -36,7 +37,7 @@ const Register = () => {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/register`, {
+            const response = await fetch(`${config.backendUrl}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firstName, lastName, dateOfBirth, username, password, email }),

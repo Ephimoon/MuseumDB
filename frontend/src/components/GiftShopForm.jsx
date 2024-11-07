@@ -14,6 +14,8 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 // Import the Image Preview plugin
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 
+import config from '../config';
+
 // Register the plugin
 registerPlugin(FilePondPluginImagePreview);
 
@@ -40,7 +42,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             // Set the image file using the URL
             setImageFile([
                 {
-                    source: `http://localhost:5000/giftshopitems/${item.item_id}/image`,
+                    source: `${config.backendUrl}/giftshopitems/${item.item_id}/image`,
                     options: {
                         type: 'remote', // Indicate that the source is a remote URL
                     },
@@ -86,12 +88,12 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
 
         if (item && item.item_id) {
             axios
-                .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
+                .put(`${config.backendUrl}/giftshopitems/${item.item_id}`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error updating item:', error));
         } else {
             axios
-                .post(`http://localhost:5000/giftshopitems`, data, config)
+                .post(`${config.backendUrl}/giftshopitems`, data, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error creating item:', error));
         }
@@ -115,7 +117,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         const role = localStorage.getItem('role');
         axios
             .put(
-                `http://localhost:5000/giftshopitems/${id}/soft-delete`,
+                `${config.backendUrl}/giftshopitems/${id}/soft-delete`,
                 {},
                 {
                     headers: { role },
