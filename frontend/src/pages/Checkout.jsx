@@ -39,7 +39,7 @@ const Checkout = () => {
         }
 
         // Send data to backend
-        fetch('http://localhost:5000/checkout', { // Ensure this endpoint matches your backend
+        fetch(`http://localhost:5000/checkout`, { // Ensure this endpoint matches your backend
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

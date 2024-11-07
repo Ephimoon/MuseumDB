@@ -28,6 +28,23 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.static('public')); // Allows access to the public folder for images
+app.use(async (req, res, next) => {
+    const userId = req.headers['user-id'];
+    const role = req.headers['role'];
+
+    if (userId && role) {
+        try {
+            // Set session variables for the current connection
+            await db.query(`SET @current_user_id = ?`, [userId]);
+            await db.query(`SET @current_user_role = ?`, [role]);
+        } catch (error) {
+            console.error('Error setting session variables:', error);
+            // Optionally, you can send an error response here
+        }
+    }
+
+    next();
+});
 
 // ----- DATABASE CONNECTION ----------------------------------------------------------------------
 const db = mysql.createPool({ // We can add the env file later so this data is not exposed
@@ -237,7 +254,7 @@ const uploadMulter = multer({ storage: multer.memoryStorage() });
 // ----- GIFT SHOP ITEMS ENDPOINTS -----
 
 // Create item API
-app.post('/giftshopitems', uploadMulter.single('image'), async (req, res) => {
+app.post('/giftshopitems', uploadMulter.single('image'), authenticateUser, async (req, res) => {
     const { name_, category, price, quantity } = req.body;
     const imageBlob = req.file ? req.file.buffer : null;
     const imageType = req.file ? req.file.mimetype : null;
@@ -264,7 +281,6 @@ app.post('/giftshopitems', uploadMulter.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Failed to create gift shop item' });
     }
 });
-
 // Get all gift shop items (non-deleted)
 app.get('/giftshopitems', async (req, res) => {
     try {
@@ -307,7 +323,8 @@ app.get('/giftshopitems/:id/image', async (req, res) => {
 });
 
 // Update item API
-app.put('/giftshopitems/:id', uploadMulter.single('image'), async (req, res) => {
+// Update item API
+app.put('/giftshopitems/:id', uploadMulter.single('image'), authenticateUser, async (req, res) => {
     const { id } = req.params;
     const { name_, category, price, quantity } = req.body;
     const imageBlob = req.file ? req.file.buffer : null;
@@ -354,6 +371,7 @@ app.put('/giftshopitems/:id', uploadMulter.single('image'), async (req, res) => 
     }
 });
 
+
 // Hard delete a gift shop item (Admin only)
 app.delete('/giftshopitems/:id/hard-delete', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
@@ -373,6 +391,7 @@ app.delete('/giftshopitems/:id/hard-delete', authenticateAdmin, async (req, res)
     }
 });
 
+
 // Soft delete a gift shop item (Admin only)
 app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
@@ -387,17 +406,17 @@ app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) =>
     }
 });
 
-// Restore a gift shop item (Admin only)
-app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
+// Soft delete a gift shop item (Admin only)
+app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const sql = 'UPDATE giftshopitem SET is_deleted = 0 WHERE item_id = ?';
+        const sql = 'UPDATE giftshopitem SET is_deleted = 1 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item restored successfully.' });
+        res.status(200).json({ message: 'Gift shop item marked as deleted.' });
     } catch (error) {
-        console.error('Error restoring gift shop item:', error);
-        res.status(500).json({ message: 'Server error restoring gift shop item.' });
+        console.error('Error soft deleting gift shop item:', error);
+        res.status(500).json({ message: 'Server error soft deleting gift shop item.' });
     }
 });
 
@@ -420,6 +439,20 @@ app.get('/users', authenticateAdmin, async (req, res) => {
     } catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ message: 'Server error fetching users.' });
+    }
+});
+app.get('/giftshopitems/logs', authenticateAdmin, async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT l.*, u.username
+            FROM giftshopitem_log l
+            LEFT JOIN users u ON l.user_id = u.user_id
+            ORDER BY l.timestamp DESC
+        `);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching gift shop item logs:', error);
+        res.status(500).json({ message: 'Server error fetching logs.' });
     }
 });
 // Get user profile
@@ -501,17 +534,17 @@ app.delete('/users/:id', authenticateAdmin, async (req, res) => {
     }
 });
 
-// Restore user (Admin only)
-app.put('/users/:id/restore', authenticateAdmin, async (req, res) => {
+// Restore a gift shop item (Admin only)
+app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
     const { id } = req.params;
 
     try {
-        const sql = 'UPDATE users SET is_deleted = 0 WHERE user_id = ?';
+        const sql = 'UPDATE giftshopitem SET is_deleted = 0 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'User restored successfully.' });
+        res.status(200).json({ message: 'Gift shop item restored successfully.' });
     } catch (error) {
-        console.error('Error restoring user:', error);
-        res.status(500).json({ message: 'Server error restoring user.' });
+        console.error('Error restoring gift shop item:', error);
+        res.status(500).json({ message: 'Server error restoring gift shop item.' });
     }
 });
 

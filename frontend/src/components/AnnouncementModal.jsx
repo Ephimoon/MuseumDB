@@ -1,8 +1,15 @@
 // src/components/AnnouncementModal.jsx
 
 import React from 'react';
-import { Modal, Box, Typography, Button } from '@mui/material';
+import {
+    Modal,
+    Box,
+    Typography,
+    Button,
+    IconButton,
+} from '@mui/material';
 import { styled } from '@mui/system';
+import CloseIcon from '@mui/icons-material/Close';
 
 const priorityColors = {
     high: '#FF4C4C',
@@ -30,24 +37,39 @@ const AnnouncementModal = ({ announcement, onClose }) => {
     return (
         <Modal open={true} onClose={onClose}>
             <Box sx={modalStyle}>
-                <Typography
-                    variant="h5"
-                    gutterBottom
-                    sx={{
-                        color: priorityColors[priority] || '#4CAF50',
-                        fontWeight: 'bold',
-                    }}
-                >
-                    {title}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                    {new Date(created_at).toLocaleString()}
-                </Typography>
-                <Typography variant="body1" sx={{ marginTop: '20px' }}>
-                    {content}
-                </Typography>
-                <Box sx={{ marginTop: '30px', textAlign: 'right' }}>
-                    <StyledButton onClick={onClose}>Close</StyledButton>
+                <Box sx={{ position: 'relative' }}>
+                    <IconButton
+                        aria-label="close"
+                        onClick={onClose}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                    <Typography
+                        variant="h5"
+                        gutterBottom
+                        sx={{
+                            color: priorityColors[priority] || '#4CAF50',
+                            fontWeight: 'bold',
+                            marginRight: '40px', // Adjust for close button
+                        }}
+                    >
+                        {title}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary" gutterBottom>
+                        {new Date(created_at).toLocaleString()}
+                    </Typography>
+                    <Typography variant="body1" sx={{ marginTop: '20px' }}>
+                        {content}
+                    </Typography>
+                    <Box sx={{ marginTop: '30px', textAlign: 'right' }}>
+                        <StyledButton onClick={onClose}>Close</StyledButton>
+                    </Box>
                 </Box>
             </Box>
         </Modal>

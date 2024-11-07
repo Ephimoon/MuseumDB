@@ -18,8 +18,16 @@
     margin-bottom: 20px;
 }
 
-/* Add button */
-.addButton {
+/* Action Buttons Container */
+.actionButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Common Button Styling */
+.button {
     padding: 10px 20px;
     font-size: 16px;
     color: #FFFFFF;
@@ -31,8 +39,33 @@
     margin-bottom: 20px;
 }
 
+.button:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Specific Button Styles */
+.addButton {
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+}
+
 .addButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+.viewLogsButton {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%); /* Blue Gradient */
+}
+
+.viewLogsButton:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+
+.backButton {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%); /* Grey Gradient */
+}
+
+.backButton:hover {
+    background: linear-gradient(90deg, #5a6268 0%, #6c757d 100%);
 }
 
 /* Filter Section */
@@ -79,6 +112,11 @@
     outline: none;
 }
 
+.filterGroup input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
 .clearButton {
     padding: 10px 20px;
     font-size: 14px;
@@ -90,6 +128,7 @@
     transition: background 0.3s ease;
     height: fit-content;
     margin-top: 22px;
+    margin-left: 50px;
 }
 
 .clearButton:hover {
@@ -101,18 +140,14 @@
     width: 90%;
     margin: 0 auto 40px;
     border-collapse: collapse;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    table-layout: fixed; /* Prevent table width from changing */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
 }
 
 .itemTable th, .itemTable td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #ddd;
-    position: relative; /* For positioning sort arrows */
-    overflow: hidden; /* Prevent content overflow */
-    text-overflow: ellipsis; /* Add ellipsis for overflowing text */
-    white-space: nowrap; /* Prevent text from wrapping */
 }
 
 .itemTable th {
@@ -125,33 +160,6 @@
 
 .itemTable th:hover {
     background-color: #C63A4D;
-}
-
-/* Sort arrow */
-.sortArrow {
-    margin-left: 5px;
-    display: inline-block;
-    width: 12px; /* Fixed width to prevent table adjustment */
-    text-align: center;
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none; /* Prevent sort arrow from capturing click events */
-}
-
-/* Remove flex display to prevent width changes */
-.itemTable th > .sortArrow {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* Optional: Style for sort arrows (font size and color) */
-.sortArrow {
-    font-size: 12px;
-    color: #fcfcfc;
 }
 
 /* Table row hover effect */
@@ -244,7 +252,7 @@
 
 .buttonGroup {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     gap: 10px;
     margin-top: 20px;
 }
@@ -265,23 +273,53 @@
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
 }
 
+/* New Button Styles */
+.viewLogsButton {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%); /* Blue Gradient */
+}
+
+.viewLogsButton:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+
+.backButton {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%); /* Grey Gradient */
+}
+
+.backButton:hover {
+    background: linear-gradient(90deg, #5a6268 0%, #6c757d 100%);
+}
+
+/* Log Details Styling */
+.logDetails {
+    text-align: left;
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', Courier, monospace;
+    margin-top: 10px;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-    .filterSection {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .filterGroup input,
-    .filterGroup select {
-        width: 100%;
+    .adminContainer {
+        padding-top: 80px;
     }
 
     .itemTable {
         width: 100%;
     }
 
-    .sortArrow {
-        right: 5px; /* Adjust position for smaller screens */
+    .modal_content {
+        width: 90%;
+    }
+
+    .filterGroup input,
+    .filterGroup select {
+        width: 100%;
     }
 }

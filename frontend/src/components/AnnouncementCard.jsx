@@ -8,6 +8,9 @@ import {
     Typography,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import LowPriorityIcon from '@mui/icons-material/LowPriority';
 
 const priorityColors = {
     high: '#FF4C4C', // Red
@@ -15,18 +18,28 @@ const priorityColors = {
     low: '#4CAF50', // Green
 };
 
+const priorityIcons = {
+    high: <PriorityHighIcon sx={{ color: priorityColors.high }} />,
+    medium: <WarningAmberIcon sx={{ color: priorityColors.medium }} />,
+    low: <LowPriorityIcon sx={{ color: priorityColors.low }} />,
+};
+
 const StyledCard = styled(Card)(({ priority }) => ({
     borderLeft: `5px solid ${priorityColors[priority] || '#4CAF50'}`,
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
+    transition: 'transform 0.2s',
+    '&:hover': {
+        transform: 'scale(1.02)',
+    },
 }));
 
 const AnnouncementCard = ({ announcement, onCardClick }) => {
     const { title, content, priority } = announcement;
 
     return (
-        <StyledCard priority={priority}>
+        <StyledCard priority={priority} elevation={3}>
             <CardActionArea
                 onClick={() => onCardClick(announcement)}
                 sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
@@ -39,9 +52,12 @@ const AnnouncementCard = ({ announcement, onCardClick }) => {
                         sx={{
                             color: priorityColors[priority] || '#4CAF50',
                             fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
                         }}
                     >
-                        {title}
+                        {priorityIcons[priority]}
+                        <span style={{ marginLeft: '8px' }}>{title}</span>
                     </Typography>
                     <Typography
                         variant="body2"
