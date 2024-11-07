@@ -722,6 +722,25 @@ app.get('/paymentmethods', async (req, res) => {
 
 // ----- (MUNA) ------------------------------------------------------------------------------------
 
+// Retrive Member Name
+app.get('/api/member/profile', authenticateUser, async (req, res) => {
+    const memberId = req.userId;  // `authenticateUser` middleware attaches userId to req
+    try {
+        const [result] = await db.query('SELECT first_name, last_name FROM users WHERE user_id = ?', [memberId]);
+        if (result.length > 0) {
+            const member = result[0];
+            res.json({ firstName: member.first_name, lastName: member.last_name });
+        } else {
+            res.status(404).json({ error: 'Member not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
+
+
+
 // (Assuming MUNA's endpoints are already correctly implemented)
 // ----- (MUNA DONE) ------------------------------------------------------------------------------
 
