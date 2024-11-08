@@ -13,6 +13,7 @@ import config from '../config';
 const Report = () => {
     const [reportCategory, setReportCategory] = useState('GiftShopReport');
     const [reportType, setReportType] = useState('revenue');
+    const [reportOptionTickets, setReportOptionTickets] = useState('totalTickets'); // 'totalTickets', 'totalRevenue', or 'peakDateSold'
     const [reportPeriodType, setReportPeriodType] = useState('date_range'); // 'date_range', 'month', or 'year'
     const [startDate, setStartDate] = useState(null); // Changed to Date object
     const [endDate, setEndDate] = useState(null); // Changed to Date object
@@ -132,7 +133,8 @@ const Report = () => {
             item_category: itemCategory,
             payment_method: paymentMethod,
             item_id: itemId,
-            user_type_id: userTypeId === "Both" ? availableUserTypes.map((user) => user.role_name) : userTypeId
+            //price_category: priceCategory,
+            //user_type_id: userTypeId === "Both" ? availableUserTypes.map((user) => user.role_name) : userTypeId
         };
 
         // Retrieve user credentials from localStorage
@@ -362,6 +364,23 @@ const Report = () => {
                         <option value="revenue">Revenue Report</option>
                     </select>
                 </div>
+                {reportCategory === 'TicketsReport' && (
+                    <div className={styles.formGroup}>
+                        <label htmlFor="reportOption">Report Options:</label>
+                        <select
+                            id="reportOption"
+                            value={reportOptionTickets}
+                            onChange={(e) => {
+                                setReportOptionTickets(e.target.value);
+                            }}
+                        >
+                            {/* Only revenue report is available as per your request */}
+                            <option value="totalTickets">Total Tickets</option>
+                            <option value="totalRevenue">Total Revenue</option>
+                            <option value="peakDateSold">Peak Date Sold</option>
+                        </select>
+                    </div>
+                )}
                 {/* Report Period Type Selection using Buttons */}
                 <div className={styles.formGroup}>
                     <label>Report Period:</label>
