@@ -58,8 +58,6 @@ const Checkout = () => {
             .then(data => {
                 setTransactionStatus('success');
                 clearCart();
-                // Optionally, navigate to a confirmation page with transaction details
-                // navigate(`/confirmation/${data.transaction_id}`);
             })
             .catch(error => {
                 console.error('Error processing transaction:', error);
@@ -80,8 +78,6 @@ const Checkout = () => {
                 {transactionStatus === 'success' ? (
                     <div className={styles.successMessage}>
                         <p>Your transaction was successful!</p>
-                        {/* Optionally display transaction details */}
-                        {/* <p>Transaction ID: {data.transaction_id}</p> */}
                         <button
                             className={styles.goBackButton}
                             onClick={() => navigate('/')}

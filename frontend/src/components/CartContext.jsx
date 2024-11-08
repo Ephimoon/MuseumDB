@@ -16,11 +16,16 @@ export const CartProvider = ({ children }) => {
     }, [cartItems]);
 
     const addToCart = (item) => {
+        console.log('Adding to cart:', item); // Debugging line
         setCartItems((prevItems) => {
-            const existingItem = prevItems.find(i => i.item_id === item.item_id);
+            const existingItem = prevItems.find(i => String(i.item_id) === String(item.item_id));
             if (existingItem) {
+                if (existingItem.quantity + 1 > existingItem.stock) {
+                    alert(`Only ${existingItem.stock} units of this item are available.`);
+                    return prevItems;
+                }
                 return prevItems.map(i =>
-                    i.item_id === item.item_id ? { ...i, quantity: i.quantity + 1 } : i
+                    String(i.item_id) === String(item.item_id) ? { ...i, quantity: i.quantity + 1 } : i
                 );
             } else {
                 return [...prevItems, { ...item, quantity: 1 }];

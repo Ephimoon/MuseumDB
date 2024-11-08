@@ -1,5 +1,6 @@
 // src/pages/Cart.jsx
-import React, { useContext } from 'react';
+
+import React, { useContext, useEffect } from 'react';
 import { CartContext } from '../components/CartContext';
 import HomeNavBar from '../components/HomeNavBar';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
@@ -9,10 +10,30 @@ const Cart = () => {
     const { cartItems, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
     const navigate = useNavigate(); // Initialize navigate
 
+    useEffect(() => {
+        console.log('Cart items:', cartItems); // Add this line
+    }, [cartItems]);
+
     const handleQuantityChange = (item_id, e) => {
         const quantity = parseInt(e.target.value);
-        if (quantity >= 1) {
+        const item = cartItems.find((item) => String(item.item_id) === String(item_id));
+
+        console.log('handleQuantityChange called with:', { item_id, quantity });
+
+        if (!item) {
+            console.error(`Item with ID ${item_id} not found in cartItems`);
+            return;
+        }
+
+        const maxQuantity = item.stock !== undefined ? item.stock : Infinity;
+
+        if (quantity >= 1 && quantity <= maxQuantity) {
             updateQuantity(item_id, quantity);
+        } else if (quantity > maxQuantity) {
+            alert(`Only ${maxQuantity} units of this item are available.`);
+            updateQuantity(item_id, maxQuantity);
+        } else {
+            alert('Quantity must be at least 1.');
         }
     };
 
@@ -51,6 +72,7 @@ const Cart = () => {
                                     <input
                                         type="number"
                                         min="1"
+                                        max={item.stock}
                                         value={item.quantity}
                                         onChange={(e) => handleQuantityChange(item.item_id, e)}
                                         className={styles.quantityInput}

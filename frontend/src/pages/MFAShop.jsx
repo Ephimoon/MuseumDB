@@ -29,6 +29,7 @@ const MFAShop = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 9; // Adjust the number of items per page as needed
 
+
     useEffect(() => {
         setLoading(true);
         fetch(`http://localhost:5000/giftshopitems`)
@@ -39,7 +40,10 @@ const MFAShop = () => {
                 return response.json();
             })
             .then((data) => {
-                setShopItems(data);
+                // Map 'quantity' to 'stock' for clarity
+                const mappedData = data.map(item => ({ ...item, stock: item.quantity }));
+                console.log('Mapped shop items:', mappedData); // For debugging
+                setShopItems(mappedData);
                 setLoading(false);
             })
             .catch((error) => {
@@ -51,8 +55,10 @@ const MFAShop = () => {
 
     // Handle card click to show modal
     const handleCardClick = (item) => {
-        setSelectedItem(item);
-        setIsModalOpen(true);
+        if (item.stock > 0) {
+            setSelectedItem(item);
+            setIsModalOpen(true);
+        }
     };
 
     const closeModal = () => {

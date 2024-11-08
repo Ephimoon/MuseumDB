@@ -13,11 +13,12 @@ import { useNavigate } from 'react-router-dom';
 const Report = () => {
     const [reportCategory, setReportCategory] = useState('GiftShopReport');
     const [reportType, setReportType] = useState('revenue');
-    const [reportPeriodType, setReportPeriodType] = useState('date_range'); // 'date_range', 'month', or 'year'
+    const [reportPeriodType, setReportPeriodType] = useState('date_range'); // 'date_range', 'month', 'year', 'single_day'
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(null);
     const [selectedYear, setSelectedYear] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(null); // For 'single_day' report period type
     const [itemCategory, setItemCategory] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
     const [itemId, setItemId] = useState('');
@@ -27,7 +28,7 @@ const Report = () => {
     const [reportData, setReportData] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
     const role = localStorage.getItem('role');
     const userId = localStorage.getItem('userId');
@@ -39,9 +40,9 @@ const Report = () => {
         }
     }, [role, navigate]);
 
-    // Fetch available options for the filters when reportType is 'revenue'
+    // Fetch available options for the filters when reportType is 'revenue' or 'transaction_details'
     useEffect(() => {
-        if (reportType === 'revenue') {
+        if (['revenue', 'transaction_details'].includes(reportType)) {
             // Fetch available items
             axios
                 .get('http://localhost:5000/giftshopitems', {
@@ -104,6 +105,11 @@ const Report = () => {
                 setErrorMessage('Please select a year.');
                 return;
             }
+        } else if (reportPeriodType === 'single_day') {
+            if (!selectedDate) {
+                setErrorMessage('Please select a date.');
+                return;
+            }
         }
 
         setErrorMessage('');
@@ -118,6 +124,7 @@ const Report = () => {
             end_date: endDate ? endDate.toISOString().split('T')[0] : '',
             selected_month: selectedMonth ? selectedMonth.toISOString().split('T')[0].slice(0, 7) : '',
             selected_year: selectedYear ? selectedYear.getFullYear().toString() : '',
+            selected_date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
             item_category: itemCategory,
             payment_method: paymentMethod,
             item_id: itemId,
@@ -150,8 +157,11 @@ const Report = () => {
 
     const handleGenerateReport = () => {
         fetchReportData();
+        setIsModalOpen(true);
     };
-
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
     // Function to render report data based on report type
     const renderReportTable = () => {
         if (loading) {
@@ -162,10 +172,16 @@ const Report = () => {
             return <p>No data available for the selected report.</p>;
         }
 
+        // Check for 'revenue' report with 'single_day' period type
+        if (reportType === 'revenue' && reportPeriodType === 'single_day') {
+            return renderSingleDayRevenueReport();
+        }
+
         switch (reportType) {
             case 'revenue':
                 return renderRevenueReport();
-            // Add other report types if needed
+            case 'transaction_details':
+                return renderTransactionDetailsReport();
             default:
                 return null;
         }
@@ -217,9 +233,121 @@ const Report = () => {
         );
     };
 
+    // New function to render revenue report for 'single_day' period type
+    const renderSingleDayRevenueReport = () => {
+        // Group transactions by transaction ID to group items within the same transaction
+        const transactions = {};
+
+        reportData.forEach((item) => {
+            if (!transactions[item.transaction_id]) {
+                transactions[item.transaction_id] = {
+                    transaction_id: item.transaction_id,
+                    transaction_date: item.transaction_date,
+                    transaction_type: item.transaction_type,
+                    payment_status: item.payment_status,
+                    username: item.username,
+                    items: [],
+                    total_amount: 0,
+                };
+            }
+            transactions[item.transaction_id].items.push({
+                item_id: item.item_id,
+                item_name: item.item_name,
+                quantity: item.quantity,
+                price_at_purchase: item.price_at_purchase,
+                item_total: item.item_total,
+            });
+            transactions[item.transaction_id].total_amount += parseFloat(item.item_total);
+        });
+
+        // Convert transactions object to array
+        const transactionsArray = Object.values(transactions);
+
+        return (
+            <>
+                <table className={styles.reportTable}>
+                    <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Transaction Time</th>
+                        <th>User</th>
+                        <th>Payment Method</th>
+                        <th>Payment Status</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {transactionsArray.map((transaction, index) => (
+                        <tr key={index}>
+                            <td>{transaction.transaction_id}</td>
+                            <td>{new Date(transaction.transaction_date).toLocaleString()}</td>
+                            <td>{transaction.username}</td>
+                            <td>{transaction.transaction_type}</td>
+                            <td>{transaction.payment_status}</td>
+                            <td>
+                                {transaction.items.map((item, idx) => (
+                                    <div key={idx}>
+                                        <strong>{item.item_name}</strong> (ID: {item.item_id})<br />
+                                        Quantity: {item.quantity}<br />
+                                        Price: ${parseFloat(item.price_at_purchase).toFixed(2)}<br />
+                                        Item Total: ${parseFloat(item.item_total).toFixed(2)}<br />
+                                    </div>
+                                ))}
+                            </td>
+                            <td>${transaction.total_amount.toFixed(2)}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </>
+        );
+    };
+
+    const renderTransactionDetailsReport = () => {
+        return (
+            <table className={styles.reportTable}>
+                <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Transaction Date</th>
+                    <th>User</th>
+                    <th>Payment Method</th>
+                    <th>Payment Status</th>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Price at Purchase</th>
+                    <th>Item Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {reportData.map((item, index) => (
+                    <tr key={index}>
+                        <td>{item.transaction_id}</td>
+                        <td>{new Date(item.transaction_date).toLocaleString()}</td>
+                        <td>{item.username}</td>
+                        <td>{item.transaction_type}</td>
+                        <td>{item.payment_status}</td>
+                        <td>{item.item_id}</td>
+                        <td>{item.item_name}</td>
+                        <td>{item.quantity}</td>
+                        <td>${parseFloat(item.price_at_purchase).toFixed(2)}</td>
+                        <td>${parseFloat(item.item_total).toFixed(2)}</td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+        );
+    };
+
     // Helper functions to get and format date labels
     const getDateLabel = () => {
-        if (reportPeriodType === 'month' || reportPeriodType === 'date_range') {
+        if (
+            reportPeriodType === 'month' ||
+            reportPeriodType === 'date_range' ||
+            reportPeriodType === 'single_day'
+        ) {
             return 'Date';
         } else if (reportPeriodType === 'year') {
             return 'Month';
@@ -228,7 +356,11 @@ const Report = () => {
     };
 
     const formatDateLabel = (dateStr) => {
-        if (reportPeriodType === 'month' || reportPeriodType === 'date_range') {
+        if (
+            reportPeriodType === 'month' ||
+            reportPeriodType === 'date_range' ||
+            reportPeriodType === 'single_day'
+        ) {
             const dateObj = new Date(dateStr);
             return dateObj.toLocaleDateString();
         } else if (reportPeriodType === 'year') {
@@ -242,29 +374,135 @@ const Report = () => {
     // Function to generate PDF of the report
     const generatePDF = () => {
         const doc = new jsPDF();
-        doc.text('Revenue Report', 14, 20);
 
-        let body = reportData.map((item) => {
-            const revenue = Number(item.total_revenue);
-            const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
-            const dateLabel = formatDateLabel(item.date);
-            return [dateLabel, formattedRevenue];
-        });
+        // Check for 'revenue' report with 'single_day' period type
+        if (reportType === 'revenue' && reportPeriodType === 'single_day') {
+            doc.text('Revenue Report - Single Day', 14, 20);
 
-        // Add total revenue row
-        const totalRevenue = reportData.reduce(
-            (acc, curr) => acc + parseFloat(curr.total_revenue || 0),
-            0
-        );
-        body.push(['Total Revenue', totalRevenue.toFixed(2)]);
+            // Group transactions as in the render function
+            const transactions = {};
 
-        doc.autoTable({
-            head: [[getDateLabel(), 'Total Revenue']],
-            body: body,
-            startY: 30,
-        });
+            reportData.forEach((item) => {
+                if (!transactions[item.transaction_id]) {
+                    transactions[item.transaction_id] = {
+                        transaction_id: item.transaction_id,
+                        transaction_date: item.transaction_date,
+                        transaction_type: item.transaction_type,
+                        payment_status: item.payment_status,
+                        username: item.username,
+                        items: [],
+                        total_amount: 0,
+                    };
+                }
+                transactions[item.transaction_id].items.push({
+                    item_id: item.item_id,
+                    item_name: item.item_name,
+                    quantity: item.quantity,
+                    price_at_purchase: item.price_at_purchase,
+                    item_total: item.item_total,
+                });
+                transactions[item.transaction_id].total_amount += parseFloat(item.item_total);
+            });
 
-        doc.save('revenue_report.pdf');
+            const transactionsArray = Object.values(transactions);
+
+            let body = transactionsArray.map((transaction) => {
+                return [
+                    transaction.transaction_id,
+                    new Date(transaction.transaction_date).toLocaleString(),
+                    transaction.username,
+                    transaction.transaction_type,
+                    transaction.payment_status,
+                    transaction.items
+                        .map(
+                            (item) =>
+                                `${item.item_name} (ID: ${item.item_id})\nQty: ${item.quantity}\nPrice: $${parseFloat(
+                                    item.price_at_purchase
+                                ).toFixed(2)}\nItem Total: $${parseFloat(item.item_total).toFixed(2)}`
+                        )
+                        .join('\n----------------\n'),
+                    `$${transaction.total_amount.toFixed(2)}`,
+                ];
+            });
+
+            doc.autoTable({
+                head: [
+                    [
+                        'Transaction ID',
+                        'Transaction Time',
+                        'User',
+                        'Payment Method',
+                        'Payment Status',
+                        'Items',
+                        'Total Amount',
+                    ],
+                ],
+                body: body,
+                startY: 30,
+                styles: { fontSize: 8 },
+            });
+        } else if (reportType === 'revenue') {
+            doc.text('Revenue Report', 14, 20);
+
+            let body = reportData.map((item) => {
+                const revenue = Number(item.total_revenue);
+                const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
+                const dateLabel = formatDateLabel(item.date);
+                return [dateLabel, formattedRevenue];
+            });
+
+            // Add total revenue row
+            const totalRevenue = reportData.reduce(
+                (acc, curr) => acc + parseFloat(curr.total_revenue || 0),
+                0
+            );
+            body.push(['Total Revenue', totalRevenue.toFixed(2)]);
+
+            doc.autoTable({
+                head: [[getDateLabel(), 'Total Revenue']],
+                body: body,
+                startY: 30,
+            });
+        } else if (reportType === 'transaction_details') {
+            doc.text('Transaction Details Report', 14, 20);
+
+            let body = reportData.map((item) => {
+                return [
+                    item.transaction_id,
+                    new Date(item.transaction_date).toLocaleString(),
+                    item.username,
+                    item.transaction_type,
+                    item.payment_status,
+                    item.item_id,
+                    item.item_name,
+                    item.quantity,
+                    parseFloat(item.price_at_purchase).toFixed(2),
+                    parseFloat(item.item_total).toFixed(2),
+                ];
+            });
+
+            doc.autoTable({
+                head: [
+                    [
+                        'Transaction ID',
+                        'Transaction Date',
+                        'User',
+                        'Payment Method',
+                        'Payment Status',
+                        'Item ID',
+                        'Item Name',
+                        'Quantity',
+                        'Price at Purchase',
+                        'Item Total',
+                    ],
+                ],
+                body: body,
+                startY: 30,
+                styles: { fontSize: 8 },
+            });
+        }
+
+        doc.save(`${reportType}_report.pdf`);
     };
 
     return (
@@ -296,8 +534,8 @@ const Report = () => {
                                 setItemId('');
                             }}
                         >
-                            {/* Only revenue report is available as per your request */}
                             <option value="revenue">Revenue Report</option>
+                            <option value="transaction_details">Transaction Details</option>
                         </select>
                     </div>
                     {/* Report Period Type Selection using Buttons */}
@@ -340,10 +578,22 @@ const Report = () => {
                             >
                                 By Year
                             </button>
+                            <button
+                                className={`${styles.toggleButton} ${
+                                    reportPeriodType === 'single_day' ? styles.activeButton : ''
+                                }`}
+                                onClick={() => {
+                                    setReportPeriodType('single_day');
+                                    setReportData([]);
+                                    setErrorMessage('');
+                                }}
+                            >
+                                By Day
+                            </button>
                         </div>
                     </div>
 
-                    {reportType === 'revenue' && (
+                    {(['revenue', 'transaction_details'].includes(reportType)) && (
                         <>
                             <div className={styles.formGroup}>
                                 <label htmlFor="itemCategory">Category:</label>
@@ -458,9 +708,24 @@ const Report = () => {
                         </div>
                     )}
 
+                    {/* Single Day Picker Input */}
+                    {reportPeriodType === 'single_day' && (
+                        <div className={styles.formGroup}>
+                            <label htmlFor="selectedDate">Select Date:</label>
+                            <DatePicker
+                                selected={selectedDate}
+                                onChange={(date) => setSelectedDate(date)}
+                                dateFormat="yyyy-MM-dd"
+                                className={styles.datePicker}
+                                placeholderText="Select Date"
+                            />
+                        </div>
+                    )}
+
                     {errorMessage && (
                         <div className={styles.errorMessage}>{errorMessage}</div>
                     )}
+
                     <button className={styles.generateButton} onClick={handleGenerateReport}>
                         Generate Report
                     </button>

@@ -3,7 +3,7 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import UserFormModal from '../components/UserFormModal';
-import ChangePasswordModal from '../components/ChangePasswordModal';
+import ChangePasswordModal from '../components/AdminResetPasswordModal';
 import styles from '../css/ManageUsers.module.css';
 import HomeNavBar from './HomeNavBar';
 

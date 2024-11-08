@@ -9,8 +9,7 @@ require('dotenv').config();
 const app = express();
 const port = 5000; // Change to 6000 when you push to GitHub
 
-const allowedOrigins = [
-    'http://localhost:3000', // Local development frontend
+const allowedOrigins = ['http://localhost:3000', // Local development frontend
     'http://localhost:3002', // Updated localhost port if needed
     'https://black-desert-0587dbd10.5.azurestaticapps.net/' // Replace with your Azure Static Web App URL
 ];
@@ -22,8 +21,7 @@ app.use(cors({
         } else {
             callback(new Error('Not allowed by CORS'));
         }
-    },
-    credentials: true // Enables credentials if you plan on using them
+    }, credentials: true // Enables credentials if you plan on using them
 }));
 
 app.use(express.json());
@@ -67,21 +65,17 @@ db.getConnection()
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'public/images');
-    },
-    filename: (req, file, cb) => {
+    }, filename: (req, file, cb) => {
         const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
         cb(null, safeFileName);
     }
 });
-const upload = multer({ storage });
+const upload = multer({storage});
 // ------------------------------------------------------------------------------------------------
 
 // ----- ROLE MAPPINGS -----------------------------------------------------------------------------
 const roleMappings = {
-    1: 'admin',
-    2: 'staff',
-    3: 'customer',
-    4: 'member',
+    1: 'admin', 2: 'staff', 3: 'customer', 4: 'member',
 };
 // ------------------------------------------------------------------------------------------------
 
@@ -97,7 +91,7 @@ app.get('/artwork', async (req, res) => {
         res.json(result);
     } catch (err) {
         console.error('Error fetching artwork:', err);
-        res.status(500).json({ message: "Error fetching artwork table" });
+        res.status(500).json({message: "Error fetching artwork table"});
     }
 });
 
@@ -109,7 +103,7 @@ app.get('/department', async (req, res) => {
         res.json(result);
     } catch (err) {
         console.error('Error fetching department:', err);
-        res.status(500).json({ message: "Error fetching department table" });
+        res.status(500).json({message: "Error fetching department table"});
     }
 });
 
@@ -121,7 +115,7 @@ app.get('/artist', async (req, res) => {
         res.json(result);
     } catch (err) {
         console.error('Error fetching artist:', err);
-        res.status(500).json({ message: "Error fetching artist table" });
+        res.status(500).json({message: "Error fetching artist table"});
     }
 });
 
@@ -131,7 +125,7 @@ app.get('/artist', async (req, res) => {
 
 // User registration
 app.post('/register', async (req, res) => {
-    const { firstName, lastName, dateOfBirth, username, password, email, roleId } = req.body;
+    const {firstName, lastName, dateOfBirth, username, password, email, roleId} = req.body;
 
     const newErrors = {};
     if (!firstName) newErrors.firstName = 'First name is required';
@@ -142,7 +136,7 @@ app.post('/register', async (req, res) => {
     if (!email) newErrors.email = 'Email is required';
 
     if (Object.keys(newErrors).length > 0) {
-        return res.status(400).json({ message: 'Validation error', errors: newErrors });
+        return res.status(400).json({message: 'Validation error', errors: newErrors});
     }
 
     // Assign default role_id if not provided
@@ -150,7 +144,7 @@ app.post('/register', async (req, res) => {
 
     // Validate roleId
     if (!Object.keys(roleMappings).includes(String(assignedRoleId))) {
-        return res.status(400).json({ message: 'Invalid role_id provided.' });
+        return res.status(400).json({message: 'Invalid role_id provided.'});
     }
 
     try {
@@ -162,17 +156,17 @@ app.post('/register', async (req, res) => {
         const values = [firstName, lastName, dateOfBirth, username, hashedPassword, email, assignedRoleId];
 
         await db.query(sql, values);
-        res.status(201).json({ message: 'User registered successfully.' });
+        res.status(201).json({message: 'User registered successfully.'});
     } catch (error) {
         console.error('Error during registration:', error);
-        res.status(500).json({ message: 'Server error during registration.' });
+        res.status(500).json({message: 'Server error during registration.'});
     }
 });
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const {username, password} = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required.' });
+        return res.status(400).json({message: 'Username and password are required.'});
     }
 
     try {
@@ -183,44 +177,41 @@ app.post('/login', async (req, res) => {
         `, [username]);
 
         if (userRows.length === 0) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         const user = userRows[0];
 
         // Check if user is deleted
         if (user.is_deleted === 1) {
-            return res.status(403).json({ message: 'Account has been deactivated. Please contact support.' });
+            return res.status(403).json({message: 'Account has been deactivated. Please contact support.'});
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         // Map role_id to role_name
         const roleName = roleMappings[user.role_id] || 'unknown';
 
         res.status(200).json({
-            message: 'Login successful!',
-            userId: user.user_id,
-            role: roleName,
-            username: user.username,
+            message: 'Login successful!', userId: user.user_id, role: roleName, username: user.username,
         });
     } catch (error) {
         console.error('Server error during login:', error);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({message: 'Server error.'});
     }
 });
 // ----- AUTHENTICATION MIDDLEWARE -----
 
 // Authenticate Admin and Staff Middleware
 function authenticateAdmin(req, res, next) {
-    const { role } = req.headers;
+    const {role} = req.headers;
     if (role === 'admin') {
         next();
     } else {
-        res.status(403).json({ message: 'Access denied. Admins only.' });
+        res.status(403).json({message: 'Access denied. Admins only.'});
     }
 }
 
@@ -236,26 +227,26 @@ async function authenticateUser(req, res, next) {
                 req.userRole = role;
                 next();
             } else {
-                res.status(403).json({ message: 'Access denied. User is deleted.' });
+                res.status(403).json({message: 'Access denied. User is deleted.'});
             }
         } catch (error) {
             console.error('Error in authenticateUser middleware:', error);
-            res.status(500).json({ message: 'Server error during authentication.' });
+            res.status(500).json({message: 'Server error during authentication.'});
         }
     } else {
-        res.status(401).json({ message: 'Unauthorized access.' });
+        res.status(401).json({message: 'Unauthorized access.'});
     }
 }
 
 
 // ----- MULTER CONFIGURATION -----
-const uploadMulter = multer({ storage: multer.memoryStorage() });
+const uploadMulter = multer({storage: multer.memoryStorage()});
 
 // ----- GIFT SHOP ITEMS ENDPOINTS -----
 
 // Create item API
 app.post('/giftshopitems', uploadMulter.single('image'), authenticateUser, async (req, res) => {
-    const { name_, category, price, quantity } = req.body;
+    const {name_, category, price, quantity} = req.body;
     const imageBlob = req.file ? req.file.buffer : null;
     const imageType = req.file ? req.file.mimetype : null;
 
@@ -264,21 +255,14 @@ app.post('/giftshopitems', uploadMulter.single('image'), authenticateUser, async
             INSERT INTO giftshopitem (name_, category, price, quantity, image, image_type)
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-        const values = [
-            name_,
-            category,
-            parseFloat(price),
-            parseInt(quantity, 10),
-            imageBlob,
-            imageType
-        ];
+        const values = [name_, category, parseFloat(price), parseInt(quantity, 10), imageBlob, imageType];
         // No cache
         res.set('Cache-Control', 'no-store');
         await db.query(sql, values);
-        res.status(201).json({ message: 'Item created successfully' });
+        res.status(201).json({message: 'Item created successfully'});
     } catch (error) {
         console.error('Error creating gift shop item:', error);
-        res.status(500).json({ error: 'Failed to create gift shop item' });
+        res.status(500).json({error: 'Failed to create gift shop item'});
     }
 });
 // Get all gift shop items (non-deleted)
@@ -288,7 +272,7 @@ app.get('/giftshopitems', async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching gift shop items:', error);
-        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+        res.status(500).json({message: 'Server error fetching gift shop items.'});
     }
 });
 
@@ -299,18 +283,18 @@ app.get('/giftshopitemsall', async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching gift shop items:', error);
-        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+        res.status(500).json({message: 'Server error fetching gift shop items.'});
     }
 });
 
 // Get image for a specific gift shop item
 app.get('/giftshopitems/:id/image', async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const [rows] = await db.query('SELECT image, image_type FROM giftshopitem WHERE item_id = ?', [id]);
         if (rows.length === 0 || !rows[0].image) {
-            return res.status(404).json({ message: 'Image not found.' });
+            return res.status(404).json({message: 'Image not found.'});
         }
 
         const imageType = rows[0].image_type || 'application/octet-stream';
@@ -318,15 +302,15 @@ app.get('/giftshopitems/:id/image', async (req, res) => {
         res.send(rows[0].image);
     } catch (error) {
         console.error('Error fetching image:', error);
-        res.status(500).json({ message: 'Server error fetching image.' });
+        res.status(500).json({message: 'Server error fetching image.'});
     }
 });
 
 // Update item API
 // Update item API
 app.put('/giftshopitems/:id', uploadMulter.single('image'), authenticateUser, async (req, res) => {
-    const { id } = req.params;
-    const { name_, category, price, quantity } = req.body;
+    const {id} = req.params;
+    const {name_, category, price, quantity} = req.body;
     const imageBlob = req.file ? req.file.buffer : null;
     const imageType = req.file ? req.file.mimetype : null;
 
@@ -336,11 +320,11 @@ app.put('/giftshopitems/:id', uploadMulter.single('image'), authenticateUser, as
         if (imageBlob && imageType) {
             sql = `
                 UPDATE giftshopitem
-                SET name_ = ?,
-                    category = ?,
-                    price = ?,
-                    quantity = ?,
-                    image = ?,
+                SET name_      = ?,
+                    category   = ?,
+                    price      = ?,
+                    quantity   = ?,
+                    image      = ?,
                     image_type = ?
                 WHERE item_id = ?
                   AND is_deleted = 0
@@ -350,9 +334,9 @@ app.put('/giftshopitems/:id', uploadMulter.single('image'), authenticateUser, as
             // If no new image is uploaded, don't update image fields
             sql = `
                 UPDATE giftshopitem
-                SET name_ = ?,
+                SET name_    = ?,
                     category = ?,
-                    price = ?,
+                    price    = ?,
                     quantity = ?
                 WHERE item_id = ?
                   AND is_deleted = 0
@@ -362,61 +346,61 @@ app.put('/giftshopitems/:id', uploadMulter.single('image'), authenticateUser, as
         res.set('Cache-Control', 'no-store');
         const [result] = await db.query(sql, values);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Item not found or already deleted.' });
+            return res.status(404).json({message: 'Item not found or already deleted.'});
         }
-        res.status(200).json({ message: 'Item updated successfully' });
+        res.status(200).json({message: 'Item updated successfully'});
     } catch (error) {
         console.error('Error updating gift shop item:', error);
-        res.status(500).json({ error: 'Failed to update gift shop item' });
+        res.status(500).json({error: 'Failed to update gift shop item'});
     }
 });
 
 
 // Hard delete a gift shop item (Admin only)
 app.delete('/giftshopitems/:id/hard-delete', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'DELETE FROM giftshopitem WHERE item_id = ?';
         const [result] = await db.query(sql, [id]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Item not found or already deleted.' });
+            return res.status(404).json({message: 'Item not found or already deleted.'});
         }
 
-        res.status(200).json({ message: 'Gift shop item permanently deleted.' });
+        res.status(200).json({message: 'Gift shop item permanently deleted.'});
     } catch (error) {
         console.error('Error hard deleting gift shop item:', error);
-        res.status(500).json({ message: 'Server error during hard delete.' });
+        res.status(500).json({message: 'Server error during hard delete.'});
     }
 });
 
 
 // Soft delete a gift shop item (Admin only)
 app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'UPDATE giftshopitem SET is_deleted = 1 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item marked as deleted.' });
+        res.status(200).json({message: 'Gift shop item marked as deleted.'});
     } catch (error) {
         console.error('Error soft deleting gift shop item:', error);
-        res.status(500).json({ message: 'Server error soft deleting gift shop item.' });
+        res.status(500).json({message: 'Server error soft deleting gift shop item.'});
     }
 });
 
 // Soft delete a gift shop item (Admin only)
 app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'UPDATE giftshopitem SET is_deleted = 1 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item marked as deleted.' });
+        res.status(200).json({message: 'Gift shop item marked as deleted.'});
     } catch (error) {
         console.error('Error soft deleting gift shop item:', error);
-        res.status(500).json({ message: 'Server error soft deleting gift shop item.' });
+        res.status(500).json({message: 'Server error soft deleting gift shop item.'});
     }
 });
 
@@ -424,21 +408,26 @@ app.put('/giftshopitems/:id/soft-delete', authenticateAdmin, async (req, res) =>
 app.get('/users', authenticateAdmin, async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT user_id, first_name, last_name, username, email, role_id, is_deleted,
+            SELECT user_id,
+                   first_name,
+                   last_name,
+                   username,
+                   email,
+                   role_id,
+                   is_deleted,
                    DATE_FORMAT(date_of_birth, '%Y-%m-%d') AS date_of_birth
             FROM users
         `);
 
         // Map role_id to role_name
         const users = rows.map(user => ({
-            ...user,
-            role_name: roleMappings[user.role_id],
+            ...user, role_name: roleMappings[user.role_id],
         }));
 
         res.status(200).json(users);
     } catch (error) {
         console.error('Error fetching users:', error);
-        res.status(500).json({ message: 'Server error fetching users.' });
+        res.status(500).json({message: 'Server error fetching users.'});
     }
 });
 app.get('/giftshopitems/logs', authenticateAdmin, async (req, res) => {
@@ -446,164 +435,278 @@ app.get('/giftshopitems/logs', authenticateAdmin, async (req, res) => {
         const [rows] = await db.query(`
             SELECT l.*, u.username
             FROM giftshopitem_log l
-            LEFT JOIN users u ON l.user_id = u.user_id
+                     LEFT JOIN users u ON l.user_id = u.user_id
             ORDER BY l.timestamp DESC
         `);
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching gift shop item logs:', error);
-        res.status(500).json({ message: 'Server error fetching logs.' });
+        res.status(500).json({message: 'Server error fetching logs.'});
     }
 });
 // Get user profile
 app.get('/users/:id', authenticateUser, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     // Ensure the user can only access their own profile or admin can access any
     if (req.userId !== id && req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied.' });
+        return res.status(403).json({message: 'Access denied.'});
     }
 
     try {
         const [rows] = await db.query(`
             SELECT first_name AS firstName, last_name AS lastName, date_of_birth AS dateOfBirth, username, email
             FROM users
-            WHERE user_id = ? AND is_deleted = 0
+            WHERE user_id = ?
+              AND is_deleted = 0
         `, [id]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res.status(404).json({message: 'User not found.'});
         }
 
         res.json(rows[0]);
     } catch (error) {
         console.error('Error fetching user data:', error);
-        res.status(500).json({ message: 'Server error fetching user data.' });
+        res.status(500).json({message: 'Server error fetching user data.'});
     }
 });
 // Update user (Admin only)
 app.put('/users/:id', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { firstName, lastName, dateOfBirth, email, roleId } = req.body;
+    const {id} = req.params;
+    const {firstName, lastName, dateOfBirth, email, roleId} = req.body;
 
     try {
         const sql = `
             UPDATE users
-            SET first_name = ?,
-                last_name = ?,
+            SET first_name    = ?,
+                last_name     = ?,
                 date_of_birth = ?,
-                email = ?,
-                role_id = ?
+                email         = ?,
+                role_id       = ?
             WHERE user_id = ?
         `;
         const values = [firstName, lastName, dateOfBirth, email, roleId, id];
 
         await db.query(sql, values);
-        res.status(200).json({ message: 'User updated successfully.' });
+        res.status(200).json({message: 'User updated successfully.'});
     } catch (error) {
         console.error('Error updating user:', error);
-        res.status(500).json({ message: 'Server error updating user.' });
+        res.status(500).json({message: 'Server error updating user.'});
     }
 });
 
 // Soft delete user (Admin only)
 app.put('/users/:id/soft-delete', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'UPDATE users SET is_deleted = 1 WHERE user_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'User soft deleted successfully.' });
+        res.status(200).json({message: 'User soft deleted successfully.'});
     } catch (error) {
         console.error('Error soft deleting user:', error);
-        res.status(500).json({ message: 'Server error soft deleting user.' });
+        res.status(500).json({message: 'Server error soft deleting user.'});
     }
 });
 
 // Hard delete user (Admin only)
 app.delete('/users/:id', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'DELETE FROM users WHERE user_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'User hard deleted successfully.' });
+        res.status(200).json({message: 'User hard deleted successfully.'});
     } catch (error) {
         console.error('Error hard deleting user:', error);
-        res.status(500).json({ message: 'Server error hard deleting user.' });
+        res.status(500).json({message: 'Server error hard deleting user.'});
     }
 });
 
 // Restore a gift shop item (Admin only)
 app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     try {
         const sql = 'UPDATE giftshopitem SET is_deleted = 0 WHERE item_id = ?';
         await db.query(sql, [id]);
-        res.status(200).json({ message: 'Gift shop item restored successfully.' });
+        res.status(200).json({message: 'Gift shop item restored successfully.'});
     } catch (error) {
         console.error('Error restoring gift shop item:', error);
-        res.status(500).json({ message: 'Server error restoring gift shop item.' });
+        res.status(500).json({message: 'Server error restoring gift shop item.'});
     }
 });
 
 // ----- CHECKOUT ENDPOINT ------------------------------------------------------------------------
 app.put('/users/:id/change-password', authenticateUser, async (req, res) => {
-    const { id } = req.params;
-    const { currentPassword, newPassword } = req.body;
+    const {id} = req.params;
+    const {currentPassword, newPassword} = req.body;
 
     // Ensure the user can only change their own password or admin can change any
     if (req.userId !== id && req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. You can only change your own password.' });
+        return res.status(403).json({message: 'Access denied. You can only change your own password.'});
     }
 
     try {
         const [rows] = await db.query('SELECT password FROM users WHERE user_id = ?', [id]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ message: 'User not found.' });
+            return res.status(404).json({message: 'User not found.'});
         }
 
         const user = rows[0];
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Current password is incorrect.' });
+            return res.status(400).json({message: 'Current password is incorrect.'});
         }
 
         // Additional Validation: Check if newPassword meets criteria (e.g., length)
         if (newPassword.length < 6) {
-            return res.status(400).json({ message: 'New password must be at least 6 characters long.' });
+            return res.status(400).json({message: 'New password must be at least 6 characters long.'});
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await db.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, id]);
 
-        res.status(200).json({ message: 'Password updated successfully!' });
+        res.status(200).json({message: 'Password updated successfully!'});
     } catch (error) {
         console.error('Error updating password:', error);
-        res.status(500).json({ message: 'Server error updating password.' });
+        res.status(500).json({message: 'Server error updating password.'});
+    }
+});
+// Admin reset password endpoint
+app.put('/users/:id/reset-password', authenticateAdmin, async (req, res) => {
+    const {id} = req.params;
+    const {newPassword} = req.body;
+
+    // Validate the new password
+    if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({message: 'New password must be at least 6 characters long.'});
+    }
+
+    try {
+        // Check if the user exists
+        const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({message: 'User not found.'});
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password
+        await db.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, id]);
+
+        res.status(200).json({message: 'Password reset successfully!'});
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        res.status(500).json({message: 'Server error resetting password.'});
+    }
+});
+// ----- CHECKOUT ENDPOINT (Assuming other checkout logic is implemented)
+app.post('/checkout', authenticateUser, async (req, res) => {
+    const {payment_method, items} = req.body;
+    const user_id = req.userId; // Retrieved from the authenticateUser middleware
+
+    // Input Validation
+    if (!payment_method || !items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({message: 'Invalid request. payment_method and items are required.'});
+    }
+
+    for (let item of items) {
+        if (!item.item_id || !item.quantity || item.quantity <= 0) {
+            return res.status(400).json({message: 'Each item must have a valid item_id and quantity greater than 0.'});
+        }
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Fetch item details with row locking to prevent race conditions
+        const itemIds = items.map(item => item.item_id);
+        const [dbItems] = await connection.query(`SELECT item_id, price, quantity
+                                                  FROM giftshopitem
+                                                  WHERE item_id IN (?)
+                                                    AND is_deleted = 0
+                                                      FOR UPDATE`, [itemIds]);
+
+        // Check if all items exist
+        if (dbItems.length !== items.length) {
+            throw new Error('One or more items do not exist or have been deleted.');
+        }
+
+        // Check for sufficient inventory and prepare transaction items
+        let calculatedSubtotal = 0;
+        const transactionItems = [];
+
+        for (let cartItem of items) {
+            const dbItem = dbItems.find(item => item.item_id === cartItem.item_id);
+            if (dbItem.quantity < cartItem.quantity) {
+                throw new Error(`Insufficient quantity for item '${dbItem.item_id}'. Available: ${dbItem.quantity}, Requested: ${cartItem.quantity}.`);
+            }
+            const itemSubtotal = parseFloat((cartItem.quantity * dbItem.price).toFixed(2));
+            calculatedSubtotal += itemSubtotal;
+            transactionItems.push({
+                item_id: cartItem.item_id,
+                quantity: cartItem.quantity,
+                price_at_purchase: dbItem.price,
+                subtotal: itemSubtotal
+            });
+        }
+
+        calculatedSubtotal = parseFloat(calculatedSubtotal.toFixed(2));
+        const taxRate = 0.0825; // 8.25% tax
+        const calculatedTax = parseFloat((calculatedSubtotal * taxRate).toFixed(2));
+        const calculatedTotal = parseFloat((calculatedSubtotal + calculatedTax).toFixed(2));
+
+        // Insert into transaction table
+        const [transactionResult] = await connection.query(`INSERT INTO \`transaction\` (transaction_date, subtotal,
+                                                                                         tax, total_amount,
+                                                                                         transaction_type, user_id,
+                                                                                         payment_status)
+                                                            VALUES (NOW(), ?, ?, ?, ?, ?,
+                                                                    ?)`, [calculatedSubtotal, calculatedTax, calculatedTotal, payment_method, user_id, 'completed']);
+        const transactionId = transactionResult.insertId;
+
+        // Insert into transaction_giftshopitem table
+        const transactionItemsValues = transactionItems.map(item => [transactionId, item.item_id, item.quantity, item.price_at_purchase]);
+
+        await connection.query(`INSERT INTO \`transaction_giftshopitem\` (transaction_id, item_id, quantity, price_at_purchase)
+                                VALUES ?`, [transactionItemsValues]);
+
+        // Update giftshopitem quantities
+        for (let cartItem of items) {
+            await connection.query(`UPDATE giftshopitem
+                                    SET quantity = quantity - ?
+                                    WHERE item_id = ?`, [cartItem.quantity, cartItem.item_id]);
+        }
+
+        // Commit the transaction
+        await connection.commit();
+
+        res.status(201).json({
+            success: true, message: 'Checkout successful.', transaction_id: transactionId, total_amount: calculatedTotal
+        });
+
+    } catch (error) {
+        await connection.rollback();
+        console.error('Checkout Error:', error.message);
+        res.status(400).json({success: false, message: error.message});
+    } finally {
+        connection.release();
     }
 });
 
-// ----- CHECKOUT ENDPOINT (Assuming other checkout logic is implemented)
-app.post('/checkout', authenticateUser, async (req, res) => {
-    // ... Existing checkout logic
-});
-
-// ----- REPORTS ENDPOINT ---------------------------------------------------------------------------
+// Updated /reports endpoint
 app.post('/reports', authenticateAdmin, async (req, res) => {
     const {
-        report_category,
-        report_type,
-        report_period_type, // 'date_range', 'month', or 'year'
-        start_date,
-        end_date,
-        selected_month,
-        selected_year, // New field for 'year' report
-        item_category,
-        payment_method,
-        item_id,
+        report_category, report_type, report_period_type, // 'date_range', 'month', 'year', or 'single_day'
+        start_date, end_date, selected_month, selected_year, // New field for 'year' report
+        selected_date, // New field for 'single_day' report
+        item_category, payment_method, item_id,
     } = req.body;
 
     console.log('Received /reports request with body:', req.body); // Debug log
@@ -612,8 +715,7 @@ app.post('/reports', authenticateAdmin, async (req, res) => {
     if (!report_category || !report_type || !report_period_type) {
         console.error('Validation Error: Missing required fields.');
         return res.status(400).json({
-            message:
-                'report_category, report_type, and report_period_type are required.',
+            message: 'report_category, report_type, and report_period_type are required.',
         });
     }
 
@@ -627,7 +729,7 @@ app.post('/reports', authenticateAdmin, async (req, res) => {
         }
         if (new Date(start_date) > new Date(end_date)) {
             console.error('Validation Error: Start date is after end date.');
-            return res.status(400).json({ message: 'Start date cannot be after end date.' });
+            return res.status(400).json({message: 'Start date cannot be after end date.'});
         }
     } else if (report_period_type === 'month') {
         if (!selected_month) {
@@ -643,9 +745,16 @@ app.post('/reports', authenticateAdmin, async (req, res) => {
                 message: 'Selected year is required for yearly reports.',
             });
         }
+    } else if (report_period_type === 'single_day') {
+        if (!selected_date) {
+            console.error('Validation Error: Selected date is required.');
+            return res.status(400).json({
+                message: 'Selected date is required for single day reports.',
+            });
+        }
     } else {
         console.error('Invalid report_period_type:', report_period_type);
-        return res.status(400).json({ message: 'Invalid report period type.' });
+        return res.status(400).json({message: 'Invalid report period type.'});
     }
 
     try {
@@ -654,55 +763,43 @@ app.post('/reports', authenticateAdmin, async (req, res) => {
             switch (report_type) {
                 case 'revenue':
                     console.log('Generating Gift Shop Revenue Report');
-                    reportData = await generateGiftShopRevenueReport(
-                        report_period_type,
-                        start_date,
-                        end_date,
-                        selected_month,
-                        selected_year,
-                        item_category,
-                        payment_method,
-                        item_id
-                    );
+                    reportData = await generateGiftShopRevenueReport(report_period_type, start_date, end_date, selected_month, selected_year, selected_date, item_category, payment_method, item_id);
                     console.log('Report Data:', reportData); // Debug log
+                    break;
+                case 'transaction_details':
+                    console.log('Generating Gift Shop Transaction Details Report');
+                    reportData = await generateGiftShopTransactionDetailsReport(report_period_type, start_date, end_date, selected_month, selected_year, selected_date, item_category, payment_method, item_id);
+                    console.log('Report Data:', reportData);
                     break;
                 // Add other report types if needed
                 default:
                     console.error('Invalid report type:', report_type);
-                    return res.status(400).json({ message: 'Invalid report type.' });
+                    return res.status(400).json({message: 'Invalid report type.'});
             }
         } else {
             console.error('Invalid report category:', report_category);
-            return res.status(400).json({ message: 'Invalid report category.' });
+            return res.status(400).json({message: 'Invalid report category.'});
         }
 
-        res.status(200).json({ reportData });
+        res.status(200).json({reportData});
     } catch (error) {
         console.error('Error generating report:', error); // Debug log with error details
-        res.status(500).json({ message: 'Server error generating report.' });
+        res.status(500).json({message: 'Server error generating report.'});
     }
 });
 
 // Updated Function to generate Gift Shop Revenue Report with filters
-async function generateGiftShopRevenueReport(
-    reportPeriodType,
-    startDate,
-    endDate,
-    selectedMonth,
-    selectedYear,
-    itemCategory,
-    paymentMethod,
-    itemId
-) {
+async function generateGiftShopRevenueReport(reportPeriodType, startDate, endDate, selectedMonth, selectedYear, selectedDate, itemCategory, paymentMethod, itemId) {
     let query = '';
     let params = [];
 
     if (reportPeriodType === 'date_range') {
         // SQL query for date range
         query = `
-            SELECT DATE(t.transaction_date) AS date, SUM(tgi.quantity * tgi.price_at_purchase) AS total_revenue
+            SELECT DATE (t.transaction_date) AS date, SUM (tgi.quantity * tgi.price_at_purchase) AS total_revenue
             FROM \`transaction\` t
-                JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+                JOIN transaction_giftshopitem tgi
+            ON t.transaction_id = tgi.transaction_id
                 JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
             WHERE t.transaction_date >= ? AND t.transaction_date < DATE_ADD(?, INTERVAL 1 DAY)
         `;
@@ -710,9 +807,10 @@ async function generateGiftShopRevenueReport(
     } else if (reportPeriodType === 'month') {
         // SQL query for month - daily data within the selected month
         query = `
-            SELECT DATE(t.transaction_date) AS date, SUM(tgi.quantity * tgi.price_at_purchase) AS total_revenue
+            SELECT DATE (t.transaction_date) AS date, SUM (tgi.quantity * tgi.price_at_purchase) AS total_revenue
             FROM \`transaction\` t
-                JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+                JOIN transaction_giftshopitem tgi
+            ON t.transaction_id = tgi.transaction_id
                 JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
             WHERE DATE_FORMAT(t.transaction_date, '%Y-%m') = ?
         `;
@@ -722,16 +820,36 @@ async function generateGiftShopRevenueReport(
         query = `
             SELECT DATE_FORMAT(t.transaction_date, '%Y-%m') AS date, SUM(tgi.quantity * tgi.price_at_purchase) AS total_revenue
             FROM \`transaction\` t
-                JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+                JOIN transaction_giftshopitem tgi
+            ON t.transaction_id = tgi.transaction_id
                 JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
-            WHERE YEAR(t.transaction_date) = ?
+            WHERE YEAR (t.transaction_date) = ?
         `;
         params = [selectedYear];
+        } else if (reportPeriodType === 'single_day') {
+            query = `
+                SELECT t.transaction_id,
+                       t.transaction_date,
+                       t.transaction_type,
+                       t.payment_status,
+                       u.username,
+                       tgi.item_id,
+                       gsi.name_                              as item_name,
+                       tgi.quantity,
+                       tgi.price_at_purchase,
+                       (tgi.quantity * tgi.price_at_purchase) as item_total
+                FROM \`transaction\` t
+                         JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+                         JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
+                         JOIN users u ON t.user_id = u.user_id
+                WHERE DATE (t.transaction_date) = ?
+            `;
+            params = [selectedDate];
     } else {
-        throw new Error('Invalid report period type.');
+        throw new Error('Invalid report period type for transaction details report.');
     }
 
-    // Apply filters if provided
+// Apply filters if provided
     if (paymentMethod) {
         query += ' AND t.transaction_type = ?';
         params.push(paymentMethod);
@@ -745,7 +863,7 @@ async function generateGiftShopRevenueReport(
         params.push(itemId);
     }
 
-    // Group by appropriate time period
+// Group by appropriate time period
     if (reportPeriodType === 'date_range' || reportPeriodType === 'month') {
         query += `
             GROUP BY DATE(t.transaction_date)
@@ -778,7 +896,7 @@ app.get('/giftshopitems', async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching gift shop items:', error);
-        res.status(500).json({ message: 'Server error fetching gift shop items.' });
+        res.status(500).json({message: 'Server error fetching gift shop items.'});
     }
 });
 
@@ -789,7 +907,7 @@ app.get('/giftshopcategories', async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching item categories:', error);
-        res.status(500).json({ message: 'Server error fetching item categories.' });
+        res.status(500).json({message: 'Server error fetching item categories.'});
     }
 });
 
@@ -800,33 +918,33 @@ app.get('/paymentmethods', async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching payment methods:', error);
-        res.status(500).json({ message: 'Server error fetching payment methods.' });
+        res.status(500).json({message: 'Server error fetching payment methods.'});
     }
 });
 // Create a new announcement (Admin only)
 app.post('/announcements', authenticateUser, async (req, res) => {
-    const { title, content, target_audience, priority } = req.body;
+    const {title, content, target_audience, priority} = req.body;
 
     // Only admin can create announcements
     if (req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. Only admins can create announcements.' });
+        return res.status(403).json({message: 'Access denied. Only admins can create announcements.'});
     }
 
     // Validate inputs
     if (!title || !content || !target_audience || !priority) {
-        return res.status(400).json({ message: 'Title, content, target audience, and priority are required.' });
+        return res.status(400).json({message: 'Title, content, target audience, and priority are required.'});
     }
 
     // Validate target_audience
     const validAudiences = ['staff', 'member', 'customer', 'all'];
     if (!validAudiences.includes(target_audience)) {
-        return res.status(400).json({ message: 'Invalid target audience.' });
+        return res.status(400).json({message: 'Invalid target audience.'});
     }
 
     // Validate priority
     const validPriorities = ['high', 'medium', 'low'];
     if (!validPriorities.includes(priority)) {
-        return res.status(400).json({ message: 'Invalid priority value.' });
+        return res.status(400).json({message: 'Invalid priority value.'});
     }
 
     try {
@@ -836,10 +954,10 @@ app.post('/announcements', authenticateUser, async (req, res) => {
         `;
         const values = [title, content, target_audience, priority];
         await db.query(sql, values);
-        res.status(201).json({ message: 'Announcement created successfully.' });
+        res.status(201).json({message: 'Announcement created successfully.'});
     } catch (error) {
         console.error('Error creating announcement:', error);
-        res.status(500).json({ message: 'Server error creating announcement.' });
+        res.status(500).json({message: 'Server error creating announcement.'});
     }
 });
 
@@ -847,7 +965,7 @@ app.post('/announcements', authenticateUser, async (req, res) => {
 app.get('/announcements/all', authenticateUser, async (req, res) => {
     // Only admins can access this endpoint
     if (req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. Admins only.' });
+        return res.status(403).json({message: 'Access denied. Admins only.'});
     }
 
     try {
@@ -855,18 +973,20 @@ app.get('/announcements/all', authenticateUser, async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching announcements:', error);
-        res.status(500).json({ message: 'Server error fetching announcements.' });
+        res.status(500).json({message: 'Server error fetching announcements.'});
     }
 });
 
 // Get announcements for a user based on their role
 app.get('/announcements/user', authenticateUser, async (req, res) => {
-    const { userRole } = req;
+    const {userRole} = req;
 
     try {
         const sql = `
-            SELECT * FROM announcements
-            WHERE (target_audience = ? OR target_audience = 'all') AND is_active = 1
+            SELECT *
+            FROM announcements
+            WHERE (target_audience = ? OR target_audience = 'all')
+              AND is_active = 1
             ORDER BY created_at DESC
         `;
         const values = [userRole];
@@ -875,64 +995,67 @@ app.get('/announcements/user', authenticateUser, async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching user announcements:', error);
-        res.status(500).json({ message: 'Server error fetching announcements.' });
+        res.status(500).json({message: 'Server error fetching announcements.'});
     }
 });
 
 // Update an announcement (Admin only)
 app.put('/announcements/:id', authenticateUser, async (req, res) => {
-    const { id } = req.params;
-    const { title, content, target_audience, priority } = req.body;
+    const {id} = req.params;
+    const {title, content, target_audience, priority} = req.body;
 
     // Only admin can update announcements
     if (req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. Only admins can update announcements.' });
+        return res.status(403).json({message: 'Access denied. Only admins can update announcements.'});
     }
 
     // Validate inputs
     if (!title || !content || !target_audience || !priority) {
-        return res.status(400).json({ message: 'Title, content, target audience, and priority are required.' });
+        return res.status(400).json({message: 'Title, content, target audience, and priority are required.'});
     }
 
     // Validate target_audience
     const validAudiences = ['staff', 'member', 'customer', 'all'];
     if (!validAudiences.includes(target_audience)) {
-        return res.status(400).json({ message: 'Invalid target audience.' });
+        return res.status(400).json({message: 'Invalid target audience.'});
     }
 
     // Validate priority
     const validPriorities = ['high', 'medium', 'low'];
     if (!validPriorities.includes(priority)) {
-        return res.status(400).json({ message: 'Invalid priority value.' });
+        return res.status(400).json({message: 'Invalid priority value.'});
     }
 
     try {
         const sql = `
             UPDATE announcements
-            SET title = ?, content = ?, target_audience = ?, priority = ?
+            SET title           = ?,
+                content         = ?,
+                target_audience = ?,
+                priority        = ?
             WHERE id = ?
         `;
         const values = [title, content, target_audience, priority, id];
 
         const [result] = await db.query(sql, values);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Announcement not found.' });
+            return res.status(404).json({message: 'Announcement not found.'});
         }
 
-        res.json({ message: 'Announcement updated successfully.' });
+        res.json({message: 'Announcement updated successfully.'});
     } catch (error) {
         console.error('Error updating announcement:', error);
-        res.status(500).json({ message: 'Server error updating announcement.' });
+        res.status(500).json({message: 'Server error updating announcement.'});
     }
 });
 
 // Soft delete an announcement (Admin only)
 app.delete('/announcements/:id', authenticateUser, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     // Only admin can delete announcements
     if (req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. Only admins can delete announcements.' });
+        return res.status(403).json({message: 'Access denied. Only admins can delete announcements.'});
     }
 
     try {
@@ -943,23 +1066,23 @@ app.delete('/announcements/:id', authenticateUser, async (req, res) => {
         `;
         const [result] = await db.query(sql, [id]);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Announcement not found.' });
+            return res.status(404).json({message: 'Announcement not found.'});
         }
 
-        res.json({ message: 'Announcement deleted successfully.' });
+        res.json({message: 'Announcement deleted successfully.'});
     } catch (error) {
         console.error('Error deleting announcement:', error);
-        res.status(500).json({ message: 'Server error deleting announcement.' });
+        res.status(500).json({message: 'Server error deleting announcement.'});
     }
 });
 
 // Restore a soft-deleted announcement (Admin only)
 app.put('/announcements/:id/restore', authenticateUser, async (req, res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
     // Only admin can restore announcements
     if (req.userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied. Only admins can restore announcements.' });
+        return res.status(403).json({message: 'Access denied. Only admins can restore announcements.'});
     }
 
     try {
@@ -970,13 +1093,13 @@ app.put('/announcements/:id/restore', authenticateUser, async (req, res) => {
         `;
         const [result] = await db.query(sql, [id]);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Announcement not found.' });
+            return res.status(404).json({message: 'Announcement not found.'});
         }
 
-        res.json({ message: 'Announcement restored successfully.' });
+        res.json({message: 'Announcement restored successfully.'});
     } catch (error) {
         console.error('Error restoring announcement:', error);
-        res.status(500).json({ message: 'Server error restoring announcement.' });
+        res.status(500).json({message: 'Server error restoring announcement.'});
     }
 });
 // ----- (LEO DONE) --------------------------------------------------------------------------------
@@ -990,43 +1113,36 @@ app.put('/announcements/:id/restore', authenticateUser, async (req, res) => {
 
 // Add a new event
 app.post('/api/events', async (req, res) => {
-    const { name, description, location, status } = req.body;
+    const {name, description, location, status} = req.body;
     try {
-        const [result] = await db.query(
-            'INSERT INTO event_ (name_, description_, location, status) VALUES (?, ?, ?, ?)',
-            [name, description, location, status]
-        )
-        res.json({ id: result.insertId, message: 'Event added successfully.' });
+        const [result] = await db.query('INSERT INTO event_ (name_, description_, location, status) VALUES (?, ?, ?, ?)', [name, description, location, status])
+        res.json({id: result.insertId, message: 'Event added successfully.'});
     } catch (error) {
         console.error('Error adding event:', error);
-        res.status(500).json({ message: 'Server error adding event.' });
+        res.status(500).json({message: 'Server error adding event.'});
     }
 });
 
 // Update event information
 app.put('/api/events/:id', async (req, res) => {
-    const { id } = req.params;
-    const { name, description, location, status } = req.body;
+    const {id} = req.params;
+    const {name, description, location, status} = req.body;
 
     const allowedStatuses = ['upcoming', 'ongoing', 'completed'];
     if (!allowedStatuses.includes(status)) {
-        return res.status(400).json({ message: 'Invalid status value.' });
+        return res.status(400).json({message: 'Invalid status value.'});
     }
 
     try {
-        const [result] = await db.query(
-            'UPDATE event_ SET name_ = ?, description_ = ?, location = ?, status = ? WHERE event_id = ?',
-            [name, description, location, status, id]
-        );
+        const [result] = await db.query('UPDATE event_ SET name_ = ?, description_ = ?, location = ?, status = ? WHERE event_id = ?', [name, description, location, status, id]);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Event not found.' });
+            return res.status(404).json({message: 'Event not found.'});
         }
-        res.json({ message: 'Event updated successfully.' });
-    }
-    catch (error) {
+        res.json({message: 'Event updated successfully.'});
+    } catch (error) {
         console.error('Error updating event:', error);
-        res.status(500).json({ message: 'Server error updating event.' });
+        res.status(500).json({message: 'Server error updating event.'});
     }
 })
 
@@ -1036,12 +1152,12 @@ app.delete('/api/events/:id', async (req, res) => {
     try {
         const [result] = await db.query('UPDATE event_ SET is_deleted = TRUE WHERE event_id = ?', [eventId]);
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Event not found.' });
+            return res.status(404).json({message: 'Event not found.'});
         }
-        res.json({ message: 'Event deleted successfully.' });
+        res.json({message: 'Event deleted successfully.'});
     } catch (error) {
         console.error('Error deleting event:', error);
-        res.status(500).json({ message: 'Server error deleting event.' });
+        res.status(500).json({message: 'Server error deleting event.'});
     }
 })
 
@@ -1052,7 +1168,7 @@ app.get('/api/events', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error fetching events:', error);
-        res.status(500).json({ message: 'Server error fetching events.' });
+        res.status(500).json({message: 'Server error fetching events.'});
     }
 })
 
@@ -1064,7 +1180,7 @@ app.get('/api/events/:id/members', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error fetching members:', error);
-        res.status(500).json({ message: 'Server error fetching members.' });
+        res.status(500).json({message: 'Server error fetching members.'});
     }
 });
 
