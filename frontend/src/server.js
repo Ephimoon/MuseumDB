@@ -63,32 +63,204 @@ const upload = multer({ storage });
 
 // ----- (MELANIE) --------------------------------------------------------------------------------
 
-// artwork images
-// const artworkStorage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//       cb(null, path.join(__dirname, 'assets/artworks')); // Save to frontend/src/assets/artworks
-//     },
-//     filename: (req, file, cb) => {
-//       const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-//       cb(null, safeFileName);
-//     }
-//   });
-  
-//   const uploadArtworkImage = multer({ storage: artworkStorage });
+// rtwork images
+app.use('/assets/artworks', express.static(path.join(__dirname, 'assets/artworks')));
+const artworkStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'assets/artworks')); // Save to frontend/src/assets/artworks
+    },
+    filename: (req, file, cb) => {
+        const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, safeFileName);
+    }
+});
+const uploadArtworkImage = multer({ storage: artworkStorage });
 
 app.get('/artwork', async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT 
-                artwork.*, 
-                artist.name_ AS artist_name
+            SELECT artwork.*, 
+                   artist.name_ AS artist_name, 
+                   department.Name AS department_name
             FROM artwork
             LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+            LEFT JOIN department ON artwork.department_id = department.DepartmentID
         `);
         res.json(rows);
     } catch (error) {
-        console.error('Error fetching artwork with artist name:', error);
+        console.error('Error fetching artwork table:', error);
+        res.status(500).json({ message: 'Server error fetching artwork table.' });
+    }
+});
+
+app.get('/artwork/:id', async (req, res) => {
+    const artworkId = req.params.id;
+
+    try {
+        const [rows] = await db.query(`
+            SELECT artwork.*, 
+                   artist.name_ AS artist_name, 
+                   department.Name AS department_name
+            FROM artwork
+            LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+            LEFT JOIN department ON artwork.department_id = department.DepartmentID
+            WHERE ArtworkID = ?`, [artworkId]);
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Artwork not found' });
+        }
+        res.json(rows[0]); // Return the single artwork object
+    } catch (error) {
+        console.error('Error fetching artwork by ID:', error);
         res.status(500).json({ message: 'Server error fetching artwork.' });
+    }
+});
+
+app.get('/mediums', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT DISTINCT Medium FROM artwork ORDER BY Medium ASC');
+        const mediums = rows.map(row => row.Medium); // Extract the Medium field into an array
+        res.json(mediums);
+    } catch (error) {
+        console.error('Error fetching mediums:', error);
+        res.status(500).json({ message: 'Server error fetching mediums.' });
+    }
+});
+
+app.get('/creation-years', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT DISTINCT CreationYear FROM Artwork ORDER BY CreationYear ASC');
+        const cy = rows.map(row => row.CreationYear); // Extract the CreationYear field into an array
+        res.json(cy);
+    } catch (error) {
+        console.error('Error fetching creation years:', error);
+        res.status(500).json({ message: 'Server error fetching creation years.' });
+    }
+});
+
+app.get('/artworkconditions', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT DISTINCT ArtworkCondition FROM artwork ORDER BY ArtworkCondition ASC');
+        const conditions = rows.map(row => row.ArtworkCondition); // Corrected field name
+        res.json(conditions);
+    } catch (error) {
+        console.error('Error fetching conditions:', error);
+        res.status(500).json({ message: 'Server error fetching conditions.' });
+    }
+});
+
+app.post('/artwork', uploadArtworkImage.single('image'), async (req, res) => {
+    try {
+        const { Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition } = req.body;
+        const image = req.file ? req.file.filename : null;
+
+        const [result] = await db.query(
+            `INSERT INTO artwork (Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition, image) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [Title, artist_id, department_id, Description, CreationYear, price || null, Medium, height, width, depth || null, acquisition_date, location || null, ArtworkCondition, image]
+        );
+
+        res.status(201).json({ message: 'Artwork added successfully', artworkId: result.insertId });
+        console.log("Artwork added successfully");
+    } catch (error) {
+        console.error('Error inserting artwork:', error);
+        res.status(500).json({ message: 'Failed to add artwork' });
+    }
+});
+
+app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) => {
+    const artworkId = req.params.id;
+    const { Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition } = req.body;
+    const image = req.file ? req.file.filename : null;
+
+    // Build the SQL query dynamically based on provided fields
+    const fields = [];
+    const values = [];
+
+    if (Title) {
+        fields.push('Title = ?');
+        values.push(Title);
+    }
+    if (artist_id) {
+        fields.push('artist_id = ?');
+        values.push(artist_id);
+    }
+    if (department_id) {
+        fields.push('department_id = ?');
+        values.push(department_id);
+    }
+    if (Description) {
+        fields.push('Description = ?');
+        values.push(Description);
+    }
+    if (CreationYear) {
+        fields.push('CreationYear = ?');
+        values.push(CreationYear);
+    }
+    if (price !== undefined) {
+        fields.push('price = ?');
+        values.push(price || null);
+    }
+    if (Medium) {
+        fields.push('Medium = ?');
+        values.push(Medium);
+    }
+    if (height) {
+        fields.push('height = ?');
+        values.push(height);
+    }
+    if (width) {
+        fields.push('width = ?');
+        values.push(width);
+    }
+    if (depth !== undefined) {
+        fields.push('depth = ?');
+        values.push(depth || null);
+    }
+    if (acquisition_date) {
+        fields.push('acquisition_date = ?');
+        values.push(acquisition_date);
+    }
+    if (location) {
+        fields.push('location = ?');
+        values.push(location || null);
+    }
+    if (ArtworkCondition) {
+        fields.push('ArtworkCondition = ?');
+        values.push(ArtworkCondition);
+    }
+    if (image) { // Only update the image if a new one is provided
+        fields.push('image = ?');
+        values.push(image);
+    }
+
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+
+    // Add the artworkId to the end of values array for the WHERE clause
+    values.push(artworkId);
+
+    const query = `UPDATE artwork SET ${fields.join(', ')} WHERE ArtworkID = ?`;
+
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Artwork updated successfully.' });
+    } catch (error) {
+        console.error('Error updating artwork:', error);
+        res.status(500).json({ message: 'Server error updating artwork.' });
+    }
+});
+
+// only delete artwork
+app.delete('/artwork/:id', async (req, res) => {
+    const artworkId = req.params.id;
+    try {
+        await db.query('DELETE FROM artwork WHERE ArtworkID = ?', [artworkId]);
+        res.status(200).json({ message: 'Artwork deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting artwork:', error);
+        res.status(500).json({ message: 'Server error deleting artwork' });
     }
 });
 
@@ -104,7 +276,6 @@ app.get('/department', async (req, res) => {
 
 // artist images
 app.use('/assets/artists', express.static(path.join(__dirname, 'assets/artists')));
-
 const artistStorage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
@@ -114,12 +285,11 @@ const artistStorage = multer.diskStorage({
       cb(null, safeFileName);
     }
 });
-  
 const uploadArtistImage = multer({ storage: artistStorage });
 
 app.get('/artist', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM artist');
+        const [rows] = await db.query('SELECT * FROM artist ORDER BY name_ ASC');
         res.json(rows);
     } catch (error) {
         console.error('Error fetching artist table:', error);
@@ -142,8 +312,53 @@ app.get('/artist/:id', async (req, res) => {
     }
 });
 
+app.get('/artist-with-artwork', async (req, res) => {
+    try {
+        console.log("Attempting to fetch artists with artwork...");
+        const [rows] = await db.query(`
+            SELECT DISTINCT artist.*
+            FROM artist
+            LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+            WHERE artwork.ArtworkID IS NOT NULL
+            ORDER BY name_ ASC
+        `);
+        if (rows.length === 0) {
+            console.log("No artists found with artwork.");
+            return res.json([]);  // Return an empty array instead of 404
+        }
+        console.log("Artists with artwork fetched successfully:", rows);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artists with artwork:', error);
+        res.status(500).json({ message: 'Server error fetching artists with artwork.' });
+    }
+});
+
+app.get('/artist-null-artwork', async (req, res) => {
+    try {
+        console.log("Attempting to fetch artists without artwork...");
+        const [rows] = await db.query(`
+            SELECT artist.*
+            FROM artist
+            LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+            WHERE artwork.ArtworkID IS NULL
+            ORDER BY name_ ASC
+        `);
+        if (rows.length === 0) {
+            console.log("No artists found without artwork.");
+            return res.json([]);  // Return an empty array instead of 404
+        }
+        console.log("Artists without artwork fetched successfully:", rows);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artists without artwork:', error);
+        res.status(500).json({ message: 'Server error fetching artists without artwork.' });
+    }
+});
+
+
 // get nationalities
-app.get('/api/nationalities', async (req, res) => {
+app.get('/nationalities', async (req, res) => {
     try {
       const [rows] = await db.query(`
         SHOW COLUMNS FROM artist LIKE 'nationality'
@@ -160,7 +375,6 @@ app.get('/api/nationalities', async (req, res) => {
       res.status(500).json({ message: 'Server error fetching nationalities.' });
     }
 });
-  
 
 // Artist creation route with image upload
 app.post('/artist', uploadArtistImage.single('image'), async (req, res) => {
@@ -251,12 +465,12 @@ app.patch('/artist/:id', uploadArtistImage.single('image'), async (req, res) => 
     }
 });
 
-
+// if i delete an artist, i want to delete all the artworks associated with that artist
 app.delete('/artist/:id', async (req, res) => {
     const artistId = req.params.id;
     try {
       await db.query('DELETE FROM artist WHERE ArtistID = ?', [artistId]);
-      res.status(200).json({ message: 'Artist deleted successfully' });
+      res.status(200).json({ message: 'Artist and associated artworks deleted successfully' });
     } catch (error) {
       console.error('Error deleting artist:', error);
       res.status(500).json({ message: 'Server error deleting artist' });

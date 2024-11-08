@@ -13,22 +13,49 @@ const ArtworkCard = ({ artwork_, onCardClick }) => {
           className={styles.card}
           onClick={() => onCardClick(art)}
         >
-          <img src={art.image} alt={art.Title} className={styles.image} />
+          <img src={`${config.backendUrl}/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
           <h1>{art.Title}</h1>
           <p>{art.artist_name || 'Unknown Artist'}</p>
-          <p>{art.CreationYear  || 'Unknown Year'}</p>
+          <p>{art.CreationYear}</p>
         </div>
       ))}
     </div>
   );
 };
 
-const ArtworkModalUser = ({ artwork_, onClose }) => {
-  if (!artwork_) return null; // If no artwork is selected, don't render the modal
+const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
+  const location = useLocation();
+  const role = localStorage.getItem('role');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [artwork, setArtwork] = useState(artwork_);
+
+  const openEditMode = () => setIsEditMode(true);
+  const openConfirmDelete = () => setShowConfirmDelete(true);
+  const closeConfirmDelete = () => setShowConfirmDelete(false);
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${config.backendUrl}/artwork/${artwork.ArtworkID}`);
+      console.log("Artwork deleted successfully");
+      onRefresh(); // Refresh the artwork list
+      onClose(); // Close the modal
+    } catch (error) {
+      console.error("Error deleting artwork:", error);
+    }
+  };
+
+  const handleModalRefresh = async () => {
+    try {
+      const response = await axios.get(`${config.backendUrl}/artwork/${artwork.ArtworkID}`);
+      setArtwork(response.data);
+    } catch (error) {
+      console.error('Error fetching updated artwork data:', error);
+    }
+  };
 
   const handleOverlayClick = (e) => {
-    // Only close if clicking on the overlay, not the modal content
-    if (e.target === e.currentTarget) {
+    if (!isEditMode && e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -36,16 +63,325 @@ const ArtworkModalUser = ({ artwork_, onClose }) => {
   return (
     <div className={styles.modal} onClick={handleOverlayClick}>
       <div className={styles.modal_content}>
-        <span className={styles.close_button} onClick={onClose}>
-          &times;
-        </span>
-        <img src={artwork_.image} alt={artwork_.Title} className={styles.modal_image} />
-        <h2>{artwork_.Title}</h2>
-        <p><strong>Artist:</strong> {artwork_.artist_name || 'Unknown Artist'}</p>
-        <p><strong>Year:</strong> {artwork_.CreationYear}</p>
-        <p><strong>Description:</strong> {artwork_.Description}</p>
-        <p><strong>Price:</strong> {artwork_.price}</p>
-        {/* Add more artwork details here as needed */}
+        {!isEditMode && (
+          <span className={styles.close_button} onClick={onClose}>
+            &times;
+          </span>
+        )}
+
+        {!isEditMode ? (
+          <>
+            <img src={`${config.backendUrl}/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
+            <h2>{artwork.Title}</h2>
+            <p><strong>Artist:</strong> {artwork.artist_name || 'Unknown Artist'}</p>
+            <p><strong>Year:</strong> {artwork.CreationYear}</p>
+            <p><strong>Department:</strong> {artwork.department_name || 'Unknown Department'}</p>
+            <p><strong>Medium:</strong> {artwork.Medium}</p>
+            <p><strong>Height:</strong> {artwork.height} inches</p>
+            <p><strong>Width:</strong> {artwork.width} inches</p>
+            <p><strong>Depth:</strong> {artwork.depth || 'N/A'} inches</p>
+            <p><strong>Acquisition Date:</strong> {artwork.acquisition_date ? new Date(artwork.acquisition_date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'N/A'}</p>
+            <p><strong>Condition:</strong> {artwork.ArtworkCondition}</p>
+            <p><strong>Location:</strong> {artwork.location || 'Not Specified'}</p>
+            <p><strong>Price:</strong> {artwork.price ? `$${artwork.price}` : 'N/A'}</p>
+            <p><strong>Description:</strong> {artwork.Description}</p>
+            {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
+              <>
+                <button onClick={openEditMode}>Edit Artwork</button>
+                <button onClick={openConfirmDelete}>Delete Artwork</button>
+              </>
+            )}
+          </>
+        ) : (
+          <EditArtworkModal 
+            artwork={artwork} 
+            onClose={() => setIsEditMode(false)} 
+            onRefresh={onRefresh} 
+            onModalRefresh={handleModalRefresh} 
+          />
+        )}
+        {showConfirmDelete && (
+          <ConfirmDeleteArtworkModal
+            onConfirm={handleDelete}
+            onCancel={closeConfirmDelete}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
+  const [Title, setTitle] = useState(artwork.Title || '');
+  const [artistId, setArtistId] = useState(artwork.artist_id || '');
+  const [departmentId, setDepartmentId] = useState(artwork.department_id || '');
+  const [CreationYear, setCreationYear] = useState(artwork.CreationYear !== null ? artwork.CreationYear : '');
+  const [medium, setMedium] = useState(artwork.Medium || '');
+  const [customMedium, setCustomMedium] = useState('');
+  const [height, setHeight] = useState(artwork.height !== null ? artwork.height : '');
+  const [width, setWidth] = useState(artwork.width !== null ? artwork.width : '');
+  const [depth, setDepth] = useState(artwork.depth !== null ? artwork.depth : '');
+  const [acquisitionDate, setAcquisitionDate] = useState(artwork.acquisition_date ? artwork.acquisition_date.split("T")[0] : '');
+  const [condition, setCondition] = useState(artwork.ArtworkCondition || '');
+  const [customCondition, setCustomCondition] = useState('');
+  const [location, setLocation] = useState(artwork.location || '');
+  const [price, setPrice] = useState(artwork.price !== null ? artwork.price : '');
+  const [description, setDescription] = useState(artwork.Description || '');
+  const [image, setImage] = useState(null);
+  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const [artists, setArtists] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [mediums, setMediums] = useState([]);
+  const [conditions, setConditions] = useState([]);
+
+  // Fetch artists, departments, mediums, and conditions
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [artistRes, departmentsRes, mediumsRes, conditionsRes] = await Promise.all([
+          axios.get(`${config.backendUrl}/artist`),
+          axios.get(`${config.backendUrl}/department`),
+          axios.get(`${config.backendUrl}/mediums`),
+          axios.get(`${config.backendUrl}/artworkconditions`)
+        ]);
+        setArtists(artistRes.data);
+        setDepartments(departmentsRes.data);
+        setMediums(mediumsRes.data);
+        setConditions(conditionsRes.data);
+      } catch (error) {
+        console.error('Error fetching dropdown options:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleImageChange = (e) => setImage(e.target.files[0]);
+
+  // Function to check if any field has changed from the original artwork values
+  const checkIfChanged = () => {
+    const originalDate = artwork.acquisition_date ? artwork.acquisition_date.split("T")[0] : '';
+    return (
+      Title !== artwork.Title ||
+      artistId !== artwork.artist_id ||
+      departmentId !== artwork.department_id ||
+      CreationYear !== artwork.CreationYear ||
+      medium !== artwork.Medium ||
+      height !== artwork.height ||
+      width !== artwork.width ||
+      (depth || '') !== (artwork.depth || '') ||  // Normalize depth comparison
+      acquisitionDate !== originalDate || 
+      condition !== artwork.ArtworkCondition ||
+      (location || '') !== (artwork.location || '') ||  // Normalize location comparison
+      (price || '') !== (artwork.price || '') ||  // Normalize price comparison
+      description !== artwork.Description ||
+      image !== null
+    );
+  };
+
+  // Update `hasChanges` whenever any field is changed
+  useEffect(() => {
+    setHasChanges(checkIfChanged());
+  }, [Title, artistId, departmentId, CreationYear, medium, height, width, depth, acquisitionDate, condition, location, price, description, image]);
+
+  // Validate all required fields
+  const validateFields = () => {
+    const newErrors = {};
+    if (!Title) newErrors.Title = "Title is required.";
+    if (!artistId) newErrors.artistId = "Please select an artist.";
+    if (!departmentId) newErrors.departmentId = "Please select a department.";
+    if (!CreationYear) newErrors.CreationYear = "Creation year is required.";
+    if (!medium) newErrors.medium = "Please select a medium.";
+    if (!height) newErrors.height = "Height is required.";
+    if (!width) newErrors.width = "Width is required.";
+    if (!acquisitionDate) newErrors.acquisitionDate = "Acquisition date is required.";
+    if (!condition) newErrors.condition = "Please select a condition.";
+    if (!description) newErrors.description = "Description is required.";
+
+    // Additional validation for custom fields
+    if (medium === "Other") {
+      if (!customMedium) {
+        newErrors.customMedium = "Please specify the medium.";
+      } else if (mediums.includes(customMedium)) {
+        newErrors.customMedium = "This medium already exists in the list. Please select it from the dropdown.";
+      }
+    }
+    if (condition === "Other") {
+      if (!customCondition) {
+        newErrors.customCondition = "Please specify the artwork condition.";
+      } else if (conditions.includes(customCondition)) {
+        newErrors.customCondition = "This condition already exists in the list. Please select it from the dropdown.";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    const newErrors = {};
+    if (!Title) newErrors.Title = "Title is required.";
+    if (!artistId) newErrors.artistId = "Please select an artist.";
+    if (!departmentId) newErrors.departmentId = "Please select a department.";
+    if (CreationYear === '') newErrors.CreationYear = "Creation year is required.";  // Handles 0 correctly
+    if (!medium) newErrors.medium = "Please select a medium.";
+    if (height === '') newErrors.height = "Height is required.";  // Handles 0 correctly
+    if (width === '') newErrors.width = "Width is required.";  // Handles 0 correctly
+    if (!acquisitionDate) newErrors.acquisitionDate = "Acquisition date is required.";
+    if (!condition) newErrors.condition = "Please select a condition.";
+    if (!description) newErrors.description = "Description is required.";
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    const formData = new FormData();
+    formData.append('Title', Title);
+    formData.append('artist_id', artistId);
+    formData.append('department_id', departmentId);
+    formData.append('CreationYear', CreationYear);
+    formData.append('Medium', medium === 'Other' ? customMedium : medium);
+    formData.append('height', height);
+    formData.append('width', width);
+    formData.append('depth', depth);
+    formData.append('acquisition_date', acquisitionDate);
+    formData.append('ArtworkCondition', condition === 'Other' ? customCondition : condition);
+    formData.append('location', location);
+    formData.append('price', price);
+    formData.append('Description', description);
+    if (image) formData.append('image', image);
+
+    try {
+      await axios.patch(`${config.backendUrl}/artwork/${artwork.ArtworkID}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      onRefresh();
+      onModalRefresh();
+      onClose();
+    } catch (error) {
+      console.error('Error updating artwork:', error);
+      setError('Failed to update artwork');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Edit Artwork</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <label>Image
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+      </label>
+      
+      <label>Title *
+        <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
+        {errors.Title && <p style={{ color: 'red' }}>{errors.Title}</p>}
+      </label>
+
+      <label>Artist *
+        <select value={artistId} onChange={(e) => setArtistId(e.target.value)}>
+          <option value="">Select Artist</option>
+          {artists.map((artist) => (
+            <option key={artist.ArtistID} value={artist.ArtistID}>{artist.name_}</option>
+          ))}
+        </select>
+        {errors.artistId && <p style={{ color: 'red' }}>{errors.artistId}</p>}
+      </label>
+
+      <label>Department *
+        <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
+          <option value="">Select Department</option>
+          {departments.map((department) => (
+            <option key={department.DepartmentID} value={department.DepartmentID}>{department.Name}</option>
+          ))}
+        </select>
+        {errors.departmentId && <p style={{ color: 'red' }}>{errors.departmentId}</p>}
+      </label>
+
+      <label>Creation Year *
+        <input type="number" value={CreationYear} onChange={(e) => setCreationYear(e.target.value)} />
+        {errors.CreationYear && <p style={{ color: 'red' }}>{errors.CreationYear}</p>}
+      </label>
+
+      <label>Medium *
+        <select value={medium} onChange={(e) => setMedium(e.target.value)}>
+          <option value="">Select Medium</option>
+          {mediums.map((med) => <option key={med} value={med}>{med}</option>)}
+          <option value="Other">Other</option>
+        </select>
+        {medium === 'Other' && (
+          <input type="text" placeholder="Specify medium" value={customMedium} onChange={(e) => setCustomMedium(e.target.value)} />
+        )}
+        {errors.medium && <p style={{ color: 'red' }}>{errors.medium}</p>}
+        {errors.customMedium && <p style={{ color: 'red' }}>{errors.customMedium}</p>}
+      </label>
+
+      <label>Height (inches) *
+        <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+        {errors.height && <p style={{ color: 'red' }}>{errors.height}</p>}
+      </label>
+
+      <label>Width (inches) *
+        <input type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
+        {errors.width && <p style={{ color: 'red' }}>{errors.width}</p>}
+      </label>
+
+      <label>Depth (inches)
+        <input type="number" value={depth} onChange={(e) => setDepth(e.target.value)} />
+      </label>
+
+      <label>Acquisition Date *
+        <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)} />
+        {errors.acquisitionDate && <p style={{ color: 'red' }}>{errors.acquisitionDate}</p>}
+      </label>
+
+      <label>Condition *
+        <select value={condition} onChange={(e) => setCondition(e.target.value)}>
+          <option value="">Select Condition</option>
+          {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
+          <option value="Other">Other</option>
+        </select>
+        {condition === 'Other' && (
+          <input type="text" placeholder="Specify condition" value={customCondition} onChange={(e) => setCustomCondition(e.target.value)} />
+        )}
+        {errors.condition && <p style={{ color: 'red' }}>{errors.condition}</p>}
+        {errors.customCondition && <p style={{ color: 'red' }}>{errors.customCondition}</p>}
+      </label>
+
+      <label>Location
+        <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+      </label>
+
+      <label>Price
+        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+      </label>
+
+      <label>Description *
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+        {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
+      </label>
+
+      <button onClick={onClose}>Cancel</button>
+      <button onClick={handleSave} disabled={!hasChanges}>Save</button>
+    </div>
+  );
+};
+
+const ConfirmDeleteArtworkModal = ({ onConfirm, onCancel }) => {
+  return (
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+        <h2>Are you sure you want to delete this artwork?</h2>
+        <p>This action cannot be undone.</p>
+        <div className={styles.buttonContainer}>
+          <button onClick={onCancel}>Cancel</button>
+          <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+        </div>
       </div>
     </div>
   );
@@ -176,7 +512,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
   useEffect(() => {
     const fetchNationalities = async () => {
       try {
-        const response = await axios.get(`${config.backendUrl}/api/nationalities`);
+        const response = await axios.get(`${config.backendUrl}/nationalities`);
         setNationalities(response.data);
       } catch (error) {
         console.error('Error fetching nationalities:', error);
@@ -251,20 +587,19 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
     });
 };
 
-
   return (
     <div>
       <h2>Edit Artist</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <label>
-          Change Image:
+          Change Image
           <input
               type="file"
               onChange={(e) => setImage(e.target.files[0])}
           />
       </label>
       <label>
-        Name:
+        Name *
         <input
           type="text"
           value={name}
@@ -273,7 +608,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         />
       </label>
       <label>
-        Gender:
+        Gender *
         <select 
           value={gender} 
           onChange={(e) => setGender(e.target.value)} 
@@ -285,7 +620,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         </select>
       </label>
       <label>
-        Nationality:
+        Nationality *
         <select 
           value={nationality} 
           onChange={(e) => setNationality(e.target.value)} 
@@ -297,7 +632,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         </select>
       </label>
       <label>
-        Birth Year:
+        Birth Year *
         <input
           type="number"
           value={birthYear}
@@ -306,7 +641,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         />
       </label>
       <label>
-        Death Year:
+        Death Year
         <input
           type="number"
           value={deathYear}
@@ -314,7 +649,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         />
       </label>
       <label>
-        Description:
+        Description *
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
