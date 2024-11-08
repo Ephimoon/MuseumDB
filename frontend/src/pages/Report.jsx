@@ -132,6 +132,7 @@ const Report = () => {
             item_category: itemCategory,
             payment_method: paymentMethod,
             item_id: itemId,
+            user_type_id: userTypeId === "Both" ? availableUserTypes.map((user) => user.role_name) : userTypeId
         };
 
         // Retrieve user credentials from localStorage
@@ -162,22 +163,22 @@ const Report = () => {
     const handlePriceCategoryChange = (e) => {
         const selectedValue = e.target.value;
     
-        if (selectedValue === "All Categories") {
-            // If "All Categories" is selected, add or clear all categories
+        if (selectedValue === "All Price Categories") {
+            // If "All Price Categories" is selected, add or clear All Price Categories
             setPriceCategory((prevCategories) => {
-                if (prevCategories.includes("All Categories")) {
+                if (prevCategories.includes("All Price Categories")) {
                     // If already selected, deselect all
                     return [];
                 } else {
-                    // Select all categories
-                    return ["All Categories", ...availablePriceCategories.map((pcategory) => pcategory.price_category)];
+                    // Select All Price Categories
+                    return ["All Price Categories", ...availablePriceCategories.map((pcategory) => pcategory.price_category)];
                 }
             });
         } else {
             // Handle individual category selection
             setPriceCategory((prevCategories) => {
-                // Remove "All Categories" if any other category is selected individually
-                const updatedCategories = prevCategories.includes("All Categories")
+                // Remove "All Price Categories" if any other category is selected individually
+                const updatedCategories = prevCategories.includes("All Price Categories")
                     ? availablePriceCategories.map((pcategory) => pcategory.price_category)
                     : prevCategories;
     
@@ -192,17 +193,17 @@ const Report = () => {
     
     const removeCategory = (category) => {
         setPriceCategory((prevCategories) => {
-            // If "All Categories" is being removed, deselect everything
-            if (category === "All Categories") {
+            // If "All Price Categories" is being removed, deselect everything
+            if (category === "All Price Categories") {
                 return [];
             }
     
             // Otherwise, remove the selected category
             const updatedCategories = prevCategories.filter((cat) => cat !== category);
     
-            // If all categories are deselected, also remove "All Categories"
+            // If All Price Categories are deselected, also remove "All Price Categories"
             if (updatedCategories.length === availablePriceCategories.length) {
-                return updatedCategories.filter((cat) => cat !== "All Categories");
+                return updatedCategories.filter((cat) => cat !== "All Price Categories");
             }
     
             return updatedCategories;
@@ -452,8 +453,8 @@ const Report = () => {
                                         onChange={handlePriceCategoryChange}
                                         value="" // Set to empty string to reset after each selection
                                     >
-                                        <option value="">Select Categories</option>
-                                        <option value="All Categories">All Categories</option>
+                                        <option value="">Select Price Categories</option>
+                                        <option value="All Price Categories">All Price Categories</option>
                                         {availablePriceCategories.map((pcategory, index) => (
                                             <option key={index} value={pcategory.price_category}>
                                                 {pcategory.price_category}
@@ -483,6 +484,7 @@ const Report = () => {
                                         onChange={(e) => setUserTypeId(e.target.value)}
                                     >
                                         <option value="">All User Types</option>
+                                        <option value="Both">Both</option> {/* Add "Both" option */}
                                         {availableUserTypes.map((usertype) => (
                                             <option key={usertype.role_name} value={usertype.role_name}>
                                                 {usertype.role_name}
