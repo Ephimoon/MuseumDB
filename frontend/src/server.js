@@ -477,6 +477,25 @@ app.delete('/artist/:id', async (req, res) => {
     }
 });
 
+app.get('/ticket', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM ticket');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching ticket table:', error);
+        res.status(500).json({ message: 'Server error fetching ticket table.' });
+    }
+});
+
+app.get('/user-type', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM roles WHERE id = 3 OR id = 4');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching roles table:', error);
+        res.status(500).json({ message: 'Server error fetching roles table.' });
+    }
+});
 
 // ----- (MELANIE DONE) ---------------------------------------------------------------------------
 
