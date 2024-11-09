@@ -7,10 +7,8 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EmailIcon from '@mui/icons-material/Email';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
-import TicketBackground from '../assets/TicketsBackground.png';
-import { toast } from 'react-toastify';
-import AccountIcon from '@mui/icons-material/AccountBox';
-import LockIcon from '@mui/icons-material/Lock';
+import TicketBackground from '../assets/TicketsBackground.png'; // Use the same background image
+
 const Register = () => {
     const [formData, setFormData] = useState({
         firstName: '',
@@ -48,8 +46,7 @@ const Register = () => {
         }
 
         try {
-            const registerUrl = `http://localhost:5000/register`;
-            const response = await fetch(registerUrl, {
+            const response = await fetch(`http://localhost:5000/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),

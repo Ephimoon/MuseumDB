@@ -3,6 +3,7 @@ import React, { useState, useContext } from 'react';
 import { Modal, Box, Typography, Button, TextField, InputLabel, Select, MenuItem } from '@mui/material';
 import { styled } from '@mui/system';
 import { CartContext } from './CartContext';
+import config from '../config';
 import axios from 'axios';
 
 const StyledButton = styled(Button)({

@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { CartContext } from './CartContext';
+import config from '../config';
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -48,7 +49,7 @@ const MFAShopCard = ({ item, onCardClick }) => {
     const { addToCart } = useContext(CartContext);
 
     const getImageUrl = (itemId) => {
-        return `http://localhost:5000/giftshopitems/${itemId}/image`;
+        return `${config.backendUrl}/giftshopitems/${itemId}/image`;
     };
 
     const isOutOfStock = item.quantity === 0;

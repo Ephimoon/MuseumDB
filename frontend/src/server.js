@@ -1,15 +1,14 @@
-// server.js
-
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+//require('dotenv').config();
 const app = express();
 const port = 5000; // Change to 6000 when you push to GitHub
 
-const allowedOrigins = ['http://localhost:3000', // Local development frontend
+const allowedOrigins = [
+    'http://localhost:3000', // Local development frontend
     'http://localhost:3002', // Updated localhost port if needed
     'https://black-desert-0587dbd10.5.azurestaticapps.net/' // Replace with your Azure Static Web App URL
 ];
@@ -83,39 +82,155 @@ const roleMappings = {
 
 // ----- (MELANIE) --------------------------------------------------------------------------------
 
-// Query artwork table
+// rtwork images
+app.use('/assets/artworks', express.static(path.join(__dirname, 'assets/artworks')));
+const artworkStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'assets/artworks')); // Save to frontend/src/assets/artworks
+    },
+    filename: (req, file, cb) => {
+        const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, safeFileName);
+    }
+});
+const uploadArtworkImage = multer({ storage: artworkStorage });
+
 app.get('/artwork', async (req, res) => {
-    const sql = 'SELECT * FROM artwork';
     try {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
         console.error('Error fetching artwork:', err);
-        res.status(500).json({message: "Error fetching artwork table"});
+        res.status(500).json({ message: "Error fetching artwork table" });
     }
 });
 
-// Query departments table
+app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) => {
+    const artworkId = req.params.id;
+    const { Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition } = req.body;
+    const image = req.file ? req.file.filename : null;
+
+    // Build the SQL query dynamically based on provided fields
+    const fields = [];
+    const values = [];
+
+    if (Title) {
+        fields.push('Title = ?');
+        values.push(Title);
+    }
+    if (artist_id) {
+        fields.push('artist_id = ?');
+        values.push(artist_id);
+    }
+    if (department_id) {
+        fields.push('department_id = ?');
+        values.push(department_id);
+    }
+    if (Description) {
+        fields.push('Description = ?');
+        values.push(Description);
+    }
+    if (CreationYear) {
+        fields.push('CreationYear = ?');
+        values.push(CreationYear);
+    }
+    if (price !== undefined) {
+        fields.push('price = ?');
+        values.push(price || null);
+    }
+    if (Medium) {
+        fields.push('Medium = ?');
+        values.push(Medium);
+    }
+    if (height) {
+        fields.push('height = ?');
+        values.push(height);
+    }
+    if (width) {
+        fields.push('width = ?');
+        values.push(width);
+    }
+    if (depth !== undefined) {
+        fields.push('depth = ?');
+        values.push(depth || null);
+    }
+    if (acquisition_date) {
+        fields.push('acquisition_date = ?');
+        values.push(acquisition_date);
+    }
+    if (location) {
+        fields.push('location = ?');
+        values.push(location || null);
+    }
+    if (ArtworkCondition) {
+        fields.push('ArtworkCondition = ?');
+        values.push(ArtworkCondition);
+    }
+    if (image) { // Only update the image if a new one is provided
+        fields.push('image = ?');
+        values.push(image);
+    }
+
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+
+    // Add the artworkId to the end of values array for the WHERE clause
+    values.push(artworkId);
+
+    const query = `UPDATE artwork SET ${fields.join(', ')} WHERE ArtworkID = ?`;
+
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Artwork updated successfully.' });
+    } catch (error) {
+        console.error('Error updating artwork:', error);
+        res.status(500).json({ message: 'Server error updating artwork.' });
+    }
+});
+
+// only delete artwork
+app.delete('/artwork/:id', async (req, res) => {
+    const artworkId = req.params.id;
+    try {
+        await db.query('DELETE FROM artwork WHERE ArtworkID = ?', [artworkId]);
+        res.status(200).json({ message: 'Artwork deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting artwork:', error);
+        res.status(500).json({ message: 'Server error deleting artwork' });
+    }
+});
+
 app.get('/department', async (req, res) => {
-    const sql = 'SELECT * FROM department';
     try {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
         console.error('Error fetching department:', err);
-        res.status(500).json({message: "Error fetching department table"});
+        res.status(500).json({ message: "Error fetching department table" });
     }
 });
 
-// Query artist table
+// artist images
+app.use('/assets/artists', express.static(path.join(__dirname, 'assets/artists')));
+const artistStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
+    },
+    filename: (req, file, cb) => {
+      const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      cb(null, safeFileName);
+    }
+});
+const uploadArtistImage = multer({ storage: artistStorage });
+
 app.get('/artist', async (req, res) => {
-    const sql = 'SELECT * FROM artist';
     try {
         const [result] = await db.query(sql);
         res.json(result);
     } catch (err) {
         console.error('Error fetching artist:', err);
-        res.status(500).json({message: "Error fetching artist table"});
+        res.status(500).json({ message: "Error fetching artist table" });
     }
 });
 
@@ -170,8 +285,8 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const [userRows] = await db.query(`
-            SELECT user_id, username, password, role_id, is_deleted
+        const [user] = await db.query(`
+            SELECT users.*, roles.role_name
             FROM users
             WHERE username = ?
         `, [username]);
@@ -189,14 +304,17 @@ app.post('/login', async (req, res) => {
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(400).json({message: 'Invalid username or password.'});
+            return res.status(400).json({ message: 'Invalid username or password.' });
         }
 
         // Map role_id to role_name
         const roleName = roleMappings[user.role_id] || 'unknown';
 
         res.status(200).json({
-            message: 'Login successful!', userId: user.user_id, role: roleName, username: user.username,
+            message: 'Login successful!',
+            userId: user[0].user_id,
+            role: user[0].role_name,
+            username: user[0].username, // Include username in response if needed
         });
     } catch (error) {
         console.error('Server error during login:', error);
@@ -1176,7 +1294,10 @@ app.get('/api/events', async (req, res) => {
 app.get('/api/events/:id/members', async (req, res) => {
     const eventId = req.params.id;
     try {
-        const [result] = await db.query('SELECT * FROM membership WHERE event_id = ?', [eventId]);
+        const [result] = await db.query(`SELECT DISTINCT membership.fname, membership.lname 
+                                        FROM events_transaction 
+                                        JOIN membership ON events_transaction.membership_id = membership.membership_id
+                                        WHERE event_id = ?`, [eventId]);
         res.json(result);
     } catch (error) {
         console.error('Error fetching members:', error);
@@ -1184,9 +1305,122 @@ app.get('/api/events/:id/members', async (req, res) => {
     }
 });
 
+// Fetch report data for a specific event
+app.get('/api/events/:id/report', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query('SELECT eventName, totalMembersSignedUp, totalRevenue FROM EventReport WHERE eventID = ?',
+            [id]);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Report not found for the specified event.' });
+        }
+        res.json(result[0]);
+    }
+    catch (error){
+        console.error('Error fetching event report:', error);
+        res.status(500).json({ message: 'Server error fetching event report.' });
+    }
+})
+
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
 // ----- (DENNIS) ---------------------------------------------------------------------------------
+
+
+// Membership registration endpoint
+app.post('/membership-registration', async (req, res) => {
+    console.log('Received membership registration request:', req.body);
+
+    const {
+        first_name,
+        last_name,
+        username,
+        type_of_membership
+    } = req.body;
+
+    try {
+        // Start transaction
+        await db.query('START TRANSACTION');
+
+        // Check if user exists and get their role_id
+        const [existingUser] = await db.query(
+            'SELECT user_id, role_id FROM users WHERE username = ?',
+            [username]
+        );
+
+        console.log('Existing user data:', existingUser);
+
+        if (existingUser.length === 0) {
+            await db.query('ROLLBACK');
+            console.log('User not found:', username);
+            return res.status(404).json({ error: 'User not found. Please register as a user first.' });
+        }
+
+        const user = existingUser[0];
+        console.log('User role_id:', user.role_id);
+
+        // Check if user already has a membership
+        const [existingMembership] = await db.query(
+            'SELECT * FROM membership WHERE user_id = ?',
+            [user.user_id]
+        );
+
+        console.log('Existing membership:', existingMembership);
+
+        if (existingMembership.length > 0) {
+            await db.query('ROLLBACK');
+            console.log('User already has membership');
+            return res.status(400).json({ error: 'User already has a membership' });
+        }
+
+        if (user.role_id !== 3) {
+            await db.query('ROLLBACK');
+            console.log('Invalid role_id:', user.role_id);
+            return res.status(403).json({
+                error: user.role_id === 4
+                    ? 'User already has an active membership'
+                    : 'User must have role_id 3 to register for membership'
+            });
+        }
+
+        // Calculate expiration date (1 month from now)
+        const expirationDate = new Date();
+        expirationDate.setMonth(expirationDate.getMonth() + 1);
+
+        // Create membership record with correct column names (fname and lname)
+        const membershipResult = await db.query(
+            `INSERT INTO membership 
+            (user_id, type_of_membership, expire_date, expiration_warning, fname, lname)
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [user.user_id, type_of_membership.toLowerCase(), expirationDate, 0, first_name, last_name]
+        );
+
+        console.log('Membership creation result:', membershipResult);
+
+        // Update user's role_id to 4
+        const userUpdateResult = await db.query(
+            'UPDATE users SET role_id = 4 WHERE user_id = ?',
+            [user.user_id]
+        );
+
+        console.log('User role update result:', userUpdateResult);
+
+        // Commit transaction
+        await db.query('COMMIT');
+        console.log('Transaction committed successfully');
+        res.status(201).json({ message: 'Membership registration successful' });
+
+    } catch (error) {
+        // Rollback transaction on error
+        await db.query('ROLLBACK');
+        console.error('Error in membership registration:', error);
+        res.status(500).json({ error: 'Internal server error during membership registration: ' + error.message });
+    }
+});
+
+// Altered Leo's login backend to accomodate for membership expiration alert trigger
+
+
 
 // (Assuming DENNIS's endpoints are already correctly implemented)
 // ----- (DENNIS DONE) ----------------------------------------------------------------------------
@@ -1195,3 +1429,4 @@ app.get('/api/events/:id/members', async (req, res) => {
 app.listen(port, () => {
     console.log(`Server Running on http://localhost:${port}`);
 });
+

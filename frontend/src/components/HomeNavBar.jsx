@@ -54,6 +54,21 @@ const Navbar = () => {
         }
     };
 
+    return (
+        <nav style={{ backgroundColor: navBackground }} className="navbar">
+            <div className="navbar-container">
+                {/* Left Side: Logo and Navigation Links */}
+                <div className="left-side">
+                    <img onClick={() => navigate('/')} src={logo} alt="MFAH" className="logo" />
+                    <ul className="nav-links">
+                        <li><a href="/Visit">Visit</a></li>
+                        <li><a href="/ExhibitionsAndEvents">Exhibitions and Events</a></li>
+                        <li><a href="/Art">Art</a></li>
+                        {(role === 'admin' || role === 'staff') && (
+                            <li><a href="/curate-art">Curate Art</a></li>
+                        )}
+                    </ul>
+                </div>
     return (<nav style={{backgroundColor: navBackground}} className="navbar">
         <div className="navbar-container">
             {/* Left Side: Logo and Navigation Links */}

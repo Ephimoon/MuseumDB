@@ -114,22 +114,7 @@ const Visit = () => {
            </div>
 
 
-           {/* Test buttons */}
-           <div style={{ padding: '20px' }}>
-               <button
-                   onClick={() => setTestData(testScenario)}
-                   style={{
-                       marginRight: '10px',
-                       padding: '8px 16px',
-                       backgroundColor: '#ffc107',
-                       border: 'none',
-                       borderRadius: '4px',
-                       cursor: 'pointer'
-                   }}
-               >
-                   Test Individual Expiring
-               </button>
-           </div>
+           
 
 
            <footer>
