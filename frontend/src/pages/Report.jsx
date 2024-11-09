@@ -8,12 +8,10 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import config from '../config';
 
 const Report = () => {
     const [reportCategory, setReportCategory] = useState('GiftShopReport');
     const [reportType, setReportType] = useState('revenue');
-    const [reportOptionTickets, setReportOptionTickets] = useState('totalTickets'); // 'totalTickets', 'totalRevenue', or 'peakDateSold'
     const [reportPeriodType, setReportPeriodType] = useState('date_range'); // 'date_range', 'month', or 'year'
     const [startDate, setStartDate] = useState(null); // Changed to Date object
     const [endDate, setEndDate] = useState(null); // Changed to Date object
@@ -32,18 +30,28 @@ const Report = () => {
     const [reportData, setReportData] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const navigate = useNavigate();
+    const role = localStorage.getItem('role');
+    const userId = localStorage.getItem('userId');
 
-    // Fetch available options for the filters when reportType is 'revenue'
+    // Redirect non-admin and non-staff users
+    useEffect(() => {
+        if (role !== 'admin' && role !== 'staff') {
+            navigate('/'); // Redirect to home or appropriate page
+        }
+    }, [role, navigate]);
+
+    // Fetch available options for the filters when reportType is 'revenue' or 'transaction_details'
     useEffect(() => {
         if (reportType === 'revenue') {
-            if (reportCategory === 'GiftShopReport') {
-                // Fetch available items
-                axios
-                    .get(`${config.backendUrl}/giftshopitems`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailableItems(response.data))
-                    .catch((error) => console.error('Error fetching items:', error));
+            // Fetch available items
+            axios
+                .get('http://localhost:5000/giftshopitems', {
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then((response) => setAvailableItems(response.data))
+                .catch((error) => console.error('Error fetching items:', error));
 
                 // Fetch available categories
                 axios
@@ -116,6 +124,11 @@ const Report = () => {
                 setErrorMessage('Please select a year.');
                 return;
             }
+        } else if (reportPeriodType === 'single_day') {
+            if (!selectedDate) {
+                setErrorMessage('Please select a date.');
+                return;
+            }
         }
 
         setErrorMessage('');
@@ -130,6 +143,7 @@ const Report = () => {
             end_date: endDate ? endDate.toISOString().split('T')[0] : '',
             selected_month: selectedMonth ? selectedMonth.toISOString().split('T')[0].slice(0, 7) : '',
             selected_year: selectedYear ? selectedYear.getFullYear().toString() : '',
+            selected_date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
             item_category: itemCategory,
             payment_method: paymentMethod,
             item_id: itemId,
@@ -164,7 +178,7 @@ const Report = () => {
 
     const handlePriceCategoryChange = (e) => {
         const selectedValue = e.target.value;
-    
+
         if (selectedValue === "All Price Categories") {
             // If "All Price Categories" is selected, add or clear All Price Categories
             setPriceCategory((prevCategories) => {
@@ -183,7 +197,7 @@ const Report = () => {
                 const updatedCategories = prevCategories.includes("All Price Categories")
                     ? availablePriceCategories.map((pcategory) => pcategory.price_category)
                     : prevCategories;
-    
+
                 if (!updatedCategories.includes(selectedValue)) {
                     return [...updatedCategories, selectedValue];
                 } else {
@@ -192,30 +206,33 @@ const Report = () => {
             });
         }
     };
-    
+
     const removeCategory = (category) => {
         setPriceCategory((prevCategories) => {
             // If "All Price Categories" is being removed, deselect everything
             if (category === "All Price Categories") {
                 return [];
             }
-    
+
             // Otherwise, remove the selected category
             const updatedCategories = prevCategories.filter((cat) => cat !== category);
-    
+
             // If All Price Categories are deselected, also remove "All Price Categories"
             if (updatedCategories.length === availablePriceCategories.length) {
                 return updatedCategories.filter((cat) => cat !== "All Price Categories");
             }
-    
+
             return updatedCategories;
         });
     };
 
     const handleGenerateReport = () => {
         fetchReportData();
+        setIsModalOpen(true);
     };
-
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
     // Function to render report data based on report type
     const renderReportTable = () => {
         if (loading) {
@@ -226,10 +243,16 @@ const Report = () => {
             return <p>No data available for the selected report.</p>;
         }
 
+        // Check for 'revenue' report with 'single_day' period type
+        if (reportType === 'revenue' && reportPeriodType === 'single_day') {
+            return renderSingleDayRevenueReport();
+        }
+
         switch (reportType) {
             case 'revenue':
                 return renderRevenueReport();
-            // Add other report types if needed
+            case 'transaction_details':
+                return renderTransactionDetailsReport();
             default:
                 return null;
         }
@@ -281,9 +304,121 @@ const Report = () => {
         );
     };
 
+    // New function to render revenue report for 'single_day' period type
+    const renderSingleDayRevenueReport = () => {
+        // Group transactions by transaction ID to group items within the same transaction
+        const transactions = {};
+
+        reportData.forEach((item) => {
+            if (!transactions[item.transaction_id]) {
+                transactions[item.transaction_id] = {
+                    transaction_id: item.transaction_id,
+                    transaction_date: item.transaction_date,
+                    transaction_type: item.transaction_type,
+                    payment_status: item.payment_status,
+                    username: item.username,
+                    items: [],
+                    total_amount: 0,
+                };
+            }
+            transactions[item.transaction_id].items.push({
+                item_id: item.item_id,
+                item_name: item.item_name,
+                quantity: item.quantity,
+                price_at_purchase: item.price_at_purchase,
+                item_total: item.item_total,
+            });
+            transactions[item.transaction_id].total_amount += parseFloat(item.item_total);
+        });
+
+        // Convert transactions object to array
+        const transactionsArray = Object.values(transactions);
+
+        return (
+            <>
+                <table className={styles.reportTable}>
+                    <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Transaction Time</th>
+                        <th>User</th>
+                        <th>Payment Method</th>
+                        <th>Payment Status</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {transactionsArray.map((transaction, index) => (
+                        <tr key={index}>
+                            <td>{transaction.transaction_id}</td>
+                            <td>{new Date(transaction.transaction_date).toLocaleString()}</td>
+                            <td>{transaction.username}</td>
+                            <td>{transaction.transaction_type}</td>
+                            <td>{transaction.payment_status}</td>
+                            <td>
+                                {transaction.items.map((item, idx) => (
+                                    <div key={idx}>
+                                        <strong>{item.item_name}</strong> (ID: {item.item_id})<br />
+                                        Quantity: {item.quantity}<br />
+                                        Price: ${parseFloat(item.price_at_purchase).toFixed(2)}<br />
+                                        Item Total: ${parseFloat(item.item_total).toFixed(2)}<br />
+                                    </div>
+                                ))}
+                            </td>
+                            <td>${transaction.total_amount.toFixed(2)}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </>
+        );
+    };
+
+    const renderTransactionDetailsReport = () => {
+        return (
+            <table className={styles.reportTable}>
+                <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Transaction Date</th>
+                    <th>User</th>
+                    <th>Payment Method</th>
+                    <th>Payment Status</th>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Price at Purchase</th>
+                    <th>Item Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {reportData.map((item, index) => (
+                    <tr key={index}>
+                        <td>{item.transaction_id}</td>
+                        <td>{new Date(item.transaction_date).toLocaleString()}</td>
+                        <td>{item.username}</td>
+                        <td>{item.transaction_type}</td>
+                        <td>{item.payment_status}</td>
+                        <td>{item.item_id}</td>
+                        <td>{item.item_name}</td>
+                        <td>{item.quantity}</td>
+                        <td>${parseFloat(item.price_at_purchase).toFixed(2)}</td>
+                        <td>${parseFloat(item.item_total).toFixed(2)}</td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+        );
+    };
+
     // Helper functions to get and format date labels
     const getDateLabel = () => {
-        if (reportPeriodType === 'month' || reportPeriodType === 'date_range') {
+        if (
+            reportPeriodType === 'month' ||
+            reportPeriodType === 'date_range' ||
+            reportPeriodType === 'single_day'
+        ) {
             return 'Date';
         } else if (reportPeriodType === 'year') {
             return 'Month';
@@ -292,7 +427,11 @@ const Report = () => {
     };
 
     const formatDateLabel = (dateStr) => {
-        if (reportPeriodType === 'month' || reportPeriodType === 'date_range') {
+        if (
+            reportPeriodType === 'month' ||
+            reportPeriodType === 'date_range' ||
+            reportPeriodType === 'single_day'
+        ) {
             const dateObj = new Date(dateStr);
             return dateObj.toLocaleDateString();
         } else if (reportPeriodType === 'year') {
@@ -306,29 +445,135 @@ const Report = () => {
     // Function to generate PDF of the report
     const generatePDF = () => {
         const doc = new jsPDF();
-        doc.text('Revenue Report', 14, 20);
 
-        let body = reportData.map((item) => {
-            const revenue = Number(item.total_revenue);
-            const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
-            const dateLabel = formatDateLabel(item.date);
-            return [dateLabel, formattedRevenue];
-        });
+        // Check for 'revenue' report with 'single_day' period type
+        if (reportType === 'revenue' && reportPeriodType === 'single_day') {
+            doc.text('Revenue Report - Single Day', 14, 20);
 
-        // Add total revenue row
-        const totalRevenue = reportData.reduce(
-            (acc, curr) => acc + parseFloat(curr.total_revenue || 0),
-            0
-        );
-        body.push(['Total Revenue', totalRevenue.toFixed(2)]);
+            // Group transactions as in the render function
+            const transactions = {};
 
-        doc.autoTable({
-            head: [[getDateLabel(), 'Total Revenue']],
-            body: body,
-            startY: 30,
-        });
+            reportData.forEach((item) => {
+                if (!transactions[item.transaction_id]) {
+                    transactions[item.transaction_id] = {
+                        transaction_id: item.transaction_id,
+                        transaction_date: item.transaction_date,
+                        transaction_type: item.transaction_type,
+                        payment_status: item.payment_status,
+                        username: item.username,
+                        items: [],
+                        total_amount: 0,
+                    };
+                }
+                transactions[item.transaction_id].items.push({
+                    item_id: item.item_id,
+                    item_name: item.item_name,
+                    quantity: item.quantity,
+                    price_at_purchase: item.price_at_purchase,
+                    item_total: item.item_total,
+                });
+                transactions[item.transaction_id].total_amount += parseFloat(item.item_total);
+            });
 
-        doc.save('revenue_report.pdf');
+            const transactionsArray = Object.values(transactions);
+
+            let body = transactionsArray.map((transaction) => {
+                return [
+                    transaction.transaction_id,
+                    new Date(transaction.transaction_date).toLocaleString(),
+                    transaction.username,
+                    transaction.transaction_type,
+                    transaction.payment_status,
+                    transaction.items
+                        .map(
+                            (item) =>
+                                `${item.item_name} (ID: ${item.item_id})\nQty: ${item.quantity}\nPrice: $${parseFloat(
+                                    item.price_at_purchase
+                                ).toFixed(2)}\nItem Total: $${parseFloat(item.item_total).toFixed(2)}`
+                        )
+                        .join('\n----------------\n'),
+                    `$${transaction.total_amount.toFixed(2)}`,
+                ];
+            });
+
+            doc.autoTable({
+                head: [
+                    [
+                        'Transaction ID',
+                        'Transaction Time',
+                        'User',
+                        'Payment Method',
+                        'Payment Status',
+                        'Items',
+                        'Total Amount',
+                    ],
+                ],
+                body: body,
+                startY: 30,
+                styles: { fontSize: 8 },
+            });
+        } else if (reportType === 'revenue') {
+            doc.text('Revenue Report', 14, 20);
+
+            let body = reportData.map((item) => {
+                const revenue = Number(item.total_revenue);
+                const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
+                const dateLabel = formatDateLabel(item.date);
+                return [dateLabel, formattedRevenue];
+            });
+
+            // Add total revenue row
+            const totalRevenue = reportData.reduce(
+                (acc, curr) => acc + parseFloat(curr.total_revenue || 0),
+                0
+            );
+            body.push(['Total Revenue', totalRevenue.toFixed(2)]);
+
+            doc.autoTable({
+                head: [[getDateLabel(), 'Total Revenue']],
+                body: body,
+                startY: 30,
+            });
+        } else if (reportType === 'transaction_details') {
+            doc.text('Transaction Details Report', 14, 20);
+
+            let body = reportData.map((item) => {
+                return [
+                    item.transaction_id,
+                    new Date(item.transaction_date).toLocaleString(),
+                    item.username,
+                    item.transaction_type,
+                    item.payment_status,
+                    item.item_id,
+                    item.item_name,
+                    item.quantity,
+                    parseFloat(item.price_at_purchase).toFixed(2),
+                    parseFloat(item.item_total).toFixed(2),
+                ];
+            });
+
+            doc.autoTable({
+                head: [
+                    [
+                        'Transaction ID',
+                        'Transaction Date',
+                        'User',
+                        'Payment Method',
+                        'Payment Status',
+                        'Item ID',
+                        'Item Name',
+                        'Quantity',
+                        'Price at Purchase',
+                        'Item Total',
+                    ],
+                ],
+                body: body,
+                startY: 30,
+                styles: { fontSize: 8 },
+            });
+        }
+
+        doc.save(`${reportType}_report.pdf`);
     };
 
     return (
@@ -344,7 +589,6 @@ const Report = () => {
                         onChange={(e) => setReportCategory(e.target.value)}
                     >
                         <option value="GiftShopReport">Gift Shop Report</option>
-                        <option value="TicketsReport">Tickets Report</option>
                         {/* Add more report categories if needed */}
                     </select>
                 </div>
@@ -364,23 +608,6 @@ const Report = () => {
                         <option value="revenue">Revenue Report</option>
                     </select>
                 </div>
-                {reportCategory === 'TicketsReport' && (
-                    <div className={styles.formGroup}>
-                        <label htmlFor="reportOption">Report Options:</label>
-                        <select
-                            id="reportOption"
-                            value={reportOptionTickets}
-                            onChange={(e) => {
-                                setReportOptionTickets(e.target.value);
-                            }}
-                        >
-                            {/* Only revenue report is available as per your request */}
-                            <option value="totalTickets">Total Tickets</option>
-                            <option value="totalRevenue">Total Revenue</option>
-                            <option value="peakDateSold">Peak Date Sold</option>
-                        </select>
-                    </div>
-                )}
                 {/* Report Period Type Selection using Buttons */}
                 <div className={styles.formGroup}>
                     <label>Report Period:</label>
@@ -426,189 +653,148 @@ const Report = () => {
 
                 {reportType === 'revenue' && (
                     <>
-                        {reportCategory === 'GiftShopReport' && (
-                            <>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="itemCategory">Category:</label>
-                                    <select
-                                        id="itemCategory"
-                                        value={itemCategory}
-                                        onChange={(e) => setItemCategory(e.target.value)}
-                                    >
-                                        <option value="">All Categories</option>
-                                        {availableCategories.map((category, index) => (
-                                            <option key={index} value={category.category}>
-                                                {category.category}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="itemId">Item:</label>
-                                    <select
-                                        id="itemId"
-                                        value={itemId}
-                                        onChange={(e) => setItemId(e.target.value)}
-                                    >
-                                        <option value="">All Items</option>
-                                        {availableItems.map((item) => (
-                                            <option key={item.item_id} value={item.item_id}>
-                                                {item.name_}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </>
-
-                        )}
-
-                        {reportCategory === 'TicketsReport' && (
-                            <>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="priceCategory">Price Category:</label>
-                                    <select
-                                        id="priceCategory"
-                                        onChange={handlePriceCategoryChange}
-                                        value="" // Set to empty string to reset after each selection
-                                    >
-                                        <option value="">Select Price Categories</option>
-                                        <option value="All Price Categories">All Price Categories</option>
-                                        {availablePriceCategories.map((pcategory, index) => (
-                                            <option key={index} value={pcategory.price_category}>
-                                                {pcategory.price_category}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    {/* Display the selected categories as buttons */}
-                                    <div className={styles.selectedCategoriesContainer}>
-                                        {priceCategory.map((category, index) => (
-                                            <button
-                                                key={index}
-                                                className={styles.categoryButton}
-                                                onClick={() => removeCategory(category)}
-                                            >
-                                                {category} <span className={styles.closeButton}>×</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="userTypeId">User Type:</label>
-                                    <select
-                                        id="userTypeId"
-                                        value={userTypeId}
-                                        onChange={(e) => setUserTypeId(e.target.value)}
-                                    >
-                                        <option value="">All User Types</option>
-                                        <option value="Both">Both</option> {/* Add "Both" option */}
-                                        {availableUserTypes.map((usertype) => (
-                                            <option key={usertype.role_name} value={usertype.role_name}>
-                                                {usertype.role_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </>
-
-                        )}
-
                         <div className={styles.formGroup}>
-                            <label htmlFor="paymentMethod">Payment Method:</label>
+                            <label htmlFor="itemCategory">Category:</label>
                             <select
-                                id="paymentMethod"
-                                value={paymentMethod}
-                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                id="itemCategory"
+                                value={itemCategory}
+                                onChange={(e) => setItemCategory(e.target.value)}
                             >
-                                <option value="">All Payment Methods</option>
-                                {availablePaymentMethods.map((method, index) => (
-                                    <option key={index} value={method.transaction_type}>
-                                        {method.transaction_type}
+                                <option value="">All Categories</option>
+                                {availableCategories.map((category, index) => (
+                                    <option key={index} value={category.category}>
+                                        {category.category}
                                     </option>
                                 ))}
                             </select>
                         </div>
-                    </>
-                )}
 
-                {/* Date Range Inputs */}
-                {reportPeriodType === 'date_range' && (
-                    <>
                         <div className={styles.formGroup}>
-                            <label htmlFor="startDate">Start Date:</label>
+                            <label htmlFor="itemId">Item:</label>
+                            <select
+                                id="itemId"
+                                value={itemId}
+                                onChange={(e) => setItemId(e.target.value)}
+                            >
+                                <option value="">All Items</option>
+                                {availableItems.map((item) => (
+                                    <option key={item.item_id} value={item.item_id}>
+                                        {item.name_}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                            <div className={styles.formGroup}>
+                                <label htmlFor="paymentMethod">Payment Method:</label>
+                                <select
+                                    id="paymentMethod"
+                                    value={paymentMethod}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                >
+                                    <option value="">All Payment Methods</option>
+                                    {availablePaymentMethods.map((method, index) => (
+                                        <option key={index} value={method.transaction_type}>
+                                            {method.transaction_type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Date Range Inputs */}
+                    {reportPeriodType === 'date_range' && (
+                        <>
+                            <div className={styles.formGroup}>
+                                <label htmlFor="startDate">Start Date:</label>
+                                <DatePicker
+                                    selected={startDate}
+                                    onChange={(date) => setStartDate(date)}
+                                    selectsStart
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    dateFormat="yyyy-MM-dd"
+                                    className={styles.datePicker}
+                                    placeholderText="Select Start Date"
+                                />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label htmlFor="endDate">End Date:</label>
+                                <DatePicker
+                                    selected={endDate}
+                                    onChange={(date) => setEndDate(date)}
+                                    selectsEnd
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    minDate={startDate}
+                                    dateFormat="yyyy-MM-dd"
+                                    className={styles.datePicker}
+                                    placeholderText="Select End Date"
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {/* Month Picker Input */}
+                    {reportPeriodType === 'month' && (
+                        <div className={styles.formGroup}>
+                            <label htmlFor="selectedMonth">Select Month:</label>
                             <DatePicker
-                                selected={startDate}
-                                onChange={(date) => setStartDate(date)}
-                                selectsStart
-                                startDate={startDate}
-                                endDate={endDate}
-                                dateFormat="yyyy-MM-dd"
+                                selected={selectedMonth}
+                                onChange={(date) => setSelectedMonth(date)}
+                                dateFormat="yyyy-MM"
+                                showMonthYearPicker
                                 className={styles.datePicker}
-                                placeholderText="Select Start Date"
+                                placeholderText="Select Month"
                             />
                         </div>
+                    )}
+
+                    {/* Year Picker Input */}
+                    {reportPeriodType === 'year' && (
                         <div className={styles.formGroup}>
-                            <label htmlFor="endDate">End Date:</label>
+                            <label htmlFor="selectedYear">Select Year:</label>
                             <DatePicker
-                                selected={endDate}
-                                onChange={(date) => setEndDate(date)}
-                                selectsEnd
-                                startDate={startDate}
-                                endDate={endDate}
-                                minDate={startDate}
-                                dateFormat="yyyy-MM-dd"
+                                selected={selectedYear}
+                                onChange={(date) => setSelectedYear(date)}
+                                dateFormat="yyyy"
+                                showYearPicker
                                 className={styles.datePicker}
-                                placeholderText="Select End Date"
+                                placeholderText="Select Year"
                             />
                         </div>
-                    </>
-                )}
+                    )}
 
-                {/* Month Picker Input */}
-                {reportPeriodType === 'month' && (
-                    <div className={styles.formGroup}>
-                        <label htmlFor="selectedMonth">Select Month:</label>
-                        <DatePicker
-                            selected={selectedMonth}
-                            onChange={(date) => setSelectedMonth(date)}
-                            dateFormat="yyyy-MM"
-                            showMonthYearPicker
-                            className={styles.datePicker}
-                            placeholderText="Select Month"
-                        />
-                    </div>
-                )}
+                    {/* Single Day Picker Input */}
+                    {reportPeriodType === 'single_day' && (
+                        <div className={styles.formGroup}>
+                            <label htmlFor="selectedDate">Select Date:</label>
+                            <DatePicker
+                                selected={selectedDate}
+                                onChange={(date) => setSelectedDate(date)}
+                                dateFormat="yyyy-MM-dd"
+                                className={styles.datePicker}
+                                placeholderText="Select Date"
+                            />
+                        </div>
+                    )}
 
-                {/* Year Picker Input */}
-                {reportPeriodType === 'year' && (
-                    <div className={styles.formGroup}>
-                        <label htmlFor="selectedYear">Select Year:</label>
-                        <DatePicker
-                            selected={selectedYear}
-                            onChange={(date) => setSelectedYear(date)}
-                            dateFormat="yyyy"
-                            showYearPicker
-                            className={styles.datePicker}
-                            placeholderText="Select Year"
-                        />
-                    </div>
-                )}
+                    {errorMessage && (
+                        <div className={styles.errorMessage}>{errorMessage}</div>
+                    )}
 
-                {errorMessage && (
-                    <div className={styles.errorMessage}>{errorMessage}</div>
-                )}
-                <button className={styles.generateButton} onClick={handleGenerateReport}>
-                    Generate Report
-                </button>
-                {reportData.length > 0 && (
-                    <button className={styles.generateButton} onClick={generatePDF}>
-                        Download PDF
+                    <button className={styles.generateButton} onClick={handleGenerateReport}>
+                        Generate Report
                     </button>
-                )}
+                    {reportData.length > 0 && (
+                        <button className={styles.generateButton} onClick={generatePDF}>
+                            Download PDF
+                        </button>
+                    )}
+                </div>
+                <div className={styles.tableContainer}>{renderReportTable()}</div>
             </div>
-            <div className={styles.tableContainer}>{renderReportTable()}</div>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-/* src/css/GiftShopFormModal.module.css */
+/* src/css/UserFormModal.module.css */
 
 /* Modal styling */
 .modal {
@@ -14,7 +14,7 @@
     z-index: 1000;
 }
 
-.modal_content {
+.modalContent {
     background: #FFFFFF;
     padding: 20px;
     width: 500px;
@@ -24,7 +24,7 @@
     position: relative;
 }
 
-.close_button {
+.closeButton {
     position: absolute;
     top: 10px;
     right: 15px;
@@ -60,8 +60,9 @@
 }
 
 .formContainer input[type="text"],
-.formContainer input[type="number"],
-.formContainer input[type="file"] {
+.formContainer input[type="email"],
+.formContainer input[type="date"],
+.formContainer select {
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;
@@ -71,7 +72,8 @@
     color: #352F36;
 }
 
-.formContainer input:focus {
+.formContainer input:focus,
+.formContainer select:focus {
     border-color: #BD2859;
     outline: none;
 }
@@ -98,16 +100,4 @@
 
 .formButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
-}
-
-/* Log Details Preformatted Text */
-.logDetails {
-    text-align: left;
-    background-color: #f1f1f1;
-    padding: 15px;
-    border-radius: 5px;
-    max-height: 400px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
 }

@@ -1,3 +1,4 @@
+// src/pages/ProfilePage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -5,9 +6,10 @@ import {
 } from '@mui/material';
 import HomeNavBar from '../components/HomeNavBar';
 import TicketBackground from '../assets/TicketsBackground.png';
-import '../css/ProfilePage.css'; // Import updated CSS file
-import dayjs from "dayjs";
-import config from '../config';
+import '../css/ProfilePage.css';
+import dayjs from 'dayjs';
+import ChangePasswordModal from '../components/ChangePasswordModal';
+import { toast } from 'react-toastify';
 
 const ProfilePage = () => {
     const [userData, setUserData] = useState({
@@ -17,23 +19,28 @@ const ProfilePage = () => {
         username: '',
         email: '',
     });
-    const [message, setMessage] = useState('');
+    const [errors, setErrors] = useState({});
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
     const userId = localStorage.getItem('userId');
     const role = localStorage.getItem('role');
 
     useEffect(() => {
-        axios.get(`${config.backendUrl}/users/${userId}`, {
-            headers: { 'user-id': userId, role },
-        })
-            .then(response => {
+        axios
+            .get(`http://localhost:5000/users/${userId}`, {
+                headers: { 'user-id': userId, role },
+            })
+            .then((response) => {
                 const data = response.data;
                 setUserData({
                     ...data,
                     dateOfBirth: dayjs(data.dateOfBirth).format('YYYY-MM-DD'),
                 });
             })
-            .catch(error => console.error('Error fetching user data:', error));
+            .catch((error) => {
+                console.error('Error fetching user data:', error);
+                toast.error('Error fetching user data.');
+            });
     }, [userId, role]);
 
     const handleChange = (e) => {
@@ -43,11 +50,40 @@ const ProfilePage = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.put(`${config.backendUrl}/users/${userId}`, userData, {
-            headers: { 'user-id': userId, role },
-        })
-            .then(response => setMessage('Profile updated successfully!'))
-            .catch(error => console.error('Error updating profile:', error));
+
+        // Validation
+        const newErrors = {};
+        if (!userData.firstName) newErrors.firstName = 'First name is required';
+        if (!userData.lastName) newErrors.lastName = 'Last name is required';
+        if (!userData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+        if (!userData.email) newErrors.email = 'Email is required';
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            Object.values(newErrors).forEach((error) => toast.error(error));
+            return;
+        }
+
+        axios
+            .put(`http://localhost:5000/users/${userId}`, userData, {
+                headers: { 'user-id': userId, role },
+            })
+            .then(() => {
+                toast.success('Profile updated successfully!');
+            })
+            .catch((error) => {
+                console.error('Error updating profile:', error);
+                toast.error('Error updating profile.');
+            });
+    };
+
+    const handleOpenPasswordModal = () => {
+        setIsPasswordModalOpen(true);
+    };
+
+    const handleClosePasswordModal = () => {
+        setIsPasswordModalOpen(false);
     };
 
     return (
@@ -82,7 +118,6 @@ const ProfilePage = () => {
                     <Typography component="h1" variant="h5" className="auth-title">
                         Your Profile
                     </Typography>
-                    {message && <Typography color="success" sx={{ mt: 2 }}>{message}</Typography>}
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
                         <TextField
                             margin="normal"
@@ -92,7 +127,7 @@ const ProfilePage = () => {
                             name="username"
                             value={userData.username}
                             InputProps={{ readOnly: true }}
-                            className="read-only-input" // Apply gray style to read-only field
+                            className="read-only-input"
                         />
                         <TextField
                             margin="normal"
@@ -103,6 +138,8 @@ const ProfilePage = () => {
                             value={userData.firstName}
                             onChange={handleChange}
                             required
+                            error={!!errors.firstName}
+                            helperText={errors.firstName}
                         />
                         <TextField
                             margin="normal"
@@ -113,6 +150,8 @@ const ProfilePage = () => {
                             value={userData.lastName}
                             onChange={handleChange}
                             required
+                            error={!!errors.lastName}
+                            helperText={errors.lastName}
                         />
                         <TextField
                             margin="normal"
@@ -125,6 +164,8 @@ const ProfilePage = () => {
                             onChange={handleChange}
                             required
                             InputLabelProps={{ shrink: true }}
+                            error={!!errors.dateOfBirth}
+                            helperText={errors.dateOfBirth}
                         />
                         <TextField
                             margin="normal"
@@ -135,6 +176,8 @@ const ProfilePage = () => {
                             value={userData.email}
                             onChange={handleChange}
                             required
+                            error={!!errors.email}
+                            helperText={errors.email}
                         />
                         <Button
                             type="submit"
@@ -146,9 +189,26 @@ const ProfilePage = () => {
                         >
                             Update Profile
                         </Button>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handleOpenPasswordModal}
+                            sx={{ mb: 2 }}
+                        >
+                            Change Password
+                        </Button>
                     </Box>
                 </Box>
             </Container>
+
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                open={isPasswordModalOpen}
+                onClose={handleClosePasswordModal}
+                userId={userId}
+                role={role}
+            />
         </div>
     );
 };

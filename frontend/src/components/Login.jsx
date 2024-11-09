@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, InputAdornment, CssBaseline, Alert, Snackbar } from '@mui/material';
+import { Box, Button, TextField, Typography, InputAdornment, CssBaseline } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
@@ -8,26 +8,32 @@ import IconButton from '@mui/material/IconButton';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
+import { toast } from 'react-toastify';
 import config from '../config';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
-    const [warningOpen, setWarningOpen] = useState(false);
-    const [expiryDate, setExpiryDate] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-    
+
         const newErrors = {};
         if (!username) newErrors.username = 'Username is required';
         if (!password) newErrors.password = 'Password is required';
         setErrors(newErrors);
-    
+
         if (Object.keys(newErrors).length > 0) return;
-    
+
+
+        if (Object.keys(newErrors).length > 0) {
+            // Display validation errors using toast
+            Object.values(newErrors).forEach((error) => toast.error(error));
+            return;
+        }
+
         try {
             const loginUrl = `${config.backendUrl}/login`;
             console.log("Login Endpoint URL:", loginUrl);
@@ -36,14 +42,13 @@ const Login = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
-                
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
-    
+
                 // Store warning data if exists
                 if (data.membershipWarning) {
                     const formattedDate = new Date(data.expireDate).toLocaleDateString('en-US', {
@@ -55,12 +60,20 @@ const Login = () => {
                     localStorage.setItem('membershipWarning', 'true');
                     localStorage.setItem('expiryDate', formattedDate);
                 }
-    
+
                 // Navigate based on role
                 if (data.role === 'admin') navigate('/');
                 else if (data.role === 'staff') navigate('/giftshop-admin');
                 else navigate('/');
-    
+
+
+                toast.success('Login successful!');
+                // Redirect based on role
+                if (data.role === 'admin') navigate('/AdminDashBoard'); // Adjust route as needed
+                else if (data.role === 'staff') navigate('/StaffDashboard');
+                else if (data.role === 'customer') navigate('/'); // Or any other customer-specific page
+                else if (data.role === 'member') navigate('/MemberDashboard');
+                else navigate('/'); // Default route
             } else {
                 const data = await response.json();
                 setErrors({ server: data.message });
@@ -68,13 +81,6 @@ const Login = () => {
         } catch (error) {
             setErrors({ server: 'Error logging in.' });
         }
-    };
-
-    const handleWarningClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setWarningOpen(false);
     };
 
     return (
@@ -137,6 +143,7 @@ const Login = () => {
                         fullWidth
                         variant="contained"
                         className="purchase-button"
+                        sx={{ mt: 3, mb: 2 }}
                     >
                         Login
                     </Button>
@@ -184,9 +191,9 @@ const Login = () => {
                         </IconButton>
                     }
                 >
-                    <Typography 
-                        sx={{ 
-                            fontWeight: 'bold', 
+                    <Typography
+                        sx={{
+                            fontWeight: 'bold',
                             mb: 1,
                             color: '#8B6E00',
                             fontSize: '1.1rem'
