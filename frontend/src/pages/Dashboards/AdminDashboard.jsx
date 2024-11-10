@@ -31,7 +31,7 @@ const AdminDashboard = () => {
     }, [announcements]);
 
     const fetchAnnouncements = () => {
-        axios.get('${process.env.REACT_APP_API_URL}/announcements/all', {
+        axios.get(`${process.env.REACT_APP_API_URL}/announcements/all`, {
             headers: { 'user-id': userId, role },
         })
             .then(response => setAnnouncements(response.data))

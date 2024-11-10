@@ -65,7 +65,7 @@ const MFAShopModalUser = ({ item, onClose, isEditing }) => {
                 });
             } else {
                 // Create new item
-                await axios.post('${process.env.REACT_APP_API_URL}/giftshopitems', formData, {
+                await axios.post(`${process.env.REACT_APP_API_URL}/giftshopitems`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },

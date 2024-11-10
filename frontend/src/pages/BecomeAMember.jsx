@@ -73,9 +73,9 @@ const BecomeAMember = () => {
             username: formData.username,
             type_of_membership: formData.membershipType
         };
-        
+
         try {
-            const response = await fetch('${process.env.REACT_APP_API_URL}/membership-registration', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/membership-registration`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -295,8 +295,8 @@ const BecomeAMember = () => {
                         variant="contained"
                         color="primary"
                         disabled={isLoading}
-                        sx={{ 
-                            mt: 2, 
+                        sx={{
+                            mt: 2,
                             mb: 2,
                             height: 48,
                             position: 'relative'
@@ -334,11 +334,11 @@ const BecomeAMember = () => {
                     }
                 }}
             >
-                <Alert 
-                    onClose={handleSnackbarClose} 
+                <Alert
+                    onClose={handleSnackbarClose}
                     severity={snackbar.severity}
                     variant="filled"
-                    sx={{ 
+                    sx={{
                         width: '100%',
                         '& .MuiAlert-message': {
                             width: '100%',
