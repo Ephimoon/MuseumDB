@@ -1,13 +1,26 @@
-// src/pages/Register.jsx
-
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, InputAdornment, CssBaseline, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import {
+    Box,
+    Button,
+    TextField,
+    Typography,
+    InputAdornment,
+    CssBaseline,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel
+} from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EmailIcon from '@mui/icons-material/Email';
+import AccountIcon from '@mui/icons-material/AccountBox'; // Import AccountIcon
+import LockIcon from '@mui/icons-material/Lock'; // Import LockIcon
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
-import TicketBackground from '../assets/TicketsBackground.png'; // Use the same background image
+import TicketBackground from '../assets/TicketsBackground.png';
+import { toast } from 'react-toastify'; // Import toast
+// config
 
 const Register = () => {
     const [formData, setFormData] = useState({

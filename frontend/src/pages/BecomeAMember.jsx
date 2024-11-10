@@ -75,7 +75,7 @@ const BecomeAMember = () => {
         };
         
         try {
-            const response = await fetch('http://localhost:8080/membership-registration', {
+            const response = await fetch('http://localhost:5000/membership-registration', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

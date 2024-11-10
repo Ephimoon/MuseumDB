@@ -2,7 +2,6 @@ import React, {useState, useEffect, useRef} from 'react'
 import { useLocation } from 'react-router-dom';
 import styles from '../css/ArtworkCard.module.css';
 import axios from 'axios';
-import config from '../config';
 
 const ArtworkCard = ({ artwork_, onCardClick }) => {
   return (
@@ -13,7 +12,7 @@ const ArtworkCard = ({ artwork_, onCardClick }) => {
           className={styles.card}
           onClick={() => onCardClick(art)}
         >
-          <img src={`${config.backendUrl}/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
+          <img src={`http://localhost:5000/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
           <h1>{art.Title}</h1>
           <p>{art.artist_name || 'Unknown Artist'}</p>
           <p>{art.CreationYear}</p>
@@ -36,7 +35,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${config.backendUrl}/artwork/${artwork.ArtworkID}`);
+      await axios.delete(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
       console.log("Artwork deleted successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -47,7 +46,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`${config.backendUrl}/artwork/${artwork.ArtworkID}`);
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
       setArtwork(response.data);
     } catch (error) {
       console.error('Error fetching updated artwork data:', error);
@@ -71,7 +70,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
         {!isEditMode ? (
           <>
-            <img src={`${config.backendUrl}/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
+            <img src={`http://localhost:5000/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
             <h2>{artwork.Title}</h2>
             <p><strong>Artist:</strong> {artwork.artist_name || 'Unknown Artist'}</p>
             <p><strong>Year:</strong> {artwork.CreationYear}</p>
@@ -97,11 +96,11 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
             )}
           </>
         ) : (
-          <EditArtworkModal 
-            artwork={artwork} 
-            onClose={() => setIsEditMode(false)} 
-            onRefresh={onRefresh} 
-            onModalRefresh={handleModalRefresh} 
+          <EditArtworkModal
+            artwork={artwork}
+            onClose={() => setIsEditMode(false)}
+            onRefresh={onRefresh}
+            onModalRefresh={handleModalRefresh}
           />
         )}
         {showConfirmDelete && (
@@ -146,10 +145,10 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
     const fetchData = async () => {
       try {
         const [artistRes, departmentsRes, mediumsRes, conditionsRes] = await Promise.all([
-          axios.get(`${config.backendUrl}/artist`),
-          axios.get(`${config.backendUrl}/department`),
-          axios.get(`${config.backendUrl}/mediums`),
-          axios.get(`${config.backendUrl}/artworkconditions`)
+          axios.get(`http://localhost:5000/artist`),
+          axios.get(`http://localhost:5000/department`),
+          axios.get(`http://localhost:5000/mediums`),
+          axios.get(`http://localhost:5000/artworkconditions`)
         ]);
         setArtists(artistRes.data);
         setDepartments(departmentsRes.data);
@@ -176,7 +175,7 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
       height !== artwork.height ||
       width !== artwork.width ||
       (depth || '') !== (artwork.depth || '') ||  // Normalize depth comparison
-      acquisitionDate !== originalDate || 
+      acquisitionDate !== originalDate ||
       condition !== artwork.ArtworkCondition ||
       (location || '') !== (artwork.location || '') ||  // Normalize location comparison
       (price || '') !== (artwork.price || '') ||  // Normalize price comparison
@@ -257,7 +256,7 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
     if (image) formData.append('image', image);
 
     try {
-      await axios.patch(`${config.backendUrl}/artwork/${artwork.ArtworkID}`, formData, {
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onRefresh();
@@ -277,7 +276,7 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
       <label>Image
         <input type="file" accept="image/*" onChange={handleImageChange} />
       </label>
-      
+
       <label>Title *
         <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
         {errors.Title && <p style={{ color: 'red' }}>{errors.Title}</p>}
@@ -396,7 +395,7 @@ const ArtistCard = ({ artist_, onCardClick }) => {
           className={styles.card}
           onClick={() => onCardClick(artist)}
         >
-          <img src={`${config.backendUrl}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
+          <img src={`http://localhost:5000/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
           <h1>{artist.name_}</h1>
         </div>
       ))}
@@ -417,7 +416,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${config.backendUrl}/artist/${artist.ArtistID}`);
+      await axios.delete(`http://localhost:5000/artist/${artist.ArtistID}`);
       console.log("Artist deleted successfully");
       onRefresh(); // Refresh the artist list
       onClose(); // Close the modal
@@ -428,7 +427,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`${config.backendUrl}/artist/${artist.ArtistID}`);
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}`);
       const updatedArtist = response.data;
       console.log('Fetched updated artist data from server:', updatedArtist);
       setArtist(updatedArtist);
@@ -451,10 +450,10 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
             &times;
           </span>
         )}
-        
+
         {!isEditMode ? (
           <>
-            <img src={`${config.backendUrl}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
+            <img src={`http://localhost:5000/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
             <h2>{artist.name_}</h2>
             <p><strong>Gender:</strong> {artist.gender}</p>
             <p><strong>Nationality:</strong> {artist.nationality || 'Not specified'}</p>
@@ -469,11 +468,11 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
             )}
           </>
         ) : (
-          <EditArtistModal 
-            artist={artist} 
-            onClose={() => setIsEditMode(false)} 
-            onRefresh={onRefresh} 
-            onModalRefresh={handleModalRefresh} 
+          <EditArtistModal
+            artist={artist}
+            onClose={() => setIsEditMode(false)}
+            onRefresh={onRefresh}
+            onModalRefresh={handleModalRefresh}
           />
         )}
         {showConfirmDelete && (
@@ -512,7 +511,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
   useEffect(() => {
     const fetchNationalities = async () => {
       try {
-        const response = await axios.get(`${config.backendUrl}/nationalities`);
+        const response = await axios.get(`http://localhost:5000/nationalities`);
         setNationalities(response.data);
       } catch (error) {
         console.error('Error fetching nationalities:', error);
@@ -531,7 +530,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
       deathYear !== initialValues.current.deathYear ||
       description !== initialValues.current.description ||
       image !== null; // Add image to check for new image selection
-  
+
     setHasChanges(changesMade);
   }, [name, gender, nationality, birthYear, deathYear, description, image]);
 
@@ -570,7 +569,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         formData.append('image', image); // Append the file only if it's selected
     }
 
-    axios.patch(`${config.backendUrl}/artist/${artist.ArtistID}`, formData, {
+    axios.patch(`http://localhost:5000/artist/${artist.ArtistID}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }
@@ -609,9 +608,9 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
       </label>
       <label>
         Gender *
-        <select 
-          value={gender} 
-          onChange={(e) => setGender(e.target.value)} 
+        <select
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
           required
         >
           <option value="Male">Male</option>
@@ -621,9 +620,9 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
       </label>
       <label>
         Nationality *
-        <select 
-          value={nationality} 
-          onChange={(e) => setNationality(e.target.value)} 
+        <select
+          value={nationality}
+          onChange={(e) => setNationality(e.target.value)}
           required
         >
           {nationalities.map((nat) => (

@@ -59,73 +59,69 @@ const Navbar = () => {
             <div className="navbar-container">
                 {/* Left Side: Logo and Navigation Links */}
                 <div className="left-side">
-                    <img onClick={() => navigate('/')} src={logo} alt="MFAH" className="logo" />
+                    <Link to="/">
+                        <img src={logo} alt="MFAH" className="logo" style={{cursor: 'pointer'}}/>
+                    </Link>
                     <ul className="nav-links">
-                        <li><a href="/Visit">Visit</a></li>
-                        <li><a href="/ExhibitionsAndEvents">Exhibitions and Events</a></li>
-                        <li><a href="/Art">Art</a></li>
-                        {(role === 'admin' || role === 'staff') && (
-                            <li><a href="/curate-art">Curate Art</a></li>
+                        <li><Link to="/Visit">Visit</Link></li>
+                        <li><Link to="/ExhibitionsAndEvents">Exhibitions and Events</Link></li>
+                        <li><Link to="/Art">Art</Link></li>
+                        <li><Link to="/MFAShop">MFA Shop</Link></li>
+                        {(['admin', 'staff'].includes(role)) && (
+                            <li className="employee-menu">
+                                <span onClick={toggleEmployeeMenu} className="employee-menu-title">
+                                    For Employee
+                                    {employeeMenuOpen ? <ExpandLessIcon className="dropdown-icon"/> :
+                                        <ExpandMoreIcon className="dropdown-icon"/>}
+                                </span>
+                                {employeeMenuOpen && (
+                                    <ul className="dropdown-menu">
+                                        {role === 'admin' && (
+                                            <>
+                                                <li><Link to="/giftshop-admin">Manage Gift Shop</Link></li>
+                                                <li><Link to="/manage-users">Manage Users</Link></li>
+                                                <li><Link to="/curate-art">Curate Art</Link></li>
+                                            </>
+                                        )}
+                                        <li><Link to="/reports">Reports</Link></li>
+                                    </ul>
+                                )}
+                            </li>
                         )}
                     </ul>
                 </div>
-    return (<nav style={{backgroundColor: navBackground}} className="navbar">
-        <div className="navbar-container">
-            {/* Left Side: Logo and Navigation Links */}
-            <div className="left-side">
-                <Link to="/">
-                    <img src={logo} alt="MFAH" className="logo" style={{cursor: 'pointer'}}/>
-                </Link>
-                <ul className="nav-links">
-                    <li><Link to="/Visit">Visit</Link></li>
-                    <li><Link to="/ExhibitionsAndEvents">Exhibitions and Events</Link></li>
-                    <li><Link to="/Art">Art</Link></li>
-                    <li><Link to="/MFAShop">MFA Shop</Link></li>
-                    {(['admin', 'staff'].includes(role)) && (<li className="employee-menu">
-                    <span onClick={toggleEmployeeMenu} className="employee-menu-title">
-                     For Employee
-                        {employeeMenuOpen ? <ExpandLessIcon className="dropdown-icon"/> :
-                            <ExpandMoreIcon className="dropdown-icon"/>}
-                     </span>
-                        {employeeMenuOpen && (<ul className="dropdown-menu">
-                            {role === 'admin' && (<>
-                                <li><Link to="/giftshop-admin">Manage Gift Shop</Link></li>
-                                <li><Link to="/manage-users">Manage Users</Link></li>
-                                {/* New Menu Item */}
-                            </>)}
-                            <li><Link to="/reports">Reports</Link></li>
-                        </ul>)}
-                    </li>)}
 
-                </ul>
+                {/* Right Side: Buttons and Cart Icon */}
+                <div className="nav-buttons">
+                    {role ? (
+                        <>
+                            <span className="welcome-message">Welcome, {username}!</span>
+                            <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
+                                Dashboard
+                            </Link>
+                            <Link to="/profile" className="btn-outline">Profile</Link>
+                            <Link to="/login" onClick={handleLogout} className="btn-outline">Logout</Link>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
+                            <Link to="/BuyTickets" className="btn-outline">Buy Tickets</Link>
+                            <Link to="/login" className="btn-outline">Login</Link>
+                            <Link to="/register" className="btn-outline">Register</Link>
+                        </>
+                    )}
+                    {location.pathname !== '/checkout' && (
+                        <div className="cart-icon" style={{position: 'relative', cursor: 'pointer'}}>
+                            <Link to="/cart">
+                                <ShoppingCartIcon fontSize="large" style={{color: '#FFFFFF'}}/>
+                                {cartItems.length > 0 && (<span className="cart-count">{cartItems.length}</span>)}
+                            </Link>
+                        </div>
+                    )}
+                </div>
             </div>
-
-            {/* Right Side: Buttons and Cart Icon */}
-            <div className="nav-buttons">
-                {role ? (<>
-                    <span className="welcome-message">Welcome, {username}!</span>
-                    <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
-                        Dashboard
-                    </Link>
-                    <Link to="/profile" className="btn-outline">Profile</Link>
-                    {/* Dashboard Button */}
-                    <Link to="/login" onClick={handleLogout} className="btn-outline">Logout</Link>
-                </>) : (<>
-                    <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
-                    <Link to="/BuyTickets" className="btn-outline">Buy Tickets</Link>
-                    <Link to="/login" className="btn-outline">Login</Link>
-                    <Link to="/register" className="btn-outline">Register</Link>
-                </>)}
-                {location.pathname !== '/checkout' && (
-                    <div className="cart-icon" style={{position: 'relative', cursor: 'pointer'}}>
-                        <Link to="/cart">
-                            <ShoppingCartIcon fontSize="large" style={{color: '#FFFFFF'}}/>
-                            {cartItems.length > 0 && (<span className="cart-count">{cartItems.length}</span>)}
-                        </Link>
-                    </div>)}
-            </div>
-        </div>
-    </nav>);
+        </nav>
+    );
 };
 
 export default Navbar;

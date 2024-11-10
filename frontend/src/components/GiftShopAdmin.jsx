@@ -1,6 +1,6 @@
 // src/pages/GiftShopAdmin.jsx
 
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import GiftShopFormModal from '../components/GiftShopForm';
 import GiftShopLogDetailsModal from '../components/GiftShopLogDetailsModal';
@@ -24,7 +24,7 @@ const GiftShopAdmin = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10; // Adjust the number of items per page as needed
 
-    // Filter state variables
+    // Filter state variables for items
     const [filterName, setFilterName] = useState('');
     const [filterCategory, setFilterCategory] = useState('');
     const [filterPriceMin, setFilterPriceMin] = useState('');
@@ -32,6 +32,14 @@ const GiftShopAdmin = () => {
     const [filterQuantity, setFilterQuantity] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterLowStock, setFilterLowStock] = useState(false); // New state for Low Stock Filter
+
+    // Filter state variables for logs
+    const [filterLogAction, setFilterLogAction] = useState('');
+    const [filterLogItemName, setFilterLogItemName] = useState('');
+    const [filterLogUser, setFilterLogUser] = useState('');
+    const [filterLogRole, setFilterLogRole] = useState('');
+    const [filterLogDateFrom, setFilterLogDateFrom] = useState('');
+    const [filterLogDateTo, setFilterLogDateTo] = useState('');
 
     useEffect(() => {
         if (isLogView) {
@@ -43,25 +51,43 @@ const GiftShopAdmin = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [items, logs, filterName, filterCategory, filterPriceMin, filterPriceMax, filterQuantity, filterStatus, filterLowStock]);
+    }, [
+        items,
+        logs,
+        filterName,
+        filterCategory,
+        filterPriceMin,
+        filterPriceMax,
+        filterQuantity,
+        filterStatus,
+        filterLowStock,
+        filterLogAction,
+        filterLogItemName,
+        filterLogUser,
+        filterLogRole,
+        filterLogDateFrom,
+        filterLogDateTo,
+    ]);
 
     // Fetch gift shop items (including deleted for admin view)
     const fetchItems = () => {
-        axios.get(`http://localhost:5000/giftshopitemsall`)
-            .then(response => setItems(response.data))
-            .catch(error => console.error('Error fetching items:', error));
+        axios
+            .get(`http://localhost:5000/giftshopitemsall`)
+            .then((response) => setItems(response.data))
+            .catch((error) => console.error('Error fetching items:', error));
     };
 
     // Fetch logs
     const fetchLogs = () => {
-        axios.get(`http://localhost:5000/giftshopitems/logs`, {
-            headers: {
-                'user-id': localStorage.getItem('userId'),
-                'role': localStorage.getItem('role'),
-            }
-        })
-            .then(response => setLogs(response.data))
-            .catch(error => console.error('Error fetching logs:', error));
+        axios
+            .get(`http://localhost:5000/giftshopitems/logs`, {
+                headers: {
+                    'user-id': localStorage.getItem('userId'),
+                    role: localStorage.getItem('role'),
+                },
+            })
+            .then((response) => setLogs(response.data))
+            .catch((error) => console.error('Error fetching logs:', error));
     };
 
     const getImageUrl = (itemId) => {
@@ -88,20 +114,26 @@ const GiftShopAdmin = () => {
 
     const handleSoftDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://localhost:5000/giftshopitems/${id}/soft-delete`, {}, {
-            headers: {'role': role, 'user-id': localStorage.getItem('userId')}
-        })
+        axios
+            .put(
+                `http://localhost:5000/giftshopitems/${id}/soft-delete`,
+                {},
+                {
+                    headers: { role: role, 'user-id': localStorage.getItem('userId') },
+                }
+            )
             .then(() => fetchItems())
-            .catch(error => console.error('Error soft deleting item:', error));
+            .catch((error) => console.error('Error soft deleting item:', error));
     };
 
     const handleHardDelete = (id) => {
         const role = localStorage.getItem('role');
-        axios.delete(`http://localhost:5000/giftshopitems/${id}/hard-delete`, {
-            headers: {'role': role, 'user-id': localStorage.getItem('userId')}
-        })
+        axios
+            .delete(`http://localhost:5000/giftshopitems/${id}/hard-delete`, {
+                headers: { role: role, 'user-id': localStorage.getItem('userId') },
+            })
             .then(() => fetchItems())
-            .catch(error => console.error('Error hard deleting item:', error));
+            .catch((error) => console.error('Error hard deleting item:', error));
     };
 
     // Confirm Restore
@@ -117,11 +149,16 @@ const GiftShopAdmin = () => {
 
     const handleRestore = (id) => {
         const role = localStorage.getItem('role');
-        axios.put(`http://localhost:5000/giftshopitems/${id}/restore`, {}, {
-            headers: {'role': role, 'user-id': localStorage.getItem('userId')}
-        })
+        axios
+            .put(
+                `http://localhost:5000/giftshopitems/${id}/restore`,
+                {},
+                {
+                    headers: { role: role, 'user-id': localStorage.getItem('userId') },
+                }
+            )
             .then(() => fetchItems())
-            .catch(error => console.error('Error restoring item:', error));
+            .catch((error) => console.error('Error restoring item:', error));
         cancelRestore();
     };
 
@@ -148,29 +185,99 @@ const GiftShopAdmin = () => {
     };
 
     // Filter items based on filter criteria
-    const filteredItems = items.filter(item => {
+    const filteredItems = items.filter((item) => {
         const matchesName = item.name_.toLowerCase().includes(filterName.toLowerCase());
         const matchesCategory = filterCategory ? item.category === filterCategory : true;
         const matchesPriceMin = filterPriceMin ? parseFloat(item.price) >= parseFloat(filterPriceMin) : true;
         const matchesPriceMax = filterPriceMax ? parseFloat(item.price) <= parseFloat(filterPriceMax) : true;
         const matchesQuantity = filterQuantity ? item.quantity === parseInt(filterQuantity) : true;
-        const matchesStatus = filterStatus ? (filterStatus === 'Active' ? item.is_deleted === 0 : item.is_deleted === 1) : true;
+        const matchesStatus = filterStatus
+            ? filterStatus === 'Active'
+                ? item.is_deleted === 0
+                : item.is_deleted === 1
+            : true;
         const matchesLowStock = filterLowStock ? item.quantity < 10 : true;
-        return matchesName && matchesCategory && matchesPriceMin && matchesPriceMax && matchesQuantity && matchesStatus && matchesLowStock;
+        return (
+            matchesName &&
+            matchesCategory &&
+            matchesPriceMin &&
+            matchesPriceMax &&
+            matchesQuantity &&
+            matchesStatus &&
+            matchesLowStock
+        );
+    });
+
+    // Filter logs based on filter criteria
+    const filteredLogs = logs.filter((log) => {
+        const matchesAction = filterLogAction
+            ? log.action.toLowerCase().includes(filterLogAction.toLowerCase())
+            : true;
+        const matchesItemName = filterLogItemName
+            ? (log.item_name || '').toLowerCase().includes(filterLogItemName.toLowerCase())
+            : true;
+        const matchesUser = filterLogUser
+            ? (log.username || '').toLowerCase().includes(filterLogUser.toLowerCase())
+            : true;
+        const matchesRole = filterLogRole
+            ? (log.role || '').toLowerCase().includes(filterLogRole.toLowerCase())
+            : true;
+        const logDate = new Date(log.timestamp);
+        const matchesDateFrom = filterLogDateFrom ? logDate >= new Date(filterLogDateFrom) : true;
+        const matchesDateTo = filterLogDateTo ? logDate <= new Date(filterLogDateTo) : true;
+
+        return (
+            matchesAction &&
+            matchesItemName &&
+            matchesUser &&
+            matchesRole &&
+            matchesDateFrom &&
+            matchesDateTo
+        );
     });
 
     // Calculate total pages and current items
-    const totalPages = isLogView ? Math.ceil(logs.length / itemsPerPage) : Math.ceil(filteredItems.length / itemsPerPage);
+    const totalPages = isLogView
+        ? Math.ceil(filteredLogs.length / itemsPerPage)
+        : Math.ceil(filteredItems.length / itemsPerPage);
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItemsToDisplay = isLogView ? logs.slice(indexOfFirstItem, indexOfLastItem) : filteredItems.slice(indexOfFirstItem, indexOfLastItem);
+
+    const currentItemsToDisplay = isLogView
+        ? filteredLogs.slice(indexOfFirstItem, indexOfLastItem)
+        : filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
     // Extract unique categories for filter dropdown
-    const uniqueCategories = [...new Set(items.map(item => item.category))];
+    const uniqueCategories = [...new Set(items.map((item) => item.category))];
+
+    // Functions to switch views and reset filters
+    const switchToLogView = () => {
+        setIsLogView(true);
+        // Clear log filters
+        setFilterLogAction('');
+        setFilterLogItemName('');
+        setFilterLogUser('');
+        setFilterLogRole('');
+        setFilterLogDateFrom('');
+        setFilterLogDateTo('');
+    };
+
+    const switchToManageItemsView = () => {
+        setIsLogView(false);
+        // Clear item filters
+        setFilterName('');
+        setFilterCategory('');
+        setFilterPriceMin('');
+        setFilterPriceMax('');
+        setFilterQuantity('');
+        setFilterStatus('');
+        setFilterLowStock(false);
+    };
 
     return (
         <div className={styles.adminContainer}>
-            <HomeNavBar/>
+            <HomeNavBar />
             <h1 className={styles.title}>Gift Shop Admin</h1>
 
             {/* Action Buttons */}
@@ -181,13 +288,19 @@ const GiftShopAdmin = () => {
                     </button>
                 )}
                 {!isLogView && (
-                    <button className={`${styles.button} ${styles.viewLogsButton}`} onClick={() => setIsLogView(true)}>
+                    <button
+                        className={`${styles.button} ${styles.viewLogsButton}`}
+                        onClick={switchToLogView}
+                    >
                         View Logs
-                    </button>)
-                }
+                    </button>
+                )}
 
                 {isLogView && (
-                    <button className={`${styles.button} ${styles.backButton}`} onClick={() => setIsLogView(false)}>
+                    <button
+                        className={`${styles.button} ${styles.backButton}`}
+                        onClick={switchToManageItemsView}
+                    >
                         Back to Manage Items
                     </button>
                 )}
@@ -215,7 +328,9 @@ const GiftShopAdmin = () => {
                         >
                             <option value="">All</option>
                             {uniqueCategories.map((category, index) => (
-                                <option key={index} value={category}>{category}</option>
+                                <option key={index} value={category}>
+                                    {category}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -275,18 +390,100 @@ const GiftShopAdmin = () => {
                             onChange={(e) => setFilterLowStock(e.target.checked)}
                         />
                     </div>
-                    <button className={styles.clearButton} onClick={() => {
-                        setFilterName('');
-                        setFilterCategory('');
-                        setFilterPriceMin('');
-                        setFilterPriceMax('');
-                        setFilterQuantity('');
-                        setFilterStatus('');
-                        setFilterLowStock(false);
-                    }}>
+                    <button
+                        className={styles.clearButton}
+                        onClick={() => {
+                            setFilterName('');
+                            setFilterCategory('');
+                            setFilterPriceMin('');
+                            setFilterPriceMax('');
+                            setFilterQuantity('');
+                            setFilterStatus('');
+                            setFilterLowStock(false);
+                        }}
+                    >
                         Clear Filters
                     </button>
                 </div>
+            )}
+
+            {/* Filter Section for Logs */}
+            {isLogView && (
+                <>
+                    <div className={styles.filterSection}>
+                        <div className={styles.filterGroup}>
+                            <label htmlFor="filterLogAction">Action:</label>
+                            <input
+                                type="text"
+                                id="filterLogAction"
+                                value={filterLogAction}
+                                onChange={(e) => setFilterLogAction(e.target.value)}
+                                placeholder="Search by action"
+                            />
+                        </div>
+                        <div className={styles.filterGroup}>
+                            <label htmlFor="filterLogItemName">Item Name:</label>
+                            <input
+                                type="text"
+                                id="filterLogItemName"
+                                value={filterLogItemName}
+                                onChange={(e) => setFilterLogItemName(e.target.value)}
+                                placeholder="Search by item name"
+                            />
+                        </div>
+                        <div className={styles.filterGroup}>
+                            <label htmlFor="filterLogUser">User:</label>
+                            <input
+                                type="text"
+                                id="filterLogUser"
+                                value={filterLogUser}
+                                onChange={(e) => setFilterLogUser(e.target.value)}
+                                placeholder="Search by user"
+                            />
+                        </div>
+                        <div className={styles.filterGroup}>
+                            <label htmlFor="filterLogRole">Role:</label>
+                            <input
+                                type="text"
+                                id="filterLogRole"
+                                value={filterLogRole}
+                                onChange={(e) => setFilterLogRole(e.target.value)}
+                                placeholder="Search by role"
+                            />
+                        </div>
+                        <div className={styles.filterGroup}>
+                            <label htmlFor="filterLogDateFrom">Date From:</label>
+                            <input
+                                type="date"
+                                id="filterLogDateFrom"
+                                value={filterLogDateFrom}
+                                onChange={(e) => setFilterLogDateFrom(e.target.value)}
+                            />
+                        </div>
+                        <div className={styles.filterGroup}>
+                            <label htmlFor="filterLogDateTo">Date To:</label>
+                            <input
+                                type="date"
+                                id="filterLogDateTo"
+                                value={filterLogDateTo}
+                                onChange={(e) => setFilterLogDateTo(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            className={styles.clearButton}
+                            onClick={() => {
+                                setFilterLogAction('');
+                                setFilterLogItemName('');
+                                setFilterLogUser('');
+                                setFilterLogRole('');
+                                setFilterLogDateFrom('');
+                                setFilterLogDateTo('');
+                            }}
+                        >
+                            Clear Filters
+                        </button>
+                    </div>
+                </>
             )}
 
             {/* Manage Items View */}
@@ -306,53 +503,60 @@ const GiftShopAdmin = () => {
                         </thead>
 
                         <tbody>
-                        {Array.isArray(currentItemsToDisplay) && currentItemsToDisplay.map(item => (
-                            <tr key={item.item_id}>
-                                <td>{item.name_}</td>
-                                <td>{item.category}</td>
-                                <td>${parseFloat(item.price).toFixed(2)}</td>
-                                <td>{item.quantity}</td>
-                                <td>{Number(item.is_deleted) === 1 ? 'Deleted' : 'Active'}</td>
-                                <td>
-                                    <img
-                                        src={getImageUrl(item.item_id)}
-                                        alt={item.name_}
-                                        className={styles.itemImage}
-                                    />
-                                </td>
-                                <td>
-                                    <button className={styles.actionButton} onClick={() => openFormModal(item)}>Edit
-                                    </button>
-                                    {Number(item.is_deleted) === 0 ? (
-                                        <>
-                                            <button
-                                                className={styles.actionButton}
-                                                onClick={() => confirmDelete(item.item_id)}
-                                            >
-                                                Delete
-                                            </button>
-                                        </>
-                                    ) : (
+                        {Array.isArray(currentItemsToDisplay) &&
+                            currentItemsToDisplay.map((item) => (
+                                <tr key={item.item_id}>
+                                    <td>{item.name_}</td>
+                                    <td>{item.category}</td>
+                                    <td>${parseFloat(item.price).toFixed(2)}</td>
+                                    <td>{item.quantity}</td>
+                                    <td>{Number(item.is_deleted) === 1 ? 'Deleted' : 'Active'}</td>
+                                    <td>
+                                        <img
+                                            src={getImageUrl(item.item_id)}
+                                            alt={item.name_}
+                                            className={styles.itemImage}
+                                        />
+                                    </td>
+                                    <td>
                                         <button
                                             className={styles.actionButton}
-                                            onClick={() => confirmRestore(item.item_id)}
+                                            onClick={() => openFormModal(item)}
                                         >
-                                            Restore
+                                            Edit
                                         </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                                        {Number(item.is_deleted) === 0 ? (
+                                            <>
+                                                <button
+                                                    className={styles.actionButton}
+                                                    onClick={() => confirmDelete(item.item_id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                className={styles.actionButton}
+                                                onClick={() => confirmRestore(item.item_id)}
+                                            >
+                                                Restore
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
 
                     {/* Pagination Controls */}
                     <div className={styles.pagination}>
-                        {Array.from({length: totalPages}, (_, index) => (
+                        {Array.from({ length: totalPages }, (_, index) => (
                             <button
                                 key={index}
                                 onClick={() => setCurrentPage(index + 1)}
-                                className={`${styles.pageButton} ${currentPage === index + 1 ? styles.activePage : ''}`}
+                                className={`${styles.pageButton} ${
+                                    currentPage === index + 1 ? styles.activePage : ''
+                                }`}
                             >
                                 {index + 1}
                             </button>
@@ -370,6 +574,7 @@ const GiftShopAdmin = () => {
                             <th>Timestamp</th>
                             <th>Action</th>
                             <th>Item ID</th>
+                            <th>Item Name</th>
                             <th>User</th>
                             <th>Role</th>
                             <th>Details</th>
@@ -377,30 +582,37 @@ const GiftShopAdmin = () => {
                         </thead>
 
                         <tbody>
-                        {Array.isArray(currentItemsToDisplay) && currentItemsToDisplay.map(log => (
-                            <tr key={log.log_id}>
-                                <td>{new Date(log.timestamp).toLocaleString()}</td>
-                                <td>{log.action}</td>
-                                <td>{log.item_id}</td>
-                                <td>{log.username || 'Unknown'}</td>
-                                <td>{log.role}</td>
-                                <td>
-                                    <button className={styles.actionButton}
-                                            onClick={() => openLogDetailsModal(log)}>View Details
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {Array.isArray(currentItemsToDisplay) &&
+                            currentItemsToDisplay.map((log) => (
+                                <tr key={log.log_id}>
+                                    <td>{new Date(log.timestamp).toLocaleString()}</td>
+                                    <td>{log.action}</td>
+                                    <td>{log.item_id}</td>
+                                    <td>{log.item_name || 'N/A'}</td>
+                                    <td>{log.username || 'Unknown'}</td>
+                                    <td>{log.role}</td>
+                                    <td>
+                                        <button
+                                            className={styles.actionButton}
+                                            onClick={() => openLogDetailsModal(log)}
+                                        >
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
 
                     {/* Pagination Controls */}
                     <div className={styles.pagination}>
-                        {Array.from({length: totalPages}, (_, index) => (
+                        {Array.from({ length: totalPages }, (_, index) => (
                             <button
                                 key={index}
                                 onClick={() => setCurrentPage(index + 1)}
-                                className={`${styles.pageButton} ${currentPage === index + 1 ? styles.activePage : ''}`}
+                                className={`${styles.pageButton} ${
+                                    currentPage === index + 1 ? styles.activePage : ''
+                                }`}
                             >
                                 {index + 1}
                             </button>
@@ -410,18 +622,15 @@ const GiftShopAdmin = () => {
             )}
 
             {/* Add/Edit Item Modal */}
-            {isFormModalOpen && (
-                <GiftShopFormModal
-                    item={selectedItem}
-                    onClose={closeFormModal}
-                />
-            )}
+            {isFormModalOpen && <GiftShopFormModal item={selectedItem} onClose={closeFormModal} />}
 
             {/* Delete Confirmation Modal */}
             {showDeleteModal && (
                 <div className={styles.modal}>
                     <div className={styles.modal_content}>
-                        <span className={styles.close_button} onClick={cancelDelete}>&times;</span>
+                        <span className={styles.close_button} onClick={cancelDelete}>
+                            &times;
+                        </span>
                         <h2>Confirm Deletion</h2>
                         <p>Do you want to soft delete or permanently delete this item?</p>
                         <div className={styles.buttonGroup}>
@@ -431,7 +640,9 @@ const GiftShopAdmin = () => {
                             <button className={styles.formButton} onClick={() => handleConfirmDelete(true)}>
                                 Hard Delete
                             </button>
-                            <button className={styles.formButton} onClick={cancelDelete}>Cancel</button>
+                            <button className={styles.formButton} onClick={cancelDelete}>
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -441,14 +652,18 @@ const GiftShopAdmin = () => {
             {showRestoreModal && (
                 <div className={styles.modal}>
                     <div className={styles.modal_content}>
-                        <span className={styles.close_button} onClick={cancelRestore}>&times;</span>
+                        <span className={styles.close_button} onClick={cancelRestore}>
+                            &times;
+                        </span>
                         <h2>Confirm Restore</h2>
                         <p>Are you sure you want to restore this item?</p>
                         <div className={styles.buttonGroup}>
                             <button className={styles.formButton} onClick={() => handleRestore(itemToRestore)}>
                                 Yes, Restore
                             </button>
-                            <button className={styles.formButton} onClick={cancelRestore}>Cancel</button>
+                            <button className={styles.formButton} onClick={cancelRestore}>
+                                Cancel
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -456,12 +671,10 @@ const GiftShopAdmin = () => {
 
             {/* Log Details Modal */}
             {showLogDetailsModal && selectedLogDetails && (
-                <GiftShopLogDetailsModal
-                    log={selectedLogDetails}
-                    onClose={closeLogDetailsModal}
-                />
+                <GiftShopLogDetailsModal log={selectedLogDetails} onClose={closeLogDetailsModal} />
             )}
-        </div>)
+        </div>
+    );
 };
 
 export default GiftShopAdmin;

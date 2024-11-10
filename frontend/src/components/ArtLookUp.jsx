@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser } from '../components/ArtworkCard';
 import styles from '../css/Art.module.css';
 import axios from 'axios';
-import config from '../config';
 
 const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, triggerRefreshArtworks }) => {
     const location = useLocation();
@@ -35,7 +34,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     const [filteredArtistsWithArtwork, setFilteredArtistsWithArtwork] = useState([]);
     const [filteredArtistsWithoutArtwork, setFilteredArtistsWithoutArtwork] = useState([]);
 
-    
+
 
     useEffect(() => {
         if (activeTab === 'artwork') {
@@ -53,15 +52,15 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     }, [refreshArtworks, refreshArtists]);
 
     const fetchArtwork = () => {
-        axios.get(`${config.backendUrl}/artwork`)
+        axios.get(`http://localhost:5000/artwork`)
             .then(response => setArtworks(response.data))
             .catch(err => console.log('Error fetching artwork:', err));
     };
 
     const fetchArtists = async () => {
         try {
-            const responseWithArtwork = await axios.get(`${config.backendUrl}/artist-with-artwork`);
-            const responseWithoutArtwork = await axios.get(`${config.backendUrl}/artist-null-artwork`);
+            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork`);
+            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork`);
             setArtistsWithArtwork(responseWithArtwork.data);
             setArtistsWithoutArtwork(responseWithoutArtwork.data);
         } catch (err) {
@@ -71,11 +70,11 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchFilterOptions = async () => {
         try {
-            const departmentRes = await axios.get(`${config.backendUrl}/department`);
-            const mediumsRes = await axios.get(`${config.backendUrl}/mediums`);
-            const yearsRes = await axios.get(`${config.backendUrl}/creation-years`);
-            //const conditionsRes = await axios.get(`${config.backendUrl}/artworkconditions`);
-            const nationalitiesRes = await axios.get(`${config.backendUrl}/nationalities`);
+            const departmentRes = await axios.get(`http://localhost:5000/department`);
+            const mediumsRes = await axios.get(`http://localhost:5000/mediums`);
+            const yearsRes = await axios.get(`http://localhost:5000/creation-years`);
+            //const conditionsRes = await axios.get(`http://localhost:5000/artworkconditions`);
+            const nationalitiesRes = await axios.get(`http://localhost:5000/nationalities`);
 
             setDepartments(departmentRes.data);
             setMediums(mediumsRes.data);
@@ -118,7 +117,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
             const medium = artwork.Medium || '';
             const year = artwork.CreationYear || '';
             const departmentName = artwork.department_name || '';
-    
+
             return (
                 (title.includes(query.toLowerCase()) || artistName.includes(query.toLowerCase())) &&
                 (!selectedMediumQ || medium === selectedMediumQ) &&
@@ -154,7 +153,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                 const artistName = artist.name_ ? artist.name_.toLowerCase() : '';
                 const artistGender = artist.gender || '';
                 const artistNationality = artist.nationality || '';
-    
+
                 // Apply all filters and search query
                 return (
                     (!query || artistName.includes(query.toLowerCase())) && // Search by artist name
@@ -174,7 +173,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                 return 0;
             });
     };
-    
+
 
 
     const [selectedArtwork, setSelectedArtwork] = useState(null);
@@ -216,12 +215,12 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
                 {/* Search */}
                 <div className={styles.search}>
-                    <input 
-                    type="text" 
-                    placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'} 
-                    value={query} 
-                    className='search' 
-                    onChange={(e) => setQuery(e.target.value)} 
+                    <input
+                    type="text"
+                    placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
+                    value={query}
+                    className='search'
+                    onChange={(e) => setQuery(e.target.value)}
                     />
                 </div>
 
@@ -311,7 +310,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                         )}
                     </select>
                 </div>
-                
+
             </div>
 
             {/* Display Artwork or Artist */}

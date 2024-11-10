@@ -3,7 +3,6 @@ import HomeNavBar from '../../components/HomeNavBar';
 import ArtLookUp from '../../components/ArtLookUp';
 import styles from '../../css/Art.module.css';
 import axios from 'axios';
-import config from '../../config';
 
 const InsertArtistModal = ({ onClose, onSave }) => {
     const [nationalities, setNationalities] = useState([]);
@@ -18,7 +17,7 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     useEffect(() => {
         const fetchNationalities = async () => {
             try {
-                const response = await axios.get(`${config.backendUrl}/nationalities`);
+                const response = await axios.get(`http://localhost:5000/nationalities`);
                 setNationalities(response.data);
             } catch (error) {
                 console.error('Error fetching nationalities:', error);
@@ -89,7 +88,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
-    
+
     // Options
     const [departments, setDepartments] = useState([]);
     const [mediums, setMediums] = useState([]);
@@ -101,7 +100,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const response = await axios.get(`${config.backendUrl}/department`);
+                const response = await axios.get(`http://localhost:5000/department`);
                 setDepartments(response.data);
             } catch (error) {
                 console.error('Error fetching departments:', error);
@@ -110,7 +109,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchMediums = async () => {
             try {
-                const response = await axios.get(`${config.backendUrl}/mediums`);
+                const response = await axios.get(`http://localhost:5000/mediums`);
                 setMediums(response.data);
             } catch (error) {
                 console.error('Error fetching mediums:', error);
@@ -119,7 +118,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchConditions = async () => {
             try {
-                const response = await axios.get(`${config.backendUrl}/artworkconditions`);
+                const response = await axios.get(`http://localhost:5000/artworkconditions`);
                 setConditions(response.data);
             } catch (error) {
                 console.error('Error fetching artworkconditions:', error);
@@ -315,7 +314,7 @@ const CurateArt = () => {
     }, [refreshArtists]);
 
     const fetchArtists = () => {
-        axios.get(`${config.backendUrl}/artist`)
+        axios.get(`http://localhost:5000/artist`)
             .then(response => setArtists(response.data))
             .catch(error => console.error('Error fetching artists:', error));
     };
@@ -325,7 +324,7 @@ const CurateArt = () => {
     }, [refreshArtworks]);
 
     const fetchArtworks = () => {
-        axios.get(`${config.backendUrl}/artwork`)
+        axios.get(`http://localhost:5000/artwork`)
             .then(response => setArtworks(response.data))
             .catch(error => console.error('Error fetching artworks:', error));
     };
@@ -340,7 +339,7 @@ const CurateArt = () => {
 
     // refresh both artist lists after saving new artwork
     const saveInsertArtwork = (artworkData) => {
-        axios.post(`${config.backendUrl}/artwork`, artworkData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        axios.post(`http://localhost:5000/artwork`, artworkData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => {
                 // Refresh both artist and artwork lists
                 triggerArtistRefresh();
@@ -351,7 +350,7 @@ const CurateArt = () => {
     };
 
     const saveInsertArtist = (artistData) => {
-        axios.post(`${config.backendUrl}/artist`, artistData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        axios.post(`http://localhost:5000/artist`, artistData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => { triggerArtistRefresh(); closeInsertArtistModal(); })
             .catch(error => console.error('Error adding artist:', error));
     };
@@ -363,11 +362,11 @@ const CurateArt = () => {
             <button onClick={openInsertArtworkModal}>Insert Artwork</button>
             <button onClick={openInsertArtistModal}>Insert Artist</button>
 
-            <ArtLookUp 
+            <ArtLookUp
                 refreshArtists={refreshArtists}
                 refreshArtworks={refreshArtworks}
                 triggerRefreshArtists={triggerArtistRefresh}
-                triggerRefreshArtworks={triggerArtworkRefresh} 
+                triggerRefreshArtworks={triggerArtworkRefresh}
             />
 
             {isInsertArtistOpen && (

@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, InputAdornment, CssBaseline } from '@mui/material';
+import {
+    Box,
+    Button,
+    TextField,
+    Typography,
+    InputAdornment,
+    CssBaseline,
+    Snackbar,
+    Alert,
+    IconButton
+} from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
-import IconButton from '@mui/material/IconButton';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
 import { toast } from 'react-toastify';
-import config from '../config';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
+    const [warningOpen, setWarningOpen] = useState(false); // Added warningOpen state
+    const [expiryDate, setExpiryDate] = useState(''); // Added expiryDate state
     const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
@@ -27,15 +37,8 @@ const Login = () => {
 
         if (Object.keys(newErrors).length > 0) return;
 
-
-        if (Object.keys(newErrors).length > 0) {
-            // Display validation errors using toast
-            Object.values(newErrors).forEach((error) => toast.error(error));
-            return;
-        }
-
         try {
-            const loginUrl = `${config.backendUrl}/login`;
+            const loginUrl = `http://localhost:5000/login`;
             console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',
@@ -59,21 +62,18 @@ const Login = () => {
                     });
                     localStorage.setItem('membershipWarning', 'true');
                     localStorage.setItem('expiryDate', formattedDate);
+                    setExpiryDate(formattedDate); // Set expiryDate state
+                    setWarningOpen(true); // Open warning Snackbar
                 }
 
                 // Navigate based on role
-                if (data.role === 'admin') navigate('/');
-                else if (data.role === 'staff') navigate('/giftshop-admin');
+                if (data.role === 'admin') navigate('/AdminDashBoard');
+                else if (data.role === 'staff') navigate('/StaffDashboard');
+                else if (data.role === 'customer') navigate('/');
+                else if (data.role === 'member') navigate('/MemberDashboard');
                 else navigate('/');
 
-
                 toast.success('Login successful!');
-                // Redirect based on role
-                if (data.role === 'admin') navigate('/AdminDashBoard'); // Adjust route as needed
-                else if (data.role === 'staff') navigate('/StaffDashboard');
-                else if (data.role === 'customer') navigate('/'); // Or any other customer-specific page
-                else if (data.role === 'member') navigate('/MemberDashboard');
-                else navigate('/'); // Default route
             } else {
                 const data = await response.json();
                 setErrors({ server: data.message });
@@ -81,6 +81,10 @@ const Login = () => {
         } catch (error) {
             setErrors({ server: 'Error logging in.' });
         }
+    };
+
+    const handleWarningClose = () => {
+        setWarningOpen(false); // Close warning Snackbar
     };
 
     return (
@@ -161,7 +165,7 @@ const Login = () => {
                 sx={{
                     mt: 2,
                     maxWidth: '600px',
-                    width: '100%'
+                    width: '100%',
                 }}
             >
                 <Alert
@@ -172,13 +176,13 @@ const Login = () => {
                         backgroundColor: '#FFF8E1',
                         color: '#8B6E00',
                         '& .MuiAlert-action': {
-                            alignItems: 'center'
+                            alignItems: 'center',
                         },
                         border: '1px solid #FFE082',
                         borderRadius: '4px',
                         '& .MuiAlert-icon': {
-                            display: 'none' // Removes the warning icon
-                        }
+                            display: 'none',
+                        },
                     }}
                     action={
                         <IconButton
@@ -196,7 +200,7 @@ const Login = () => {
                             fontWeight: 'bold',
                             mb: 1,
                             color: '#8B6E00',
-                            fontSize: '1.1rem'
+                            fontSize: '1.1rem',
                         }}
                     >
                         Membership Expiration Notice

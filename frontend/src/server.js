@@ -3,16 +3,18 @@ const mysql = require('mysql2/promise');
 const cors = require('cors');
 const multer = require('multer');
 const bcrypt = require('bcrypt');
-//require('dotenv').config();
+const path = require('path');
 const app = express();
 const port = 5000; // Change to 6000 when you push to GitHub
-
+require('dotenv').config();
 const allowedOrigins = [
     'http://localhost:3000', // Local development frontend
     'http://localhost:3002', // Updated localhost port if needed
     'https://black-desert-0587dbd10.5.azurestaticapps.net/' // Replace with your Azure Static Web App URL
 ];
+// ----- DATABASE CONNECTION ----------------------------------------------------------------------
 
+// ------------------------------------------------------------------------------------------------
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -42,9 +44,8 @@ app.use(async (req, res, next) => {
 
     next();
 });
-
-// ----- DATABASE CONNECTION ----------------------------------------------------------------------
-const db = mysql.createPool({ // We can add the env file later so this data is not exposed
+// ----- DATABASE CONNECTION ------------------------------------------------------------------------
+const dbConfig = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
@@ -54,11 +55,11 @@ const db = mysql.createPool({ // We can add the env file later so this data is n
     connectionLimit: 10,
     queueLimit: 0,
     decimalNumbers: true
-});
+};
+const db = mysql.createPool(dbConfig);
 db.getConnection()
     .then(() => console.log('Connected to the MySQL database'))
     .catch((err) => console.error('Error connecting to the database:', err));
-// ------------------------------------------------------------------------------------------------
 
 // ----- MULTER: IMAGE UPLOAD ---------------------------------------------------------------------
 const storage = multer.diskStorage({
@@ -97,11 +98,93 @@ const uploadArtworkImage = multer({ storage: artworkStorage });
 
 app.get('/artwork', async (req, res) => {
     try {
-        const [result] = await db.query(sql);
-        res.json(result);
-    } catch (err) {
-        console.error('Error fetching artwork:', err);
-        res.status(500).json({ message: "Error fetching artwork table" });
+        const [rows] = await db.query(`
+            SELECT artwork.*, 
+                   artist.name_ AS artist_name, 
+                   department.Name AS department_name
+            FROM artwork
+            LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+            LEFT JOIN department ON artwork.department_id = department.DepartmentID
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artwork table:', error);
+        res.status(500).json({ message: 'Server error fetching artwork table.' });
+    }
+});
+
+app.get('/artwork/:id', async (req, res) => {
+    const artworkId = req.params.id;
+
+    try {
+        const [rows] = await db.query(`
+            SELECT artwork.*, 
+                   artist.name_ AS artist_name, 
+                   department.Name AS department_name
+            FROM artwork
+            LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+            LEFT JOIN department ON artwork.department_id = department.DepartmentID
+            WHERE ArtworkID = ?`, [artworkId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Artwork not found' });
+        }
+        res.json(rows[0]); // Return the single artwork object
+    } catch (error) {
+        console.error('Error fetching artwork by ID:', error);
+        res.status(500).json({ message: 'Server error fetching artwork.' });
+    }
+});
+
+app.get('/mediums', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT DISTINCT Medium FROM artwork ORDER BY Medium ASC');
+        const mediums = rows.map(row => row.Medium); // Extract the Medium field into an array
+        res.json(mediums);
+    } catch (error) {
+        console.error('Error fetching mediums:', error);
+        res.status(500).json({ message: 'Server error fetching mediums.' });
+    }
+});
+
+app.get('/creation-years', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT DISTINCT CreationYear FROM Artwork ORDER BY CreationYear ASC');
+        const cy = rows.map(row => row.CreationYear); // Extract the CreationYear field into an array
+        res.json(cy);
+    } catch (error) {
+        console.error('Error fetching creation years:', error);
+        res.status(500).json({ message: 'Server error fetching creation years.' });
+    }
+});
+
+app.get('/artworkconditions', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT DISTINCT ArtworkCondition FROM artwork ORDER BY ArtworkCondition ASC');
+        const conditions = rows.map(row => row.ArtworkCondition); // Corrected field name
+        res.json(conditions);
+    } catch (error) {
+        console.error('Error fetching conditions:', error);
+        res.status(500).json({ message: 'Server error fetching conditions.' });
+    }
+});
+
+app.post('/artwork', uploadArtworkImage.single('image'), async (req, res) => {
+    try {
+        const { Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition } = req.body;
+        const image = req.file ? req.file.filename : null;
+
+        const [result] = await db.query(
+            `INSERT INTO artwork (Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition, image) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [Title, artist_id, department_id, Description, CreationYear, price || null, Medium, height, width, depth || null, acquisition_date, location || null, ArtworkCondition, image]
+        );
+
+        res.status(201).json({ message: 'Artwork added successfully', artworkId: result.insertId });
+        console.log("Artwork added successfully");
+    } catch (error) {
+        console.error('Error inserting artwork:', error);
+        res.status(500).json({ message: 'Failed to add artwork' });
     }
 });
 
@@ -203,11 +286,11 @@ app.delete('/artwork/:id', async (req, res) => {
 
 app.get('/department', async (req, res) => {
     try {
-        const [result] = await db.query(sql);
-        res.json(result);
-    } catch (err) {
-        console.error('Error fetching department:', err);
-        res.status(500).json({ message: "Error fetching department table" });
+        const [rows] = await db.query('SELECT * FROM department');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching department table:', error);
+        res.status(500).json({message: 'Server error fetching department table.'});
     }
 });
 
@@ -215,27 +298,228 @@ app.get('/department', async (req, res) => {
 app.use('/assets/artists', express.static(path.join(__dirname, 'assets/artists')));
 const artistStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
+        cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
     },
     filename: (req, file, cb) => {
-      const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-      cb(null, safeFileName);
+        const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, safeFileName);
     }
 });
 const uploadArtistImage = multer({ storage: artistStorage });
 
 app.get('/artist', async (req, res) => {
     try {
-        const [result] = await db.query(sql);
-        res.json(result);
-    } catch (err) {
-        console.error('Error fetching artist:', err);
-        res.status(500).json({ message: "Error fetching artist table" });
+        const [rows] = await db.query('SELECT * FROM artist ORDER BY name_ ASC');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artist table:', error);
+        res.status(500).json({message: 'Server error fetching artist table.'});
+    }
+});
+
+app.get('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT * FROM artist WHERE ArtistID = ?', [artistId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Artist not found' });
+        }
+        res.json(rows[0]); // Return the single artist object
+    } catch (error) {
+        console.error('Error fetching artist by ID:', error);
+        res.status(500).json({ message: 'Server error fetching artist.' });
+    }
+});
+
+app.get('/artist-with-artwork', async (req, res) => {
+    try {
+        console.log("Attempting to fetch artists with artwork...");
+        const [rows] = await db.query(`
+            SELECT DISTINCT artist.*
+            FROM artist
+            LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+            WHERE artwork.ArtworkID IS NOT NULL
+            ORDER BY name_ ASC
+        `);
+        if (rows.length === 0) {
+            console.log("No artists found with artwork.");
+            return res.json([]);  // Return an empty array instead of 404
+        }
+        console.log("Artists with artwork fetched successfully:", rows);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artists with artwork:', error);
+        res.status(500).json({ message: 'Server error fetching artists with artwork.' });
+    }
+});
+
+app.get('/artist-null-artwork', async (req, res) => {
+    try {
+        console.log("Attempting to fetch artists without artwork...");
+        const [rows] = await db.query(`
+            SELECT artist.*
+            FROM artist
+            LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+            WHERE artwork.ArtworkID IS NULL
+            ORDER BY name_ ASC
+        `);
+        if (rows.length === 0) {
+            console.log("No artists found without artwork.");
+            return res.json([]);  // Return an empty array instead of 404
+        }
+        console.log("Artists without artwork fetched successfully:", rows);
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching artists without artwork:', error);
+        res.status(500).json({ message: 'Server error fetching artists without artwork.' });
+    }
+});
+
+
+// get nationalities
+app.get('/nationalities', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+        SHOW COLUMNS FROM artist LIKE 'nationality'
+      `);
+
+        // Extract the enum values from the `Type` column
+        const enumValues = rows[0].Type.match(/enum\((.*)\)/)[1]
+            .replace(/'/g, '') // Remove single quotes
+            .split(','); // Split by comma to get individual nationalities
+
+        res.json(enumValues);
+    } catch (error) {
+        console.error('Error fetching nationalities:', error);
+        res.status(500).json({ message: 'Server error fetching nationalities.' });
+    }
+});
+
+// Artist creation route with image upload
+app.post('/artist', uploadArtistImage.single('image'), async (req, res) => {
+    try {
+        const { name, gender, nationality, birthYear, description } = req.body;
+        let deathYear = req.body.deathYear ? parseInt(req.body.deathYear) : null;
+        if (isNaN(deathYear)) {
+            deathYear = null;
+        }
+        const image = req.file ? req.file.filename : null;
+
+        console.log("Received data:", { name, gender, nationality, birthYear, description, deathYear, image });
+
+        if (!name || !gender || !nationality || !birthYear || !description) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        const [result] = await db.query(
+            `INSERT INTO artist (name_, image, description, gender, nationality, birth_year, death_year) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [name, image, description, gender, nationality, birthYear, deathYear]
+        );
+
+        res.status(201).json({ message: 'Artist added successfully', artistId: result.insertId });
+    } catch (error) {
+        console.error('Error inserting artist:', error);
+        res.status(500).json({ message: 'Failed to add artist' });
+    }
+});
+
+app.patch('/artist/:id', uploadArtistImage.single('image'), async (req, res) => {
+    const artistId = req.params.id;
+    const { name, nationality, birthYear, deathYear, description, gender } = req.body;
+    const image = req.file ? req.file.filename : null; // Get the uploaded file, if available
+
+    // Handle deathYear - convert to null if it's empty or invalid
+    const parsedDeathYear = deathYear ? parseInt(deathYear) : null;
+    const finalDeathYear = isNaN(parsedDeathYear) ? null : parsedDeathYear;
+
+    // Build the SQL query dynamically based on provided fields
+    const fields = [];
+    const values = [];
+
+    if (name) {
+        fields.push('name_ = ?');
+        values.push(name);
+    }
+    if (gender) {
+        fields.push('gender = ?');
+        values.push(gender);
+    }
+    if (nationality) {
+        fields.push('nationality = ?');
+        values.push(nationality);
+    }
+    if (birthYear) {
+        fields.push('birth_year = ?');
+        values.push(birthYear);
+    }
+    if (finalDeathYear !== undefined) { // Use finalDeathYear to handle null values
+        fields.push('death_year = ?');
+        values.push(finalDeathYear);
+    }
+    if (description) {
+        fields.push('description = ?');
+        values.push(description);
+    }
+    if (image) { // Only update the image if a new one is provided
+        fields.push('image = ?');
+        values.push(image);
+    }
+
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+
+    // Add the artistId to the end of values array for the WHERE clause
+    values.push(artistId);
+
+    const query = `UPDATE artist SET ${fields.join(', ')} WHERE ArtistID = ?`;
+
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Artist updated successfully.' });
+    } catch (error) {
+        console.error('Error updating artist:', error);
+        res.status(500).json({ message: 'Server error updating artist.' });
+    }
+});
+
+// if i delete an artist, i want to delete all the artworks associated with that artist
+app.delete('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+    try {
+        await db.query('DELETE FROM artist WHERE ArtistID = ?', [artistId]);
+        res.status(200).json({ message: 'Artist and associated artworks deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting artist:', error);
+        res.status(500).json({ message: 'Server error deleting artist' });
+    }
+});
+
+app.get('/ticket', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM ticket');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching ticket table:', error);
+        res.status(500).json({ message: 'Server error fetching ticket table.' });
+    }
+});
+
+app.get('/user-type', async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM roles WHERE id = 3 OR id = 4');
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching roles table:', error);
+        res.status(500).json({ message: 'Server error fetching roles table.' });
     }
 });
 
 // ----- (MELANIE DONE) ---------------------------------------------------------------------------
 
+// ----- (LEO) ------------------------------------------------------------------------------------
 // ----- (LEO) ------------------------------------------------------------------------------------
 
 // User registration
@@ -285,8 +569,8 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const [user] = await db.query(`
-            SELECT users.*, roles.role_name
+        const [userRows] = await db.query(`
+            SELECT user_id, username, password, role_id, is_deleted
             FROM users
             WHERE username = ?
         `, [username]);
@@ -304,17 +588,14 @@ app.post('/login', async (req, res) => {
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(400).json({ message: 'Invalid username or password.' });
+            return res.status(400).json({message: 'Invalid username or password.'});
         }
 
         // Map role_id to role_name
         const roleName = roleMappings[user.role_id] || 'unknown';
 
         res.status(200).json({
-            message: 'Login successful!',
-            userId: user[0].user_id,
-            role: user[0].role_name,
-            username: user[0].username, // Include username in response if needed
+            message: 'Login successful!', userId: user.user_id, role: roleName, username: user.username,
         });
     } catch (error) {
         console.error('Server error during login:', error);
@@ -551,15 +832,16 @@ app.get('/users', authenticateAdmin, async (req, res) => {
 app.get('/giftshopitems/logs', authenticateAdmin, async (req, res) => {
     try {
         const [rows] = await db.query(`
-            SELECT l.*, u.username
+            SELECT l.*, u.username, i.name_ AS item_name
             FROM giftshopitem_log l
                      LEFT JOIN users u ON l.user_id = u.user_id
+                     LEFT JOIN giftshopitem i ON l.item_id = i.item_id
             ORDER BY l.timestamp DESC
         `);
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching gift shop item logs:', error);
-        res.status(500).json({message: 'Server error fetching logs.'});
+        res.status(500).json({ message: 'Server error fetching logs.' });
     }
 });
 // Get user profile
@@ -944,25 +1226,25 @@ async function generateGiftShopRevenueReport(reportPeriodType, startDate, endDat
             WHERE YEAR (t.transaction_date) = ?
         `;
         params = [selectedYear];
-        } else if (reportPeriodType === 'single_day') {
-            query = `
-                SELECT t.transaction_id,
-                       t.transaction_date,
-                       t.transaction_type,
-                       t.payment_status,
-                       u.username,
-                       tgi.item_id,
-                       gsi.name_                              as item_name,
-                       tgi.quantity,
-                       tgi.price_at_purchase,
-                       (tgi.quantity * tgi.price_at_purchase) as item_total
-                FROM \`transaction\` t
-                         JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
-                         JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
-                         JOIN users u ON t.user_id = u.user_id
-                WHERE DATE (t.transaction_date) = ?
-            `;
-            params = [selectedDate];
+    } else if (reportPeriodType === 'single_day') {
+        query = `
+            SELECT t.transaction_id,
+                   t.transaction_date,
+                   t.transaction_type,
+                   t.payment_status,
+                   u.username,
+                   tgi.item_id,
+                   gsi.name_                              as item_name,
+                   tgi.quantity,
+                   tgi.price_at_purchase,
+                   (tgi.quantity * tgi.price_at_purchase) as item_total
+            FROM \`transaction\` t
+                     JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+                     JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
+                     JOIN users u ON t.user_id = u.user_id
+            WHERE DATE (t.transaction_date) = ?
+        `;
+        params = [selectedDate];
     } else {
         throw new Error('Invalid report period type for transaction details report.');
     }
@@ -1008,7 +1290,7 @@ async function generateGiftShopRevenueReport(reportPeriodType, startDate, endDat
 }
 
 // Endpoint to get all gift shop items
-app.get('/giftshopitems', async (req, res) => {
+app.get('/giftshopitemsreport', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT item_id, name_ FROM giftshopitem WHERE is_deleted = 0');
         res.status(200).json(rows);
