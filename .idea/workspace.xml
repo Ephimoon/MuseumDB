@@ -6,24 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/AdminResetPasswordModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AdminResetPasswordModal.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/AnnouncementDisplay.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementDisplay.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/AnnouncementFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementFormModal.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ArtLookUp.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ArtLookUp.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ArtworkCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ArtworkCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ChangePasswordModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ChangePasswordModal.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopForm.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/ManageUsers.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ManageUsers.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BecomeAMember.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BecomeAMember.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Checkout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Checkout.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateArt.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateArt.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -40,6 +22,9 @@
         <option value="CSS File" />
       </list>
     </option>
+  </component>
+  <component name="Git.Rebase.Settings">
+    <option name="NEW_BASE" value="main" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -195,6 +180,7 @@
       <workItem from="1731083407018" duration="8756000" />
       <workItem from="1731153847838" duration="1137000" />
       <workItem from="1731216326690" duration="16466000" />
+      <workItem from="1731235644586" duration="10000" />
     </task>
     <task id="LOCAL-00001" summary="Updated server.js">
       <option name="closed" value="true" />

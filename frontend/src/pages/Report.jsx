@@ -9,7 +9,6 @@ import 'jspdf-autotable';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
-import config from '../config';
 
 const Report = () => {
     const [reportCategory, setReportCategory] = useState('GiftShopReport');
