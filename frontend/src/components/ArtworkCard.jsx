@@ -12,7 +12,7 @@ const ArtworkCard = ({ artwork_, onCardClick }) => {
           className={styles.card}
           onClick={() => onCardClick(art)}
         >
-          <img src={`http://localhost:5000/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
+          <img src={`${process.env.REACT_APP_API_URL}/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
           <h1>{art.Title}</h1>
           <p>{art.artist_name || 'Unknown Artist'}</p>
           <p>{art.CreationYear}</p>
@@ -35,7 +35,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`);
       console.log("Artwork deleted successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -46,7 +46,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`);
       setArtwork(response.data);
     } catch (error) {
       console.error('Error fetching updated artwork data:', error);
@@ -70,7 +70,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
         {!isEditMode ? (
           <>
-            <img src={`http://localhost:5000/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
+            <img src={`${process.env.REACT_APP_API_URL}/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
             <h2>{artwork.Title}</h2>
             <p><strong>Artist:</strong> {artwork.artist_name || 'Unknown Artist'}</p>
             <p><strong>Year:</strong> {artwork.CreationYear}</p>
@@ -145,10 +145,10 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
     const fetchData = async () => {
       try {
         const [artistRes, departmentsRes, mediumsRes, conditionsRes] = await Promise.all([
-          axios.get(`http://localhost:5000/artist`),
-          axios.get(`http://localhost:5000/department`),
-          axios.get(`http://localhost:5000/mediums`),
-          axios.get(`http://localhost:5000/artworkconditions`)
+          axios.get(`${process.env.REACT_APP_API_URL}/artist`),
+          axios.get(`${process.env.REACT_APP_API_URL}/department`),
+          axios.get(`${process.env.REACT_APP_API_URL}/mediums`),
+          axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`)
         ]);
         setArtists(artistRes.data);
         setDepartments(departmentsRes.data);
@@ -256,7 +256,7 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
     if (image) formData.append('image', image);
 
     try {
-      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}`, formData, {
+      await axios.patch(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onRefresh();
@@ -395,7 +395,7 @@ const ArtistCard = ({ artist_, onCardClick }) => {
           className={styles.card}
           onClick={() => onCardClick(artist)}
         >
-          <img src={`http://localhost:5000/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
+          <img src={`${process.env.REACT_APP_API_URL}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
           <h1>{artist.name_}</h1>
         </div>
       ))}
@@ -416,7 +416,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:5000/artist/${artist.ArtistID}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`);
       console.log("Artist deleted successfully");
       onRefresh(); // Refresh the artist list
       onClose(); // Close the modal
@@ -427,7 +427,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`);
       const updatedArtist = response.data;
       console.log('Fetched updated artist data from server:', updatedArtist);
       setArtist(updatedArtist);
@@ -453,7 +453,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
 
         {!isEditMode ? (
           <>
-            <img src={`http://localhost:5000/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
+            <img src={`${process.env.REACT_APP_API_URL}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
             <h2>{artist.name_}</h2>
             <p><strong>Gender:</strong> {artist.gender}</p>
             <p><strong>Nationality:</strong> {artist.nationality || 'Not specified'}</p>
@@ -511,7 +511,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
   useEffect(() => {
     const fetchNationalities = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/nationalities`);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
         setNationalities(response.data);
       } catch (error) {
         console.error('Error fetching nationalities:', error);
@@ -569,7 +569,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         formData.append('image', image); // Append the file only if it's selected
     }
 
-    axios.patch(`http://localhost:5000/artist/${artist.ArtistID}`, formData, {
+    axios.patch(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
         }

@@ -52,15 +52,15 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     }, [refreshArtworks, refreshArtists]);
 
     const fetchArtwork = () => {
-        axios.get(`http://localhost:5000/artwork`)
+        axios.get(`${process.env.REACT_APP_API_URL}/artwork`)
             .then(response => setArtworks(response.data))
             .catch(err => console.log('Error fetching artwork:', err));
     };
 
     const fetchArtists = async () => {
         try {
-            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork`);
-            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork`);
+            const responseWithArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-with-artwork`);
+            const responseWithoutArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-null-artwork`);
             setArtistsWithArtwork(responseWithArtwork.data);
             setArtistsWithoutArtwork(responseWithoutArtwork.data);
         } catch (err) {
@@ -70,11 +70,11 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchFilterOptions = async () => {
         try {
-            const departmentRes = await axios.get(`http://localhost:5000/department`);
-            const mediumsRes = await axios.get(`http://localhost:5000/mediums`);
-            const yearsRes = await axios.get(`http://localhost:5000/creation-years`);
-            //const conditionsRes = await axios.get(`http://localhost:5000/artworkconditions`);
-            const nationalitiesRes = await axios.get(`http://localhost:5000/nationalities`);
+            const departmentRes = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
+            const mediumsRes = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
+            const yearsRes = await axios.get(`${process.env.REACT_APP_API_URL}/creation-years`);
+            //const conditionsRes = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
+            const nationalitiesRes = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
 
             setDepartments(departmentRes.data);
             setMediums(mediumsRes.data);

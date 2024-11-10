@@ -47,7 +47,7 @@ const UserFormModal = ({ user, onClose }) => {
         try {
             if (user && user.user_id) {
                 // Update existing user
-                await axios.put(`http://localhost:5000//users/${user.user_id}`, formData, {
+                await axios.put(`${process.env.REACT_APP_API_URL}//users/${user.user_id}`, formData, {
                     headers: {
                         role: role,
                         'user-id': userId,
@@ -55,7 +55,7 @@ const UserFormModal = ({ user, onClose }) => {
                 });
             } else {
                 // Create new user
-                await axios.post(`http://localhost:5000/register`, formData);
+                await axios.post(`${process.env.REACT_APP_API_URL}/register`, formData);
             }
             onClose();
         } catch (error) {

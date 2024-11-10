@@ -17,7 +17,7 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     useEffect(() => {
         const fetchNationalities = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/nationalities`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
                 setNationalities(response.data);
             } catch (error) {
                 console.error('Error fetching nationalities:', error);
@@ -100,7 +100,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/department`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
                 setDepartments(response.data);
             } catch (error) {
                 console.error('Error fetching departments:', error);
@@ -109,7 +109,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchMediums = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/mediums`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
                 setMediums(response.data);
             } catch (error) {
                 console.error('Error fetching mediums:', error);
@@ -118,7 +118,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchConditions = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/artworkconditions`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
                 setConditions(response.data);
             } catch (error) {
                 console.error('Error fetching artworkconditions:', error);
@@ -314,7 +314,7 @@ const CurateArt = () => {
     }, [refreshArtists]);
 
     const fetchArtists = () => {
-        axios.get(`http://localhost:5000/artist`)
+        axios.get(`${process.env.REACT_APP_API_URL}/artist`)
             .then(response => setArtists(response.data))
             .catch(error => console.error('Error fetching artists:', error));
     };
@@ -324,7 +324,7 @@ const CurateArt = () => {
     }, [refreshArtworks]);
 
     const fetchArtworks = () => {
-        axios.get(`http://localhost:5000/artwork`)
+        axios.get(`${process.env.REACT_APP_API_URL}/artwork`)
             .then(response => setArtworks(response.data))
             .catch(error => console.error('Error fetching artworks:', error));
     };
@@ -339,7 +339,7 @@ const CurateArt = () => {
 
     // refresh both artist lists after saving new artwork
     const saveInsertArtwork = (artworkData) => {
-        axios.post(`http://localhost:5000/artwork`, artworkData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        axios.post(`${process.env.REACT_APP_API_URL}/artwork`, artworkData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => {
                 // Refresh both artist and artwork lists
                 triggerArtistRefresh();
@@ -350,7 +350,7 @@ const CurateArt = () => {
     };
 
     const saveInsertArtist = (artistData) => {
-        axios.post(`http://localhost:5000/artist`, artistData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        axios.post(`${process.env.REACT_APP_API_URL}/artist`, artistData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => { triggerArtistRefresh(); closeInsertArtistModal(); })
             .catch(error => console.error('Error adding artist:', error));
     };

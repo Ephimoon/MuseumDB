@@ -52,7 +52,7 @@ const Report = () => {
             if (reportCategory === 'GiftShopReport') {
                 // Fetch available items
                 axios
-                    .get(`http://localhost:5000/giftshopitemsreport`, {
+                    .get(`${process.env.REACT_APP_API_URL}/giftshopitemsreport`, {
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailableItems(response.data))
@@ -60,7 +60,7 @@ const Report = () => {
 
                 // Fetch available categories
                 axios
-                    .get(`http://localhost:5000/giftshopcategories`, {
+                    .get(`${process.env.REACT_APP_API_URL}/giftshopcategories`, {
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailableCategories(response.data))
@@ -68,7 +68,7 @@ const Report = () => {
 
                 // Fetch available payment methods
                 axios
-                    .get(`http://localhost:5000/paymentmethods`, {
+                    .get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailablePaymentMethods(response.data))
@@ -76,7 +76,7 @@ const Report = () => {
             } else if (reportCategory === 'TicketsReport') {
                 // Fetch available price categories
                 axios
-                    .get(`http://localhost:5000/ticket`, {
+                    .get(`${process.env.REACT_APP_API_URL}/ticket`, {
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailablePriceCategories(response.data))
@@ -84,7 +84,7 @@ const Report = () => {
 
                 // Fetch available user types
                 axios
-                    .get(`http://localhost:5000/user-type`, {
+                    .get(`${process.env.REACT_APP_API_URL}/user-type`, {
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailableUserTypes(response.data))
@@ -92,7 +92,7 @@ const Report = () => {
 
                 // Fetch available payment methods
                 axios
-                    .get(`http://localhost:5000/paymentmethods`, {
+                    .get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailablePaymentMethods(response.data))
@@ -170,7 +170,7 @@ const Report = () => {
         const userId = localStorage.getItem('userId');
 
         axios
-            .post(`http://localhost:5000/reports`, reportRequest, {
+            .post(`${process.env.REACT_APP_API_URL}/reports`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,

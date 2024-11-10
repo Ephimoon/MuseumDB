@@ -24,7 +24,7 @@ const ManageUsers = () => {
     }, []);
 
     const fetchUsers = () => {
-        axios.get(`http://localhost:5000/users`, {
+        axios.get(`${process.env.REACT_APP_API_URL}/users`, {
             headers: {role, 'user-id': userId},
         })
             .then(response => setUsers(response.data))
@@ -67,7 +67,7 @@ const ManageUsers = () => {
     };
 
     const handleRestore = (user) => {
-        axios.put(`http://localhost:5000/users/${user.user_id}/restore`, {}, {
+        axios.put(`${process.env.REACT_APP_API_URL}/users/${user.user_id}/restore`, {}, {
             headers: {role, 'user-id': userId},
         })
             .then(() => fetchUsers())
