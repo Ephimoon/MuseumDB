@@ -8,7 +8,7 @@ const Settings = () => {
     <div className="dashboard-container">
       <Sidebar />  
       <div className="header-container">
-        <Header />  
+        <Header />
         <div className="settings-container">
           <h2>Settings</h2>
             <div className='settings-options'>

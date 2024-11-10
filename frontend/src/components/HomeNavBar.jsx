@@ -13,7 +13,8 @@ const Navbar = () => {
     const [navBackground, setNavBackground] = useState('transparent');
 
     const role = localStorage.getItem('role');
-    const username = localStorage.getItem('username');
+    //const username = localStorage.getItem('username');
+    const firstName = localStorage.getItem('firstName');
 
     // Function to handle the navbar background on scroll
     const handleScroll = () => {
@@ -39,6 +40,19 @@ const Navbar = () => {
     const handleLogout = () => {
         localStorage.clear();
         navigate('/login');
+    };
+
+    // Handle Buy Tickets button click
+    const handleBuyTicketsClick = () => {
+        if (!role) {
+            // If not logged in, redirect to login page with a redirect state
+            navigate('/login', { state: { redirectTo: '/BuyTickets' } });
+        } else if (role === 'customer' || role === 'member') {
+            // If logged in and user is customer or member, go to buy tickets page
+            navigate('/BuyTickets');
+        } else {
+            alert('Only members and customers can purchase tickets.');
+        }
     };
 
     return (
@@ -68,14 +82,25 @@ const Navbar = () => {
                 <div className="nav-buttons">
                     {role ? (
                         <>
-                            <span className="welcome-message">Welcome, {username}!</span>
-                            <button onClick={() => navigate('/profile')} className="btn-outline">Profile</button>
-                            <button onClick={handleLogout} className="btn-outline">Logout</button>
+                            <span className="welcome-message">Welcome, {firstName}!</span>
+                            <div className="dropdown">
+                                <button className="btn-outline">Profile</button>
+                                <div className="dropdown-content">
+                                    <button onClick={() => navigate('/profile')}>Profile</button>
+                                    {(role === 'customer' || role === 'member') && (
+                                        <button onClick={() => navigate('/MemberDashboard')}>Dashboard</button>
+                                    )}
+                                    <button onClick={handleLogout}>Logout</button>
+                                </div>
+                            </div>
+                            {(role === 'customer' || role === 'member') && (
+                                <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
+                            )}
                         </>
                     ) : (
                         <>
                             <a href="/BecomeAMember" className="becomeamember">Become a Member</a>
-                            <button onClick={() => navigate('/BuyTickets')} className="btn-outline">Buy Tickets</button>
+                            <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
                             <button onClick={() => navigate('/login')} className="btn-outline">Login</button>
                             <button onClick={() => navigate('/register')} className="btn-outline">Register</button>
                         </>

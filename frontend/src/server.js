@@ -354,7 +354,8 @@ app.post('/login', async (req, res) => {
             message: 'Login successful!',
             userId: user[0].user_id,
             role: user[0].role_name,
-            
+            firstName: user[0].first_name, 
+            lastName: user[0].last_name,
             username: user[0].username,
             membershipWarning: membershipInfo?.expiration_warning === 1,
             expireDate: membershipInfo?.expire_date

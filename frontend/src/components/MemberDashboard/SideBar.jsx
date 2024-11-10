@@ -8,14 +8,14 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken'); // Clear auth token, if applicable
+    localStorage.clear();
     navigate('/');
   };
 
   return (
     <div className="sidebar">
-      <div className="logo">
-        <img src={logo} alt='MFA Logo' />
+      <div className="logo" onClick={() => navigate('/')}>
+        <img src={logo} alt="MFA Logo" style={{ cursor: 'pointer' }} />
       </div>
       <ul className="menu">
         <li><a href="/MemberDashboard">Dashboard</a></li>
