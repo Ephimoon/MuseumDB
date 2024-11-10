@@ -79,22 +79,29 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         const role = localStorage.getItem('role');
         const config = {
             headers: {
-                'Content-Type': 'multipart/form-data', // or 'application/json' as appropriate
+                'Content-Type': 'multipart/form-data',
                 'user-id': localStorage.getItem('userId'),
-                'role': localStorage.getItem('role'),
+                'role': role,
             },
         };
 
-
         if (item && item.item_id) {
+            // Update existing item
             axios
                 .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
-                .then(() => onClose())
+                .then(() => {
+                    onClose(); // Close the modal
+                    window.location.reload(); // Refresh the page
+                })
                 .catch((error) => console.error('Error updating item:', error));
         } else {
+            // Create new item
             axios
                 .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
-                .then(() => onClose())
+                .then(() => {
+                    onClose(); // Close the modal
+                    window.location.reload(); // Refresh the page
+                })
                 .catch((error) => console.error('Error creating item:', error));
         }
     };

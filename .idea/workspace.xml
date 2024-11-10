@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,7 +179,7 @@
       <workItem from="1731083407018" duration="8756000" />
       <workItem from="1731153847838" duration="1137000" />
       <workItem from="1731216326690" duration="16466000" />
-      <workItem from="1731235644586" duration="10000" />
+      <workItem from="1731235644586" duration="1205000" />
     </task>
     <task id="LOCAL-00001" summary="Updated server.js">
       <option name="closed" value="true" />
