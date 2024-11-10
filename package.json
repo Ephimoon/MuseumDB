@@ -1,5 +1,8 @@
 {
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.6",
     "@mui/styles": "^6.1.5",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
@@ -13,9 +16,13 @@
     "slick-carousel": "^1.8.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "node frontend/src/server.js",
+    "dev": "nodemon frontend/src/server.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }

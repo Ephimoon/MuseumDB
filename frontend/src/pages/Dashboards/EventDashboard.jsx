@@ -18,7 +18,7 @@ const EventDirectorDashboard = () => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get('${process.env.REACT_APP_API_URL}/api/events'); // replace with http://${process.env.REACT_APP_API_URL}/api/events
+                const response = await axios.get(`http://localhost:5000/api/events`);
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,
@@ -26,7 +26,7 @@ const EventDirectorDashboard = () => {
                         description: event.description_,
                         location: event.location,
                         status: event.status,
-                        date: event.date
+                        //date: event.date
                     }));
                     setEventCards(formattedEvents);
                 }
@@ -56,8 +56,8 @@ const EventDirectorDashboard = () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
-                //const response = await axios.put(`http://${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
-                const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
+                //const response = await axios.put(`http://http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
+                const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
                 } else {
@@ -65,8 +65,8 @@ const EventDirectorDashboard = () => {
                 }
             } else {
                 // Add new event
-                //const response = await axios.post('http://${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
-                const response = await axios.post('${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
+                //const response = await axios.post('http://http://localhost:5000/api/events', selectedEvent);
+                const response = await axios.post(`http://localhost:5000/api/events`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
                 } else {
@@ -82,7 +82,7 @@ const EventDirectorDashboard = () => {
 
     const removeEventCard = async (id) => {
         try {
-            const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/events/${id}`); // replace with http://${process.env.REACT_APP_API_URL}/api/events/${id}
+            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://http://localhost:5000/api/events/${id}
             if (response.status === 200) {
                 setEventCards(eventCards.filter(event => event.id !== id));
             }
@@ -101,9 +101,10 @@ const EventDirectorDashboard = () => {
 
     const viewMembers = async (eventId) => {
         try {
-            //const response = await axios.get(`http://${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
+            //const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
             if (response.status === 200) {
+                console.log('Members: ', response.data);
                 setMembersList(response.data);
             } else {
                 console.error('Failed to fetch members');
@@ -122,33 +123,29 @@ const EventDirectorDashboard = () => {
         setMembersList([]);
     };
 
-    // Get current date
-    const currentDate = new Date();
-
-    // Separate active and archived events
-    const activeEvents = eventCards.filter(event => new Date(event.date) >= currentDate);
-    const archivedEvents = eventCards.filter(event => new Date(event.date) < currentDate);
-
     // Handle event selection for reports
     const handleEventSelection = (e) => {
         setSelectedEventId(e.target.value);
     };
 
     // Simulate fetching report data for a specific event
-    const fetchReport = (eventId) => {
+    const fetchReport = async (eventId) => {
         if (!eventId) {
             alert('Please select an event.');
             return;
         }
+        console.log('Fetching report for event: ', eventId);
 
-        // Dummy report data
-        const dummyReportData = {
-            totalMembers: Math.floor(Math.random() * 100),
-            totalRevenue: (Math.random() * 10000).toFixed(2)
-        };
-
-        // Simulate report data fetching
-        setReportData(dummyReportData);
+        try {
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/report`);
+            if (response.status === 200) {
+                setReportData(response.data);
+            } else {
+                console.error('Failed to fetch report');
+            }
+        } catch (error) {
+            console.error('Error fetching report: ', error);
+        }
     };
 
     return (
@@ -253,19 +250,6 @@ const EventDirectorDashboard = () => {
                                 </div>
                             </div>
                         )}
-
-                        {/* Archive Section */}
-                        <div className="archive">
-                            <h3>Archived Events</h3>
-                            <div className="event-cards-container">
-                                {archivedEvents.map((event) => (
-                                    <div key={event.id} className="event-card">
-                                        <p>Archived Event Date: {new Date(event.date).toDateString()}</p>
-                                        <button onClick={() => removeEventCard(event.id)} className="Remove">Remove</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                     </div>
                 )}
 
@@ -277,7 +261,7 @@ const EventDirectorDashboard = () => {
                             <ul>
                                 {membersList.length > 0 ? (
                                     membersList.map(member => (
-                                        <li key={member.id}>{member.name}</li>
+                                        <li key={member.id}>{member.fname} {member.lname}</li>
                                     ))
                                 ) : (
                                     <p>No members signed up.</p>
@@ -298,7 +282,7 @@ const EventDirectorDashboard = () => {
                             <option value="">-- Select an Event --</option>
                             {eventCards.map(event => (
                                 <option key={event.id} value={event.id}>
-                                    {event.name} (Date: {new Date(event.date).toDateString()})
+                                    {event.name}
                                 </option>
                             ))}
                         </select>
@@ -310,7 +294,7 @@ const EventDirectorDashboard = () => {
                         {reportData && (
                             <div className="report">
                                 <h4>Report for Event:</h4>
-                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembers}</p>
+                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembersSignedUp}</p>
                                 <p><strong>Total Revenue Generated:</strong> ${reportData.totalRevenue}</p>
                             </div>
                         )}

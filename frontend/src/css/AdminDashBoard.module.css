@@ -1,0 +1,171 @@
+/* src/css/AdminDashboard.module.css */
+
+/* Main container */
+.adminContainer {
+    padding-top: 100px;
+    min-height: 100vh;
+    background-color: #fcfcfc;
+    text-align: center;
+}
+
+/* Title styling */
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 48px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin-bottom: 20px;
+}
+
+/* Add button */
+.addButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.addButton:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Table styling */
+.itemTable {
+    width: 90%;
+    margin: 0 auto 40px;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    table-layout: fixed; /* Prevent table width from changing */
+}
+
+.itemTable th, .itemTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.itemTable th {
+    background-color: #BD2859;
+    color: #fcfcfc;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.itemTable th:hover {
+    background-color: #C63A4D;
+}
+
+/* Table row hover effect */
+.itemTable tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Action buttons */
+.actionButton {
+    padding: 8px 12px;
+    margin-right: 5px;
+    font-size: 14px;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.actionButton:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pageButton {
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    background-color: #D7D5D7;
+    color: #FFFFFF;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.pageButton:hover {
+    background-color: #BD2859;
+}
+
+.activePage {
+    background-color: #BD2859;
+}
+
+/* Modal Styling */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal_content {
+    background: #FFFFFF;
+    padding: 20px;
+    width: 400px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.close_button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #352F36;
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.formButton {
+    padding: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #FFFFFF;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.formButton:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}

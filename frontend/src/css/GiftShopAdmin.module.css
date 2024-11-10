@@ -18,8 +18,16 @@
     margin-bottom: 20px;
 }
 
-/* Add button */
-.addButton {
+/* Action Buttons Container */
+.actionButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Common Button Styling */
+.button {
     padding: 10px 20px;
     font-size: 16px;
     color: #FFFFFF;
@@ -31,8 +39,100 @@
     margin-bottom: 20px;
 }
 
+.button:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Specific Button Styles */
+.addButton {
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+}
+
 .addButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+.viewLogsButton {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%); /* Blue Gradient */
+}
+
+.viewLogsButton:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+
+.backButton {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%); /* Grey Gradient */
+}
+
+.backButton:hover {
+    background: linear-gradient(90deg, #5a6268 0%, #6c757d 100%);
+}
+
+/* Filter Section */
+.filterSection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    width: 90%;
+    margin: 0 auto 20px;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.filterGroup label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #352F36;
+}
+
+.filterGroup input,
+.filterGroup select {
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid #D7D5D7;
+    border-radius: 5px;
+    width: 200px;
+    background-color: #fcfcfc;
+    color: #352F36;
+}
+
+.filterGroup input:focus,
+.filterGroup select:focus {
+    border-color: #BD2859;
+    outline: none;
+}
+
+.filterGroup input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+.clearButton {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #FFFFFF;
+    background: #5D595E;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    height: fit-content;
+    margin-top: 22px;
+    margin-left: 50px;
+}
+
+.clearButton:hover {
+    background: #352F36;
 }
 
 /* Table styling */
@@ -40,7 +140,8 @@
     width: 90%;
     margin: 0 auto 40px;
     border-collapse: collapse;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
 }
 
 .itemTable th, .itemTable td {
@@ -53,8 +154,15 @@
     background-color: #BD2859;
     color: #fcfcfc;
     font-weight: bold;
+    cursor: pointer;
+    user-select: none;
 }
 
+.itemTable th:hover {
+    background-color: #C63A4D;
+}
+
+/* Table row hover effect */
 .itemTable tr:hover {
     background-color: #f1f1f1;
 }
@@ -82,6 +190,34 @@
 .actionButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
 }
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pageButton {
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    background-color: #D7D5D7;
+    color: #FFFFFF;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.pageButton:hover {
+    background-color: #BD2859;
+}
+
+.activePage {
+    background-color: #BD2859;
+}
+
+/* Modal Styling */
 .modal {
     position: fixed;
     top: 0;
@@ -102,6 +238,7 @@
     border-radius: 10px;
     text-align: center;
     position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .close_button {
@@ -115,8 +252,9 @@
 
 .buttonGroup {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     gap: 10px;
+    margin-top: 20px;
 }
 
 .formButton {
@@ -133,4 +271,55 @@
 
 .formButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* New Button Styles */
+.viewLogsButton {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%); /* Blue Gradient */
+}
+
+.viewLogsButton:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+
+.backButton {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%); /* Grey Gradient */
+}
+
+.backButton:hover {
+    background: linear-gradient(90deg, #5a6268 0%, #6c757d 100%);
+}
+
+/* Log Details Styling */
+.logDetails {
+    text-align: left;
+    background-color: #f1f1f1;
+    padding: 15px;
+    border-radius: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', Courier, monospace;
+    margin-top: 10px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .adminContainer {
+        padding-top: 80px;
+    }
+
+    .itemTable {
+        width: 100%;
+    }
+
+    .modal_content {
+        width: 90%;
+    }
+
+    .filterGroup input,
+    .filterGroup select {
+        width: 100%;
+    }
 }

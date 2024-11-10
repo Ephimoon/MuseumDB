@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, InputAdornment, CssBaseline } from '@mui/material';
+import {
+    Box,
+    Button,
+    TextField,
+    Typography,
+    InputAdornment,
+    CssBaseline,
+    Snackbar,
+    Alert,
+    IconButton
+} from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
-import HomeNavBar from '../components/HomeNavBar'; // Move this import to the top
-import '../css/Auth.module.css'; // Import the updated CSS
+import CloseIcon from '@mui/icons-material/Close';
+import HomeNavBar from '../components/HomeNavBar';
+import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
+    const [warningOpen, setWarningOpen] = useState(false); // Added warningOpen state
+    const [expiryDate, setExpiryDate] = useState(''); // Added expiryDate state
     const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
@@ -38,9 +52,28 @@ const Login = () => {
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
 
-                if (data.role === 'admin') navigate('/');
-                else if (data.role === 'staff') navigate('/giftshop-admin');
+                // Store warning data if exists
+                if (data.membershipWarning) {
+                    const formattedDate = new Date(data.expireDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    localStorage.setItem('membershipWarning', 'true');
+                    localStorage.setItem('expiryDate', formattedDate);
+                    setExpiryDate(formattedDate); // Set expiryDate state
+                    setWarningOpen(true); // Open warning Snackbar
+                }
+
+                // Navigate based on role
+                if (data.role === 'admin') navigate('/AdminDashBoard');
+                else if (data.role === 'staff') navigate('/StaffDashboard');
+                else if (data.role === 'customer') navigate('/');
+                else if (data.role === 'member') navigate('/MemberDashboard');
                 else navigate('/');
+
+                toast.success('Login successful!');
             } else {
                 const data = await response.json();
                 setErrors({ server: data.message });
@@ -48,6 +81,10 @@ const Login = () => {
         } catch (error) {
             setErrors({ server: 'Error logging in.' });
         }
+    };
+
+    const handleWarningClose = () => {
+        setWarningOpen(false); // Close warning Snackbar
     };
 
     return (
@@ -110,6 +147,7 @@ const Login = () => {
                         fullWidth
                         variant="contained"
                         className="purchase-button"
+                        sx={{ mt: 3, mb: 2 }}
                     >
                         Login
                     </Button>
@@ -118,6 +156,60 @@ const Login = () => {
                     </Typography>
                 </Box>
             </div>
+
+            <Snackbar
+                open={warningOpen}
+                autoHideDuration={null}
+                onClose={handleWarningClose}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                sx={{
+                    mt: 2,
+                    maxWidth: '600px',
+                    width: '100%',
+                }}
+            >
+                <Alert
+                    onClose={handleWarningClose}
+                    severity="warning"
+                    sx={{
+                        width: '100%',
+                        backgroundColor: '#FFF8E1',
+                        color: '#8B6E00',
+                        '& .MuiAlert-action': {
+                            alignItems: 'center',
+                        },
+                        border: '1px solid #FFE082',
+                        borderRadius: '4px',
+                        '& .MuiAlert-icon': {
+                            display: 'none',
+                        },
+                    }}
+                    action={
+                        <IconButton
+                            size="small"
+                            aria-label="close"
+                            color="inherit"
+                            onClick={handleWarningClose}
+                        >
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
+                    }
+                >
+                    <Typography
+                        sx={{
+                            fontWeight: 'bold',
+                            mb: 1,
+                            color: '#8B6E00',
+                            fontSize: '1.1rem',
+                        }}
+                    >
+                        Membership Expiration Notice
+                    </Typography>
+                    <Typography sx={{ color: '#8B6E00' }}>
+                        Your individual membership will expire on {expiryDate}. Please renew your membership to continue enjoying museum benefits.
+                    </Typography>
+                </Alert>
+            </Snackbar>
         </div>
     );
 };
