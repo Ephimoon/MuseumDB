@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/BuyTickets.css';
 import TicketBackground from '../assets/TicketsBackground.png';
+import { TicketCartContext } from '../components/TicketCartContext';
+import { useNavigate } from 'react-router-dom';
 
 const BuyTickets = () => {
   const [ticketCounts, setTicketCounts] = useState({
-    adult: 0,
-    senior: 0,
-    student: 0,
-    child: 0
+    Adult: 0,
+    Senior: 0,
+    Student: 0,
+    Child: 0
   });
 
   const [visitDate, setVisitDate] = useState('');
+  const { addTicketToCart } = useContext(TicketCartContext);
+  const navigate = useNavigate();
   
   const prices = {
-    adult: 23.99,
-    senior: 19.99,
-    student: 14.99,
-    child: 0
+    Adult: 23.99,
+    Senior: 19.99,
+    Student: 14.99,
+    Child: 0
   };
 
   const handleIncrement = (type) => {
@@ -50,21 +54,32 @@ const BuyTickets = () => {
     return Object.values(ticketCounts).reduce((sum, count) => sum + count, 0);
   };
 
-  const handlePurchase = () => {
-    const { total, totalTickets } = calculateTotal();
+  const handleAddToCart = () => {
+    const { totalTickets } = calculateTotal();
     if (totalTickets > 0 && visitDate) {
-      const formattedDate = visitDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
+        const formattedDate = visitDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
 
-      alert(`Total Purchase: $${total.toFixed(2)} on ${formattedDate}`);
-      // Here, add logic to send the visit date and ticket data to the backend
+        // Prepare the ticket items for the cart with correct quantities
+        Object.keys(ticketCounts).forEach((type) => {
+            if (ticketCounts[type] > 0) {
+                addTicketToCart({
+                    name_: `${type} Ticket`,
+                    price: prices[type],
+                    quantity: ticketCounts[type], 
+                    visitDate: formattedDate,
+                });
+            }
+        });
+        navigate('/ticket-checkout'); // Navigate to the ticket checkout page
     } else {
-      alert("Please select a date and at least one ticket.");
+        alert("Please select a date and at least one ticket.");
     }
-  };
+};
+
 
 
   return (
@@ -90,6 +105,11 @@ const BuyTickets = () => {
             dateFormat="MM/dd/yyyy"
             placeholderText="Select a date"
             className="custom-date-picker"
+            minDate={new Date()}
+            filterDate={(date) => {
+              const day = date.getDay();
+              return day !== 1 && day !== 2; // 1 = Monday, 2 = Tuesday
+            }}
           />
         </div>
         
@@ -124,10 +144,10 @@ const BuyTickets = () => {
           <p className="total-amount">Total: ${calculateTotal().total.toFixed(2)}</p>
           <button 
             className="purchase-button"
-            onClick={handlePurchase}
+            onClick={handleAddToCart}
             disabled={calculateTotal().totalTickets === 0 || !visitDate}
           >
-            Purchase Tickets
+            Proceed to Checkout
           </button>
         </div>
       </div>
