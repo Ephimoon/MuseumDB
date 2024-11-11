@@ -135,6 +135,7 @@ const EventDirectorDashboard = () => {
             return;
         }
         console.log('Fetching report for event: ', eventId);
+        setReportData(null);
 
         try {
             const response = await axios.get(`http://localhost:5000/api/events/${eventId}/report`);
@@ -145,6 +146,7 @@ const EventDirectorDashboard = () => {
             }
         } catch (error) {
             console.error('Error fetching report: ', error);
+            setReportData({totalMembersSignedUp: 0, totalRevenue: 0});
         }
     };
 
@@ -197,7 +199,9 @@ const EventDirectorDashboard = () => {
                         <div className="event-cards-container">
                             {eventCards.map((event) => (
                                 <div key={event.id} className="event-card">
-                                    <p>{event.name}</p>
+                                    <div className='event-name'>
+                                        <p>{event.name}</p>
+                                    </div>
                                     <button onClick={() => openEditModal(event)}>Edit</button>
                                     <button onClick={() => removeEventCard(event.id)} className="Remove">Remove</button>
                                     <button onClick={() => viewMembers(event.id)}>View Members</button>

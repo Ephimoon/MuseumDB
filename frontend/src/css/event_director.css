@@ -102,12 +102,19 @@
         margin-bottom: 20px;
         border-radius: 5px;
         display: flex;
-        flex-direction: row;
-        align-items: flex-end;
+        flex-direction: column;
+        align-items: space-between;
+    }
+
+    .event-card .event-name {
+        font-weight: bold;
+        margin-bottom: auto;
     }
 
     .event-card button {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
         margin: 10px;
         border: none;
         border-radius: 5px;
