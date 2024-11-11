@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
 import ExhibitionImage from '../assets/exhibitions.png';
 import { ExhibitionsCardUser, ExhibitionModalUser } from '../components/ExhibitionsCardUser.jsx'; // Importing both components
 import '../css/ExhibitionsAndEvents.css';
+import axios from 'axios';
 
 const ExhibitionsAndEvents = () => {
 
@@ -31,7 +32,7 @@ const ExhibitionsAndEvents = () => {
             date_end: 'Feb 5, 2024',
             description: 'Discover more about this exhibition.'
         },
-        {
+        /*{
             id: 4,
             image: "https://placehold.jp/500x500.png",
             name: 'Modern Art Exhibition',
@@ -54,12 +55,36 @@ const ExhibitionsAndEvents = () => {
             date_start: 'June 1, 2023',
             date_end: 'Feb 5, 2024',
             description: 'Journey through time with artifacts from ancient Egypt, Greece, and Rome. Interactive displays and guided tours available.'
-        },
+        },*/
     ];
 
-
+    const [event, setSelectedEvent] = useState([]);
     const [selectedExhibition, setSelectedExhibition] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        // Fetch event data
+        const fetchEventData = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/events');
+                if (response.status === 200) {
+                    const formattedEvents = response.data.map(event => ({
+                        id: event.event_id,
+                        name: event.name_,
+                        image: "https://placehold.jp/500x500.png",
+                        date_start: event.start_date,
+                        date_end: event.end_date,
+                        description: event.description_
+                    }));
+                    setSelectedEvent(formattedEvents);
+                } 
+            } catch (error) {
+                console.error('Error fetching events: ', error);
+            }
+        };
+        fetchEventData();
+    }, []);
+
 
     const handleExploreClick = (exhibition) => {
         setSelectedExhibition(exhibition);
@@ -82,6 +107,13 @@ const ExhibitionsAndEvents = () => {
 
             <div className="exhibitions-container">
                 {exhibitions.map((exhibition) => (
+                    <ExhibitionsCardUser
+                        key={exhibition.id}
+                        exhibition={exhibition}
+                        onExploreClick={handleExploreClick}
+                    />
+                ))}
+                 {event.map((exhibition) => (
                     <ExhibitionsCardUser
                         key={exhibition.id}
                         exhibition={exhibition}
