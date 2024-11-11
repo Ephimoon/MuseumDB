@@ -13,6 +13,8 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     const [deathYear, setDeathYear] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
+    // Error tracking for multiple fields
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchNationalities = async () => {
@@ -29,6 +31,20 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     const handleImageChange = (e) => setImage(e.target.files[0]);
 
     const handleSave = () => {
+        let newErrors = {};
+        if (!name) newErrors.name = "Name is required";
+        if (!gender) newErrors.gender = "Gender is required";
+        if (!nationality) newErrors.nationality = "Nationallity is required";
+        if (!birthYear) newErrors.birthYear = "Birth year is required";
+        if (!description) newErrors.description = "Description is required";
+
+        setErrors(newErrors);
+
+        // Stop if there are any validation errors
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
         const formData = new FormData();
         formData.append('name', name);
         formData.append('gender', gender);
@@ -188,7 +204,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
         formData.append('price', price);
         formData.append('Description', description);
         if (image) formData.append('image', image);
-
+    
         onSave(formData);
         onClose();
     };
@@ -304,6 +320,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 const CurateArt = () => {
     const [isInsertArtistOpen, setIsInsertArtistOpen] = useState(false);
     const [isInsertArtworkOpen, setIsInsertArtworkOpen] = useState(false);
+    const [isDeletedOpen, setIsDeletedOpen] = useState(false);
     const [artists, setArtists] = useState([]);
     const [artworks, setArtworks] = useState([]);
     const [refreshArtists, setRefreshArtists] = useState(false);
@@ -311,20 +328,25 @@ const CurateArt = () => {
 
     useEffect(() => {
         fetchArtists();
-    }, [refreshArtists]);
+    }, [refreshArtists, isDeletedOpen]);
 
     const fetchArtists = () => {
-        axios.get(`http://localhost:5000/artist`)
-            .then(response => setArtists(response.data))
+        axios.get(`http://localhost:5000/artist?isDeleted=${isDeletedOpen}`)
+            .then(response => {
+                // Filter out any entries without a valid ArtistID
+                const validArtists = response.data.flat().filter(artist => artist.ArtistID);
+                console.log("Filtered valid artists:", validArtists);
+                setArtists(validArtists);
+            })
             .catch(error => console.error('Error fetching artists:', error));
     };
 
     useEffect(() => {
         fetchArtworks();
-    }, [refreshArtworks]);
+    }, [refreshArtworks, isDeletedOpen]);
 
     const fetchArtworks = () => {
-        axios.get(`http://localhost:5000/artwork`)
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedOpen}`)
             .then(response => setArtworks(response.data))
             .catch(error => console.error('Error fetching artworks:', error));
     };
@@ -339,41 +361,54 @@ const CurateArt = () => {
 
     // refresh both artist lists after saving new artwork
     const saveInsertArtwork = (artworkData) => {
-        axios.post(`http://localhost:5000/artwork`, artworkData, { headers: { 'Content-Type': 'multipart/form-data' } })
-            .then(() => {
-                // Refresh both artist and artwork lists
-                triggerArtistRefresh();
-                triggerArtworkRefresh();
-                closeInsertArtworkModal();
-            })
-            .catch(error => console.error('Error adding artwork:', error));
+        axios.post(`http://localhost:5000/artwork`, artworkData, {
+            headers: { 'Content-Type': 'multipart/form-data' } // Set proper header for file uploads
+        })
+        .then(() => {
+            triggerArtworkRefresh();
+            closeInsertArtworkModal();
+        })
+        .catch(error => console.error('Error adding artwork:', error));
     };
 
     const saveInsertArtist = (artistData) => {
-        axios.post(`http://localhost:5000/artist`, artistData, { headers: { 'Content-Type': 'multipart/form-data' } })
-            .then(() => { triggerArtistRefresh(); closeInsertArtistModal(); })
-            .catch(error => console.error('Error adding artist:', error));
+        axios.post(`http://localhost:5000/artist`, artistData, { 
+            headers: { 'Content-Type': 'multipart/form-data' } 
+        })
+        .then(() => { 
+            triggerArtistRefresh();
+            closeInsertArtistModal(); 
+        })
+        .catch(error => console.error('Error adding artist:', error));
     };
 
     return (
         <div className={styles.ArtContainer}>
             <HomeNavBar />
             <h1>Curate Art</h1>
-            <button onClick={openInsertArtworkModal}>Insert Artwork</button>
-            <button onClick={openInsertArtistModal}>Insert Artist</button>
+            {!isDeletedOpen && (
+                <>
+                    <button onClick={openInsertArtworkModal}>Insert Artwork</button>
+                    <button onClick={openInsertArtistModal}>Insert Artist</button>               
+                </>
+            )}
+            <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
+                {isDeletedOpen ? 'View Active' : 'View Deleted'}
+            </button>
 
             <ArtLookUp
                 refreshArtists={refreshArtists}
                 refreshArtworks={refreshArtworks}
                 triggerRefreshArtists={triggerArtistRefresh}
                 triggerRefreshArtworks={triggerArtworkRefresh}
+                isDeletedView={isDeletedOpen}
             />
 
-            {isInsertArtistOpen && (
-                <InsertArtistModal onClose={closeInsertArtistModal} onSave={saveInsertArtist} />
-            )}
             {isInsertArtworkOpen && (
                 <InsertArtworkModal onClose={closeInsertArtworkModal} onSave={saveInsertArtwork} artists={artists} />
+            )}
+            {isInsertArtistOpen && (
+                <InsertArtistModal onClose={closeInsertArtistModal} onSave={saveInsertArtist} />
             )}
         </div>
     );

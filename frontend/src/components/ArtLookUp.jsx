@@ -4,11 +4,12 @@ import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser } from '../c
 import styles from '../css/Art.module.css';
 import axios from 'axios';
 
-const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, triggerRefreshArtworks }) => {
+const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, triggerRefreshArtworks, isDeletedView }) => {
     const location = useLocation();
     const role = localStorage.getItem('role');
 
     const [artworks, setArtworks] = useState([]);
+    const [artists, setArtists] = useState([]);
     const [artistsWithArtwork, setArtistsWithArtwork] = useState([]);
     const [artistsWithoutArtwork, setArtistsWithoutArtwork] = useState([]);
 
@@ -34,7 +35,10 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     const [filteredArtistsWithArtwork, setFilteredArtistsWithArtwork] = useState([]);
     const [filteredArtistsWithoutArtwork, setFilteredArtistsWithoutArtwork] = useState([]);
 
-
+    const [artworkImages, setArtworkImages] = useState({});
+    const [artworkPreviewImages, setArtworkPreviewImages] = useState({});
+    const [artistImages, setArtistImages] = useState({});
+    const [artistPreviewImages, setArtistPreviewImages] = useState({});
 
     useEffect(() => {
         if (activeTab === 'artwork') {
@@ -49,24 +53,101 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         fetchArtwork();
         fetchArtists();
         fetchFilterOptions();
-    }, [refreshArtworks, refreshArtists]);
+    }, [isDeletedView, refreshArtworks, refreshArtists]);
 
     const fetchArtwork = () => {
-        axios.get(`http://localhost:5000/artwork`)
-            .then(response => setArtworks(response.data))
+        console.log("isDeletedView:", isDeletedView); 
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedView}`)
+            .then(response => {
+                console.log("Artwork data:", response.data); // Log the data to see if it's fetched
+                setArtworks(response.data[0]);
+            })
             .catch(err => console.log('Error fetching artwork:', err));
     };
 
+    useEffect(() => {
+        fetchAllArtworkImages();
+    }, [artworks]);
+      
+    const fetchAllArtworkImages = async () => {
+        const images = {};
+        await Promise.all(
+            artworks.map(async (art_image) => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/artwork/${art_image.ArtworkID}/image`, {
+                        responseType: 'blob',
+                    });
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[art_image.ArtworkID] = imageUrl;
+                    console.log(`Fetched image for artwork ${art_image.ArtworkID}`);
+                } catch (error) {
+                    console.error(`Error fetching image for artwork ${art_image.ArtworkID}:, error`);
+                }
+            })
+        );
+        setArtworkImages(images); // Update artworkImages state with all images
+    };
+    // Update specific artwork preview in artworkPreviewImages
+    const handlePreviewImageChange = (artworkId, previewUrl) => {
+        setArtworkPreviewImages((prev) => ({
+            ...prev,
+            [artworkId]: previewUrl,
+        }));
+    }; 
+
     const fetchArtists = async () => {
         try {
-            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork`);
-            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork`);
-            setArtistsWithArtwork(responseWithArtwork.data);
-            setArtistsWithoutArtwork(responseWithoutArtwork.data);
+            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork?isDeleted=${isDeletedView}`);
+            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork?isDeleted=${isDeletedView}`);
+    
+            // Combine and filter out entries without ArtistID
+            const artistsWithArtwork = responseWithArtwork.data.flat().filter(artist => artist.ArtistID);
+            const artistsWithoutArtwork = responseWithoutArtwork.data.flat().filter(artist => artist.ArtistID);
+    
+            console.log("Filtered Artists with artwork:", artistsWithArtwork);
+            console.log("Filtered Artists without artwork:", artistsWithoutArtwork);
+    
+            setArtists([...artistsWithArtwork, ...artistsWithoutArtwork]);
+            setArtistsWithArtwork(artistsWithArtwork);
+            setArtistsWithoutArtwork(artistsWithoutArtwork);
         } catch (err) {
             console.log('Error fetching artists:', err);
         }
     };
+
+    useEffect(() => {
+        fetchAllArtistImages();
+    }, [artists]);
+      
+    const fetchAllArtistImages = async () => {
+        const images = {};
+        await Promise.all(
+            artists.filter(artist_image => artist_image.ArtistID).map(async (artist_image) => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/artist/${artist_image.ArtistID}/image`, {
+                        responseType: 'blob',
+                    });
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[artist_image.ArtistID] = imageUrl;
+                    console.log(`Fetched image for artist ${artist_image.ArtistID}`);
+                } catch (error) {
+                    console.error(`Error fetching image for artist ${artist_image.ArtistID}:`, error);
+                }
+            })
+        );
+        setArtistImages(images);
+    };
+    // Update specific artwork preview in artworkPreviewImages
+    const handlePreviewArtistImageChange = (artistId, previewUrl) => {
+        console.log(`Updating preview for artist ${artistId} with URL:`, previewUrl);
+        setArtistPreviewImages((prev) => ({
+            ...prev,
+            [artistId]: previewUrl,
+        }));
+    }; 
+
+
+
 
     const fetchFilterOptions = async () => {
         try {
@@ -128,17 +209,17 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         }).sort((a, b) => {
             switch (sortOption) {
                 case 'title_asc':
-                    return a.Title.localeCompare(b.Title);
+                    return (a.Title || '').localeCompare(b.Title || '');
                 case 'title_desc':
-                    return b.Title.localeCompare(a.Title);
+                    return (b.Title || '').localeCompare(a.Title || '');
                 case 'year_asc':
-                    return a.CreationYear - b.CreationYear;
+                    return (a.CreationYear || 0) - (b.CreationYear || 0);
                 case 'year_desc':
-                    return b.CreationYear - a.CreationYear;
+                    return (b.CreationYear || 0) - (a.CreationYear || 0);
                 case 'artist_asc':
-                    return a.artist_name.localeCompare(b.artist_name);
+                    return (a.artist_name || '').localeCompare(b.artist_name || '');
                 case 'artist_desc':
-                    return b.artist_name.localeCompare(a.artist_name);
+                    return (b.artist_name || '').localeCompare(a.artist_name || '');
                 default:
                     return 0;
             }
@@ -182,8 +263,8 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     const [isArtworkModalOpen, setIsArtworkModalOpen] = useState(false);
     const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
 
-    const openArtworkModal = (artwork) => {
-        setSelectedArtwork(artwork);
+    const openArtworkModal = (artwork, refreshImage) => {
+        setSelectedArtwork({ ...artwork, refreshImage });
         setIsArtworkModalOpen(true);
     };
     const closeArtworkModal = () => {
@@ -191,8 +272,8 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         setIsArtworkModalOpen(false);
     };
 
-    const openArtistModal = (artist) => {
-        setSelectedArtist(artist);
+    const openArtistModal = (artist, refreshImage) => {
+        setSelectedArtist({ ...artist, refreshImage });
         setIsArtistModalOpen(true);
     };
     const closeArtistModal = () => {
@@ -203,7 +284,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     return (
         <div>
             <div className={styles.FilterContainer}>
-                <h1>Search Collection</h1>
+                <h1>{isDeletedView ? 'Deleted Collection' : 'Search Collection'}</h1>
                 <div className={styles.tabs}>
                     <button onClick={() => handleTabSwitch('artwork')} className={activeTab === 'artwork' ? styles.activeTab : ''}>
                         Artwork
@@ -316,16 +397,31 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
             {/* Display Artwork or Artist */}
             <div>
                 {activeTab === 'artwork' ? (
-                    searchArtwork(filteredArtworks).length > 0 ? (
-                        <>
-                            <ArtworkCard artwork_={filteredArtworks} onCardClick={openArtworkModal} />
-                            {isArtworkModalOpen && (
-                                <ArtworkModalUser artwork_={selectedArtwork} onClose={closeArtworkModal} onRefresh={triggerRefreshArtworks} />
-                            )}
-                        </>
-                    ) : (
-                        <p>No artwork found matching your search.</p>
-                    )
+                    <>
+                        <p>{isDeletedView ? 'Restore deleted artwork' : ''}</p>
+                        {searchArtwork(filteredArtworks).length > 0 ? (
+                            <>
+                                <ArtworkCard artwork_=
+                                {filteredArtworks} 
+                                onCardClick={openArtworkModal} 
+                                artworkImages={artworkImages} 
+                                />
+                                {isArtworkModalOpen && (
+                                    <ArtworkModalUser 
+                                    artwork_={selectedArtwork} 
+                                    onClose={closeArtworkModal} 
+                                    onRefresh={triggerRefreshArtworks}
+                                    artworkPreviewImages={artworkPreviewImages} // Pass preview images
+                                    handlePreviewImageChange={handlePreviewImageChange} // Pass function to update preview
+                                    isDeletedView={isDeletedView} // Pass function to open edit modal
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <p>No artwork found matching your search.</p>
+                        )}
+                    </>
+
                 ) : (
                     <>
                         {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
@@ -336,9 +432,20 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                                     searchArtists(filteredArtistsWithoutArtwork).length > 0 ? (
                                         // Display artists that match the search criteria
                                         <>
-                                            <ArtistCard artist_={filteredArtistsWithoutArtwork} onCardClick={openArtistModal} />
+                                            <ArtistCard artist_=
+                                            {filteredArtistsWithoutArtwork} 
+                                            onCardClick={openArtistModal} 
+                                            artistImages={artistImages} 
+                                            />
                                             {isArtistModalOpen && (
-                                                <ArtistModalUser artist_={selectedArtist} onClose={closeArtistModal} onRefresh={triggerRefreshArtists} />
+                                                <ArtistModalUser 
+                                                artist_={selectedArtist} 
+                                                onClose={closeArtistModal} 
+                                                onRefresh={triggerRefreshArtists} 
+                                                artistPreviewImages={artistPreviewImages} // Pass preview images
+                                                handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
+                                                isDeletedView={isDeletedView}
+                                                />
                                             )}
                                         </>
                                     ) : (
@@ -354,9 +461,20 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                         )}
                         {searchArtists(filteredArtistsWithArtwork).length > 0 ? (
                             <>
-                                <ArtistCard artist_={filteredArtistsWithArtwork} onCardClick={openArtistModal} />
+                                <ArtistCard 
+                                artist_={filteredArtistsWithArtwork} 
+                                onCardClick={openArtistModal} 
+                                artistImages={artistImages} 
+                                />
                                 {isArtistModalOpen && (
-                                    <ArtistModalUser artist_={selectedArtist} onClose={closeArtistModal} onRefresh={triggerRefreshArtists} />
+                                    <ArtistModalUser 
+                                    artist_={selectedArtist} 
+                                    onClose={closeArtistModal} 
+                                    onRefresh={triggerRefreshArtists} 
+                                    artistPreviewImages={artistPreviewImages} // Pass preview images
+                                    handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
+                                    isDeletedView={isDeletedView}
+                                    />
                                 )}
                             </>
                         ) : (
