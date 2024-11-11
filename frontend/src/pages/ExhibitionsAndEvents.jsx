@@ -31,7 +31,32 @@ const ExhibitionsAndEvents = () => {
             date_end: 'Feb 5, 2024',
             description: 'Discover more about this exhibition.'
         },
+        {
+            id: 4,
+            image: "https://placehold.jp/500x500.png",
+            name: 'Modern Art Exhibition',
+            date_start: 'Nov 25, 2021',
+            date_end: 'Jan 7, 2022',
+            description: 'Explore contemporary artworks from emerging artists around the globe. Features paintings, sculptures, and digital installations.'
+        },
+        {
+            id: 5,
+            image: "https://placehold.jp/500x500.png",
+            name: 'Renaissance Masters',
+            date_start: 'Nov 1, 2023',
+            date_end: 'Feb 5, 2024',
+            description: 'A curated collection of Renaissance masterpieces, featuring works from Italian and Northern European artists.'
+        },
+        {
+            id: 6,
+            image: "https://placehold.jp/500x500.png",
+            name: 'Ancient Civilizations',
+            date_start: 'June 1, 2023',
+            date_end: 'Feb 5, 2024',
+            description: 'Journey through time with artifacts from ancient Egypt, Greece, and Rome. Interactive displays and guided tours available.'
+        },
     ];
+
 
     const [selectedExhibition, setSelectedExhibition] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +76,7 @@ const ExhibitionsAndEvents = () => {
             <div className="container">
                 <img src={ExhibitionImage} alt="Exhibitions" className="HalfBackgroundImage" />
                 <div className="overlay">
-                    <h1 className="title">Exhibitions</h1>
+                    <h1 className="title">Exhibitions & Events</h1>
                 </div>
             </div>
 
