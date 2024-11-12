@@ -1513,9 +1513,9 @@ app.put('/announcements/:id/restore', authenticateUser, async (req, res) => {
 
 // Add a new event
 app.post('/api/events', async (req, res) => {
-    const {name, description, location, status} = req.body;
+    const {name, description, location, status, start_date, end_date} = req.body;
     try {
-        const [result] = await db.query('INSERT INTO event_ (name_, description_, location, status) VALUES (?, ?, ?, ?)', [name, description, location, status])
+        const [result] = await db.query('INSERT INTO event_ (name_, description_, location, status, start_date, end_date) VALUES (?, ?, ?, ?, ?, ?)', [name, description, location, status, start_date, end_date]);
         res.json({id: result.insertId, message: 'Event added successfully.'});
     } catch (error) {
         console.error('Error adding event:', error);
@@ -1526,7 +1526,7 @@ app.post('/api/events', async (req, res) => {
 // Update event information
 app.put('/api/events/:id', async (req, res) => {
     const {id} = req.params;
-    const {name, description, location, status} = req.body;
+    const {name, description, location, status, start_date, end_date} = req.body;
 
     const allowedStatuses = ['upcoming', 'ongoing', 'completed'];
     if (!allowedStatuses.includes(status)) {
@@ -1534,7 +1534,7 @@ app.put('/api/events/:id', async (req, res) => {
     }
 
     try {
-        const [result] = await db.query('UPDATE event_ SET name_ = ?, description_ = ?, location = ?, status = ? WHERE event_id = ?', [name, description, location, status, id]);
+        const [result] = await db.query('UPDATE event_ SET name_ = ?, description_ = ?, location = ?, status = ?, start_date = ?, end_date = ? WHERE event_id = ?', [name, description, location, status, start_date, end_date, id]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({message: 'Event not found.'});
