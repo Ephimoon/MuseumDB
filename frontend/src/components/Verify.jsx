@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Box, Button, TextField, Typography, CssBaseline } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import config from '../config';
 
 export default function Verify() {
     const [email, setEmail] = useState('');
@@ -23,7 +22,7 @@ export default function Verify() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const response = await fetch(`${config.backendUrl}/verify`, {
+            const response = await fetch(`http://localhost:5000/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

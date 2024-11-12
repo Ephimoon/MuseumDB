@@ -38,7 +38,7 @@ const Home = () => {
             <HomeNavBar />
             {/* Background Image */}
             <img src={HomeImage} alt="MFAH Landing Page Image" className="HomeBackgroundImage" />
-            
+
             {/* Overlayed content */}
             <div className="home-content">
                 <h1 className="heading-title">The Museum of Fine Arts, Houston</h1>

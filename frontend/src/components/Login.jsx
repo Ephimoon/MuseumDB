@@ -4,43 +4,41 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
-import IconButton from '@mui/material/IconButton';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
-import config from '../config';
+import { toast } from 'react-toastify';
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
-    const [warningOpen, setWarningOpen] = useState(false);
-    const [expiryDate, setExpiryDate] = useState('');
+    const [warningOpen, setWarningOpen] = useState(false); // Added warningOpen state
+    const [expiryDate, setExpiryDate] = useState(''); // Added expiryDate state
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-    
+
         const newErrors = {};
         if (!username) newErrors.username = 'Username is required';
         if (!password) newErrors.password = 'Password is required';
         setErrors(newErrors);
-    
+
         if (Object.keys(newErrors).length > 0) return;
-    
+
         try {
-            const loginUrl = `${config.backendUrl}/login`;
+            const loginUrl = `http://localhost:5000/login`;
             console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
-    
+
             if (response.ok) {
                 const data = await response.json();
-                
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
@@ -57,6 +55,8 @@ const Login = () => {
                     });
                     localStorage.setItem('membershipWarning', 'true');
                     localStorage.setItem('expiryDate', formattedDate);
+                    setExpiryDate(formattedDate); // Set expiryDate state
+                    setWarningOpen(true); // Open warning Snackbar
                 }
 
                 // Check if we have a redirect path
@@ -82,11 +82,8 @@ const Login = () => {
         }
     };
 
-    const handleWarningClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setWarningOpen(false);
+    const handleWarningClose = () => {
+        setWarningOpen(false); // Close warning Snackbar
     };
 
     return (
@@ -149,6 +146,7 @@ const Login = () => {
                         fullWidth
                         variant="contained"
                         className="purchase-button"
+                        sx={{ mt: 3, mb: 2 }}
                     >
                         Login
                     </Button>
@@ -166,7 +164,7 @@ const Login = () => {
                 sx={{
                     mt: 2,
                     maxWidth: '600px',
-                    width: '100%'
+                    width: '100%',
                 }}
             >
                 <Alert
@@ -177,13 +175,13 @@ const Login = () => {
                         backgroundColor: '#FFF8E1',
                         color: '#8B6E00',
                         '& .MuiAlert-action': {
-                            alignItems: 'center'
+                            alignItems: 'center',
                         },
                         border: '1px solid #FFE082',
                         borderRadius: '4px',
                         '& .MuiAlert-icon': {
-                            display: 'none' // Removes the warning icon
-                        }
+                            display: 'none',
+                        },
                     }}
                     action={
                         <IconButton
@@ -196,12 +194,12 @@ const Login = () => {
                         </IconButton>
                     }
                 >
-                    <Typography 
-                        sx={{ 
-                            fontWeight: 'bold', 
+                    <Typography
+                        sx={{
+                            fontWeight: 'bold',
                             mb: 1,
                             color: '#8B6E00',
-                            fontSize: '1.1rem'
+                            fontSize: '1.1rem',
                         }}
                     >
                         Membership Expiration Notice

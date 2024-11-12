@@ -4,7 +4,6 @@ import { CartContext } from '../components/CartContext';
 import HomeNavBar from '../components/HomeNavBar';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import styles from '../css/Checkout.module.css'; // Import Checkout-specific styles
-import config from '../config';
 
 const Checkout = () => {
     const { cartItems, clearCart, updateQuantity } = useContext(CartContext);
@@ -40,7 +39,7 @@ const Checkout = () => {
         }
 
         // Send data to backend
-        fetch(`${config.backendUrl}/checkout`, { // Ensure this endpoint matches your backend
+        fetch(`http://localhost:5000/checkout`, { // Ensure this endpoint matches your backend
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -59,8 +58,6 @@ const Checkout = () => {
             .then(data => {
                 setTransactionStatus('success');
                 clearCart();
-                // Optionally, navigate to a confirmation page with transaction details
-                // navigate(`/confirmation/${data.transaction_id}`);
             })
             .catch(error => {
                 console.error('Error processing transaction:', error);
@@ -81,8 +78,6 @@ const Checkout = () => {
                 {transactionStatus === 'success' ? (
                     <div className={styles.successMessage}>
                         <p>Your transaction was successful!</p>
-                        {/* Optionally display transaction details */}
-                        {/* <p>Transaction ID: {data.transaction_id}</p> */}
                         <button
                             className={styles.goBackButton}
                             onClick={() => navigate('/')}

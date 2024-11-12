@@ -1,0 +1,28 @@
+/* src/css/AnnouncementDisplay.module.css */
+
+.background {
+    background-color: #FFFFFF;
+    padding: 20px;
+    min-height: 100vh; /* Makes sure it covers the full viewport height */
+}
+.announcementsContainer {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #FFFFFF; /* Add this line */
+}
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 2rem;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .announcementsContainer {
+        padding: 10px;
+    }
+}

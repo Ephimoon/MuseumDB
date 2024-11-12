@@ -1,61 +1,88 @@
-// src/pages/Register.jsx
 import React, { useState } from 'react';
 import {
-    Box, Button, TextField, Typography, InputAdornment, Grid, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle
+    Box,
+    Button,
+    TextField,
+    Typography,
+    InputAdornment,
+    CssBaseline,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EmailIcon from '@mui/icons-material/Email';
-import PersonIcon from '@mui/icons-material/Person';
-import LockIcon from '@mui/icons-material/Lock';
-import AccountIcon from '@mui/icons-material/AccountBox';
+import AccountIcon from '@mui/icons-material/AccountBox'; // Import AccountIcon
+import LockIcon from '@mui/icons-material/Lock'; // Import LockIcon
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
-import TicketBackground from '../assets/TicketsBackground.png'; // Use the same background image
-import config from '../config';
+import TicketBackground from '../assets/TicketsBackground.png';
+import { toast } from 'react-toastify'; // Import toast
+// config
 
 const Register = () => {
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [dateOfBirth, setDateOfBirth] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [email, setEmail] = useState('');
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        dateOfBirth: '',
+        username: '',
+        password: '',
+        email: '',
+        roleId: 3, // Default to 'customer'
+    });
     const [errors, setErrors] = useState({});
-    const [openDialog, setOpenDialog] = useState(false);
     const navigate = useNavigate();
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+
         const newErrors = {};
-        if (!firstName) newErrors.firstName = 'First name is required';
-        if (!lastName) newErrors.lastName = 'Last name is required';
-        if (!dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
-        if (!username) newErrors.username = 'Username is required';
-        if (!password) newErrors.password = 'Password is required';
-        if (!email) newErrors.email = 'Email is required';
+        if (!formData.firstName) newErrors.firstName = 'First name is required';
+        if (!formData.lastName) newErrors.lastName = 'Last name is required';
+        if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+        if (!formData.username) newErrors.username = 'Username is required';
+        if (!formData.password) newErrors.password = 'Password is required';
+        if (!formData.email) newErrors.email = 'Email is required';
         setErrors(newErrors);
-        if (Object.keys(newErrors).length > 0) return;
+
+        if (Object.keys(newErrors).length > 0) {
+            // Display validation errors using toast
+            Object.values(newErrors).forEach((error) => toast.error(error));
+            return;
+        }
 
         try {
-            const response = await fetch(`${config.backendUrl}/register`, {
+            const response = await fetch(`http://localhost:5000/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, dateOfBirth, username, password, email }),
+                body: JSON.stringify(formData),
             });
+
             if (response.ok) {
-                setOpenDialog(true);
-            } else {
                 const data = await response.json();
-                setErrors({ server: data.message });
+                toast.success(data.message);
+                navigate('/login');
+            } else {
+                const errorData = await response.json();
+                if (errorData.errors) {
+                    // Display field-specific errors
+                    Object.values(errorData.errors).forEach((error) => toast.error(error));
+                } else {
+                    // Display general error message
+                    toast.error(errorData.message || 'Error registering user.');
+                }
             }
         } catch (error) {
-            setErrors({ server: 'Error registering user.' });
+            console.error('Error registering:', error);
+            toast.error('Error registering user.');
         }
-    };
-
-    const handleDialogClose = () => {
-        setOpenDialog(false);
-        navigate('/login');
     };
 
     return (
@@ -74,54 +101,58 @@ const Register = () => {
                 <Typography component="h1" variant="h5" className="tickets-title">
                     Register
                 </Typography>
-                {errors.server && <Typography color="error">{errors.server}</Typography>}
                 <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="First Name"
-                                error={!!errors.firstName}
-                                helperText={errors.firstName}
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <PersonIcon />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Last Name"
-                                error={!!errors.lastName}
-                                helperText={errors.lastName}
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <PersonIcon />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        </Grid>
-                    </Grid>
                     <TextField
+                        margin="normal"
+                        required
                         fullWidth
+                        id="firstName"
+                        label="First Name"
+                        name="firstName"
+                        error={!!errors.firstName}
+                        helperText={errors.firstName}
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <PersonAddIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="lastName"
+                        label="Last Name"
+                        name="lastName"
+                        error={!!errors.lastName}
+                        helperText={errors.lastName}
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <PersonAddIcon />
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="dateOfBirth"
                         label="Date of Birth"
                         type="date"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth}
+                        onChange={handleChange}
+                        InputLabelProps={{ shrink: true }}
                         error={!!errors.dateOfBirth}
                         helperText={errors.dateOfBirth}
-                        value={dateOfBirth}
-                        onChange={(e) => setDateOfBirth(e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        sx={{ mt: 2 }}
                     />
                     <TextField
                         margin="normal"
@@ -129,10 +160,11 @@ const Register = () => {
                         fullWidth
                         id="username"
                         label="Username"
+                        name="username"
                         error={!!errors.username}
                         helperText={errors.username}
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
+                        value={formData.username}
+                        onChange={handleChange}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -148,10 +180,11 @@ const Register = () => {
                         id="password"
                         label="Password"
                         type="password"
+                        name="password"
                         error={!!errors.password}
                         helperText={errors.password}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={formData.password}
+                        onChange={handleChange}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -166,10 +199,12 @@ const Register = () => {
                         fullWidth
                         id="email"
                         label="Email"
+                        type="email"
+                        name="email"
                         error={!!errors.email}
                         helperText={errors.email}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        value={formData.email}
+                        onChange={handleChange}
                         InputProps={{
                             startAdornment: (
                                 <InputAdornment position="start">
@@ -178,11 +213,32 @@ const Register = () => {
                             ),
                         }}
                     />
+                    {/* Optionally, allow admins to select role during registration */}
+                    {/* Uncomment the following block if needed */}
+                    {/*
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="role-label">Role</InputLabel>
+                        <Select
+                            labelId="role-label"
+                            id="roleId"
+                            name="roleId"
+                            value={formData.roleId}
+                            label="Role"
+                            onChange={handleChange}
+                        >
+                            <MenuItem value={1}>Admin</MenuItem>
+                            <MenuItem value={2}>Staff</MenuItem>
+                            <MenuItem value={3}>Customer</MenuItem>
+                            <MenuItem value={4}>Member</MenuItem>
+                        </Select>
+                    </FormControl>
+                    */}
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
                         className="purchase-button"
+                        sx={{ mt: 3, mb: 2 }}
                     >
                         Register
                     </Button>
@@ -190,15 +246,6 @@ const Register = () => {
                         Already have an account? <Link to="/login">Login here</Link>
                     </Typography>
                 </Box>
-                <Dialog open={openDialog} onClose={handleDialogClose}>
-                    <DialogTitle>Registration Successful</DialogTitle>
-                    <DialogContent>Thank you for registering!</DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleDialogClose} color="primary">
-                            OK
-                        </Button>
-                    </DialogActions>
-                </Dialog>
             </div>
         </div>
     );

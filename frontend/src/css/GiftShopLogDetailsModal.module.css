@@ -1,0 +1,141 @@
+/* src/css/GiftShopLogDetailsModal.module.css */
+
+/* Modal Overlay */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+/* Modal Content */
+.modalContent {
+    background: #FFFFFF;
+    padding: 30px;
+    width: 600px;
+    border-radius: 10px;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Close Button (Top-right) */
+.closeButton {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #352F36;
+}
+
+/* Details Section */
+.detailsSection {
+    margin-top: 20px;
+}
+
+/* Changed Fields Section */
+.changedFields {
+    margin-top: 20px;
+}
+
+.changedFields ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.fieldItem {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+/* Value Change Styling */
+.valueChange {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+}
+
+.oldValue {
+    color: #dc3545; /* Red color for old value */
+    text-decoration: line-through;
+}
+
+.arrow {
+    font-weight: bold;
+    color: #6c757d; /* Grey color for arrow */
+}
+
+.newValue {
+    color: #28a745; /* Green color for new value */
+    font-weight: bold;
+}
+
+/* Image Changes Styling */
+.imageChanges {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.imageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.logImage {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Close Button at Bottom */
+.closeButtonMain {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #BD2859;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+}
+
+.closeButtonMain:hover {
+    background-color: #D22D36;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .modalContent {
+        width: 90%;
+    }
+
+    .logImage {
+        width: 100px;
+        height: 100px;
+    }
+
+    .imageChanges {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

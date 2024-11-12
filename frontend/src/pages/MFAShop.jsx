@@ -14,7 +14,6 @@ import {
 import HomeNavBar from '../components/HomeNavBar';
 import MFAShopCard from '../components/MFAShopCard';
 import MFAShopModalUser from '../components/MFAShopModalUser';
-import config from '../config';
 
 const MFAShop = () => {
     const [shopItems, setShopItems] = useState([]);
@@ -26,9 +25,14 @@ const MFAShop = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Pagination state variables
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 9; // Adjust the number of items per page as needed
+
+
     useEffect(() => {
         setLoading(true);
-        fetch(`${config.backendUrl}/giftshopitems`)
+        fetch(`http://localhost:5000/giftshopitems`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch shop items');
@@ -36,7 +40,10 @@ const MFAShop = () => {
                 return response.json();
             })
             .then((data) => {
-                setShopItems(data);
+                // Map 'quantity' to 'stock' for clarity
+                const mappedData = data.map(item => ({ ...item, stock: item.quantity }));
+                console.log('Mapped shop items:', mappedData); // For debugging
+                setShopItems(mappedData);
                 setLoading(false);
             })
             .catch((error) => {
@@ -48,8 +55,10 @@ const MFAShop = () => {
 
     // Handle card click to show modal
     const handleCardClick = (item) => {
-        setSelectedItem(item);
-        setIsModalOpen(true);
+        if (item.stock > 0) {
+            setSelectedItem(item);
+            setIsModalOpen(true);
+        }
     };
 
     const closeModal = () => {
@@ -79,6 +88,17 @@ const MFAShop = () => {
                 return 0;
         }
     });
+
+    // Calculate total pages and current items
+    const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedItems.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Reset current page when filters or sorting options change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [query, selectedCategory, sortOption]);
 
     // Get unique category options
     const categoryOptions = [...new Set(shopItems.map((item) => item.category))];
@@ -194,8 +214,8 @@ const MFAShop = () => {
                                 <Typography>Loading items...</Typography>
                             ) : error ? (
                                 <Typography>Error: {error}</Typography>
-                            ) : sortedItems.length > 0 ? (
-                                sortedItems.map((item) => (
+                            ) : currentItems.length > 0 ? (
+                                currentItems.map((item) => (
                                     <Grid item xs={12} sm={6} md={4} key={item.item_id}>
                                         <MFAShopCard item={item} onCardClick={handleCardClick} />
                                     </Grid>
@@ -204,6 +224,27 @@ const MFAShop = () => {
                                 <Typography>No items found matching your query.</Typography>
                             )}
                         </Grid>
+
+                        {/* Pagination Controls */}
+                        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                            {Array.from({ length: totalPages }, (_, index) => (
+                                <Box
+                                    key={index}
+                                    sx={{
+                                        padding: '8px 12px',
+                                        margin: '0 4px',
+                                        borderRadius: '4px',
+                                        backgroundColor:
+                                            currentPage === index + 1 ? '#BD2859' : '#D7D5D7',
+                                        color: '#FFFFFF',
+                                        cursor: 'pointer',
+                                    }}
+                                    onClick={() => setCurrentPage(index + 1)}
+                                >
+                                    {index + 1}
+                                </Box>
+                            ))}
+                        </Box>
                     </Box>
                 </Box>
 

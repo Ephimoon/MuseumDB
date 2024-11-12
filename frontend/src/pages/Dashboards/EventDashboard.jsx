@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import '../../css/event_director.css';
 import logo from '../../assets/LOGO.png';
 import axios from 'axios';
-import config from '../../config';
 
 const EventDirectorDashboard = () => {
     const [eventCards, setEventCards] = useState([]);
@@ -13,13 +12,13 @@ const EventDirectorDashboard = () => {
     const [membersList, setMembersList] = useState([]); // State to store members list
     const [isMembersModalOpen, setIsMembersModalOpen] = useState(false); // State to control members modal
     const [isEventModalOpen, setIsEventModalOpen] = useState(false); // State to control event modal
-    const [selectedEvent, setSelectedEvent] = useState({ id: '', name: '', description: '', location: '', status: 'upcoming' }); // State to store selected event for editing
+    const [selectedEvent, setSelectedEvent] = useState({ id: '', name: '', description: '', location: '', status: 'upcoming', start_date: '', end_date: ''}); // State to store selected event for editing
 
     useEffect(() => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get(`${config.backendUrl}/api/events`);
+                const response = await axios.get(`http://localhost:5000/api/events`);
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,
@@ -27,7 +26,8 @@ const EventDirectorDashboard = () => {
                         description: event.description_,
                         location: event.location,
                         status: event.status,
-                        date: event.date
+                        start_date: event.start_date,
+                        end_date: event.end_date
                     }));
                     setEventCards(formattedEvents);
                 }
@@ -39,7 +39,7 @@ const EventDirectorDashboard = () => {
     }, []);
 
     const addEventCard = () => {
-        setSelectedEvent({ id: '', name: '', description: '', location: '', status: 'upcoming' });
+        setSelectedEvent({ id: '', name: '', description: '', location: '', status: 'upcoming', start_date: '', end_date: '' });
         setIsEventModalOpen(true);
     };
 
@@ -57,8 +57,8 @@ const EventDirectorDashboard = () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
-                //const response = await axios.put(`http://http://localhost:8080/api/events/${selectedEvent.id}`, selectedEvent);
-                const response = await axios.put(`${config.backendUrl}/api/events/${selectedEvent.id}`, selectedEvent);
+                //const response = await axios.put(`http://http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
+                const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
                 } else {
@@ -66,15 +66,15 @@ const EventDirectorDashboard = () => {
                 }
             } else {
                 // Add new event
-                //const response = await axios.post('http://http://localhost:8080/api/events', selectedEvent);
-                const response = await axios.post(`${config.backendUrl}/api/events`, selectedEvent);
+                //const response = await axios.post('http://http://localhost:5000/api/events', selectedEvent);
+                const response = await axios.post(`http://localhost:5000/api/events`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
                 } else {
                     console.error('Failed to add event');
                 }
             }
-            setSelectedEvent({ id: '', name: '', description: '', location: '', status: 'upcoming' });
+            setSelectedEvent({ id: '', name: '', description: '', location: '', status: 'upcoming', start_date: '', end_date: '' });
             setIsEventModalOpen(false);
         } catch (error) {
             console.error('Error saving event: ', error);
@@ -83,7 +83,7 @@ const EventDirectorDashboard = () => {
 
     const removeEventCard = async (id) => {
         try {
-            const response = await axios.delete(`${config.backendUrl}/api/events/${id}`); // replace with http://http://localhost:8080/api/events/${id}
+            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://http://localhost:5000/api/events/${id}
             if (response.status === 200) {
                 setEventCards(eventCards.filter(event => event.id !== id));
             }
@@ -102,9 +102,10 @@ const EventDirectorDashboard = () => {
 
     const viewMembers = async (eventId) => {
         try {
-            //const response = await axios.get(`http://http://localhost:8080/api/events/${eventId}/members`);
-            const response = await axios.get(`${config.backendUrl}/api/events/${eventId}/members`);
+            //const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
             if (response.status === 200) {
+                console.log('Members: ', response.data);
                 setMembersList(response.data);
             } else {
                 console.error('Failed to fetch members');
@@ -134,16 +135,20 @@ const EventDirectorDashboard = () => {
             alert('Please select an event.');
             return;
         }
+        console.log('Fetching report for event: ', eventId);
+        setReportData(null);
 
         try {
-            const response = await axios.get(`${config.backendUrl}/api/events/${eventId}/report`); 
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/report`);
             if (response.status === 200) {
                 setReportData(response.data);
             } else {
                 console.error('Failed to fetch report');
+                setReportData({totalMembersSignedUp: 0, totalRevenue: 0});
             }
         } catch (error) {
             console.error('Error fetching report: ', error);
+            setReportData({totalMembersSignedUp: 0, totalRevenue: 0});
         }
     };
 
@@ -196,7 +201,9 @@ const EventDirectorDashboard = () => {
                         <div className="event-cards-container">
                             {eventCards.map((event) => (
                                 <div key={event.id} className="event-card">
-                                    <p>{event.name}</p>
+                                    <div className='event-name'>
+                                        <p>{event.name}</p>
+                                    </div>
                                     <button onClick={() => openEditModal(event)}>Edit</button>
                                     <button onClick={() => removeEventCard(event.id)} className="Remove">Remove</button>
                                     <button onClick={() => viewMembers(event.id)}>View Members</button>
@@ -244,6 +251,24 @@ const EventDirectorDashboard = () => {
                                             onChange={handleInputChange}
                                         />
                                     </label>
+                                    <label>
+                                        Start Date:
+                                        <input
+                                            type="text"
+                                            name="start_date"
+                                            value={selectedEvent.start_date || ''}
+                                            onChange={handleInputChange}
+                                        />
+                                    </label>
+                                    <label>
+                                        End Date:
+                                        <input
+                                            type="text"
+                                            name="end_date"
+                                            value={selectedEvent.end_date || ''}
+                                            onChange={handleInputChange}
+                                        />
+                                    </label>
                                     <button onClick={saveEventChanges}>{selectedEvent.id ? 'Save Changes' : 'Submit'}</button>
                                     <button onClick={() => setIsEventModalOpen(false)}>Cancel</button>
                                 </div>
@@ -260,7 +285,7 @@ const EventDirectorDashboard = () => {
                             <ul>
                                 {membersList.length > 0 ? (
                                     membersList.map(member => (
-                                        <li key={member.id}>{member.name}</li>
+                                        <li key={member.id}>{member.fname} {member.lname}</li>
                                     ))
                                 ) : (
                                     <p>No members signed up.</p>
@@ -281,7 +306,7 @@ const EventDirectorDashboard = () => {
                             <option value="">-- Select an Event --</option>
                             {eventCards.map(event => (
                                 <option key={event.id} value={event.id}>
-                                    {event.name} 
+                                    {event.name}
                                 </option>
                             ))}
                         </select>
@@ -293,8 +318,8 @@ const EventDirectorDashboard = () => {
                         {reportData && (
                             <div className="report">
                                 <h4>Report for Event:</h4>
-                                <p><strong>Total Members Signed Up:</strong> {reportData.TotalMembersSignedUp}</p>
-                                <p><strong>Total Revenue Generated:</strong> ${reportData.TotalCashRevenue}</p>
+                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembersSignedUp}</p>
+                                <p><strong>Total Revenue Generated:</strong> ${reportData.totalRevenue}</p>
                             </div>
                         )}
                     </div>
