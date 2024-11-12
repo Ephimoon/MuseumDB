@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -10,7 +10,7 @@ import {
     Alert,
     IconButton
 } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
@@ -20,39 +20,73 @@ import TicketBackground from '../assets/TicketsBackground.png';
 import { toast } from 'react-toastify';
 
 const Login = () => {
+    const location = useLocation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
-    const [warningOpen, setWarningOpen] = useState(false); // Added warningOpen state
-    const [expiryDate, setExpiryDate] = useState(''); // Added expiryDate state
+    const [warningOpen, setWarningOpen] = useState(false);
+    const [expiryDate, setExpiryDate] = useState('');
+    const [membershipMessage, setMembershipMessage] = useState({
+        open: false,
+        message: ''
+    });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (location.state?.showMessage) {
+            setMembershipMessage({
+                open: true,
+                message: location.state.message
+            });
+        }
+    }, [location]);
+
+    const handleMembershipMessageClose = () => {
+        setMembershipMessage(prev => ({ ...prev, open: false }));
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+    
         const newErrors = {};
         if (!username) newErrors.username = 'Username is required';
         if (!password) newErrors.password = 'Password is required';
         setErrors(newErrors);
-
+    
         if (Object.keys(newErrors).length > 0) return;
-
+    
         try {
             const loginUrl = `http://localhost:5000/login`;
-            console.log("Login Endpoint URL:", loginUrl);
             const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
+                console.log('Received login response:', data); // Debug log
+    
+                // Check if first_name and last_name exist in response
+                if (!data.first_name || !data.last_name) {
+                    console.warn('Missing name data in response:', data);
+                }
+    
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
-
-                // Store warning data if exists
+                localStorage.setItem('firstName', data.first_name || '');  // Handle undefined case
+                localStorage.setItem('lastName', data.last_name || '');    // Handle undefined case
+    
+                // Verify localStorage values
+                console.log('localStorage after login:', {
+                    firstName: localStorage.getItem('firstName'),
+                    lastName: localStorage.getItem('lastName'),
+                    role: localStorage.getItem('role'),
+                    userId: localStorage.getItem('userId'),
+                    username: localStorage.getItem('username')
+                });
+    
                 if (data.membershipWarning) {
                     const formattedDate = new Date(data.expireDate).toLocaleDateString('en-US', {
                         weekday: 'long',
@@ -62,29 +96,29 @@ const Login = () => {
                     });
                     localStorage.setItem('membershipWarning', 'true');
                     localStorage.setItem('expiryDate', formattedDate);
-                    setExpiryDate(formattedDate); // Set expiryDate state
-                    setWarningOpen(true); // Open warning Snackbar
+                    setExpiryDate(formattedDate);
+                    setWarningOpen(true);
                 }
-
-                // Navigate based on role
+    
                 if (data.role === 'admin') navigate('/AdminDashBoard');
                 else if (data.role === 'staff') navigate('/StaffDashboard');
                 else if (data.role === 'customer') navigate('/');
                 else if (data.role === 'member') navigate('/MemberDashboard');
                 else navigate('/');
-
+    
                 toast.success('Login successful!');
             } else {
                 const data = await response.json();
                 setErrors({ server: data.message });
             }
         } catch (error) {
+            console.error('Error during login:', error);
             setErrors({ server: 'Error logging in.' });
         }
     };
 
     const handleWarningClose = () => {
-        setWarningOpen(false); // Close warning Snackbar
+        setWarningOpen(false);
     };
 
     return (
@@ -157,6 +191,50 @@ const Login = () => {
                 </Box>
             </div>
 
+            {membershipMessage.open && (
+    <div
+        style={{
+            position: 'fixed',
+            top: '89px',
+            right: '16px',
+            backgroundColor: '#2196F3', // Keeping the blue color
+            color: 'white',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            zIndex: 1000,
+            width: '330px',  // Matching the width of your existing notice
+            borderRadius: '4px',
+            fontSize: '14px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}
+    >
+        <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            marginBottom: '4px'
+        }}>
+            <strong>Membership Access</strong>
+            <IconButton
+                size="small"
+                onClick={handleMembershipMessageClose}
+                style={{ 
+                    color: 'white', 
+                    padding: '2px',
+                    marginRight: '-8px',
+                    marginTop: '-8px'
+                }}
+            >
+                <CloseIcon style={{ fontSize: '16px' }} />
+            </IconButton>
+        </div>
+        <div>
+            You do not have a membership. Please login or register to continue
+        </div>
+    </div>
+)}
+
+            {/* Existing Warning Snackbar */}
             <Snackbar
                 open={warningOpen}
                 autoHideDuration={null}

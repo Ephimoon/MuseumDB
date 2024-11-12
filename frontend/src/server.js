@@ -569,11 +569,27 @@ app.post('/login', async (req, res) => {
     }
 
     try {
+        console.log('Attempting login for username:', username);
+
+        // Explicitly select first_name and last_name
         const [userRows] = await db.query(`
-            SELECT user_id, username, password, role_id, is_deleted
-            FROM users
+            SELECT 
+                user_id, 
+                username, 
+                password, 
+                role_id, 
+                is_deleted, 
+                first_name,  /* Make sure these columns exist */
+                last_name    /* in your users table */
+            FROM users 
             WHERE username = ?
         `, [username]);
+
+        // Debug log the query result
+        console.log('Login query result:', {
+            rowCount: userRows.length,
+            userData: userRows[0]
+        });
 
         if (userRows.length === 0) {
             return res.status(400).json({message: 'Invalid username or password.'});
@@ -594,9 +610,28 @@ app.post('/login', async (req, res) => {
         // Map role_id to role_name
         const roleName = roleMappings[user.role_id] || 'unknown';
 
-        res.status(200).json({
-            message: 'Login successful!', userId: user.user_id, role: roleName, username: user.username,
+        // Debug log the user data being sent
+        console.log('User data being sent to frontend:', {
+            userId: user.user_id,
+            role: roleName,
+            username: user.username,
+            first_name: user.first_name,
+            last_name: user.last_name
         });
+
+        // Make sure first_name and last_name are included in response
+        const response = {
+            message: 'Login successful!',
+            userId: user.user_id,
+            role: roleName,
+            username: user.username,
+            first_name: user.first_name || '', // Provide default empty string if null
+            last_name: user.last_name || ''    // Provide default empty string if null
+        };
+
+        console.log('Sending response:', response);
+
+        res.status(200).json(response);
     } catch (error) {
         console.error('Server error during login:', error);
         res.status(500).json({message: 'Server error.'});
@@ -1609,97 +1644,100 @@ app.get('/api/events/:id/report', async (req, res) => {
 // ----- (DENNIS) ---------------------------------------------------------------------------------
 
 
-// Membership registration endpoint
-app.post('/membership-registration', async (req, res) => {
-    console.log('Received membership registration request:', req.body);
+// Keep middleware minimal - only check what's needed for access control
+async function authenticateMembershipAccess(req, res, next) {
+    const userId = req.headers['user-id'];
+    const role = req.headers['role'];
 
-    const {
-        first_name,
-        last_name,
-        username,
-        type_of_membership
-    } = req.body;
+    if (!userId || !role) {
+        return res.status(401).json({ message: 'Please log in first.' });
+    }
 
     try {
-        // Start transaction
-        await db.query('START TRANSACTION');
-
-        // Check if user exists and get their role_id
-        const [existingUser] = await db.query(
-            'SELECT user_id, role_id FROM users WHERE username = ?',
-            [username]
+        // Only get what we need for authentication
+        const [user] = await db.query(
+            'SELECT role_id, is_deleted FROM users WHERE user_id = ?', 
+            [userId]
         );
 
-        console.log('Existing user data:', existingUser);
-
-        if (existingUser.length === 0) {
-            await db.query('ROLLBACK');
-            console.log('User not found:', username);
-            return res.status(404).json({ error: 'User not found. Please register as a user first.' });
+        if (user.length === 0 || user[0].is_deleted === 1) {
+            return res.status(403).json({ message: 'User not found or deleted.' });
         }
 
-        const user = existingUser[0];
-        console.log('User role_id:', user.role_id);
+        if (user[0].role_id === 4) {
+            return res.status(403).json({ message: 'Already a member.' });
+        }
 
-        // Check if user already has a membership
+        if (user[0].role_id !== 3) {
+            return res.status(403).json({ message: 'Only customers can become members.' });
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error in authenticateMembershipAccess middleware:', error);
+        res.status(500).json({ message: 'Server error during authentication.' });
+    }
+}
+
+app.post('/membership-registration', authenticateMembershipAccess, async (req, res) => {
+    const userId = req.headers['user-id'];
+    const { first_name, last_name, type_of_membership } = req.body;
+
+    console.log('Received membership registration request:', {
+        userId,
+        first_name,
+        last_name,
+        type_of_membership
+    });
+
+    try {
+        await db.query('START TRANSACTION');
+
         const [existingMembership] = await db.query(
             'SELECT * FROM membership WHERE user_id = ?',
-            [user.user_id]
+            [userId]
         );
-
-        console.log('Existing membership:', existingMembership);
 
         if (existingMembership.length > 0) {
             await db.query('ROLLBACK');
-            console.log('User already has membership');
             return res.status(400).json({ error: 'User already has a membership' });
         }
 
-        if (user.role_id !== 3) {
-            await db.query('ROLLBACK');
-            console.log('Invalid role_id:', user.role_id);
-            return res.status(403).json({
-                error: user.role_id === 4
-                    ? 'User already has an active membership'
-                    : 'User must have role_id 3 to register for membership'
-            });
-        }
-
-        // Calculate expiration date (1 month from now)
         const expirationDate = new Date();
         expirationDate.setMonth(expirationDate.getMonth() + 1);
 
-        // Create membership record with correct column names (fname and lname)
-        const membershipResult = await db.query(
-            `INSERT INTO membership 
+        // Updated column names: fname and lname (no underscore)
+        const insertQuery = `
+            INSERT INTO membership 
             (user_id, type_of_membership, expire_date, expiration_warning, fname, lname)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [user.user_id, type_of_membership.toLowerCase(), expirationDate, 0, first_name, last_name]
-        );
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+        
+        const insertParams = [
+            userId,
+            type_of_membership.toLowerCase(),
+            expirationDate.toISOString().slice(0, 19).replace('T', ' '),
+            0,
+            first_name,
+            last_name
+        ];
+            
+        console.log('Insert params:', insertParams);
+        
+        await db.query(insertQuery, insertParams);
 
-        console.log('Membership creation result:', membershipResult);
+        // Update user's role using parameterized query
+        await db.query('UPDATE users SET role_id = ? WHERE user_id = ?', [4, userId]);
 
-        // Update user's role_id to 4
-        const userUpdateResult = await db.query(
-            'UPDATE users SET role_id = 4 WHERE user_id = ?',
-            [user.user_id]
-        );
-
-        console.log('User role update result:', userUpdateResult);
-
-        // Commit transaction
         await db.query('COMMIT');
-        console.log('Transaction committed successfully');
         res.status(201).json({ message: 'Membership registration successful' });
 
     } catch (error) {
-        // Rollback transaction on error
         await db.query('ROLLBACK');
         console.error('Error in membership registration:', error);
         res.status(500).json({ error: 'Internal server error during membership registration: ' + error.message });
     }
 });
-
 // Altered Leo's login backend to accomodate for membership expiration alert trigger
 
 

@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 
 import React, {useContext, useEffect, useState} from 'react';
-import {Link, useLocation} from 'react-router-dom'; // Using Link for navigation
+import {Link, useLocation} from 'react-router-dom';
 import '../css/HomeNavBar.css';
 import logo from '../assets/LOGO.png';
 import {CartContext} from './CartContext';
@@ -17,6 +17,8 @@ const Navbar = () => {
 
     const role = localStorage.getItem('role');
     const username = localStorage.getItem('username');
+
+    console.log('Current role:', role); // Debug log
 
     const handleScroll = () => {
         setNavBackground(window.scrollY > 50 ? '#352F36' : 'transparent');
@@ -48,7 +50,7 @@ const Navbar = () => {
             case 'member':
                 return '/MemberDashBoard';
             case 'customer':
-                return '/CustomerDashBoard'; // Assuming you have a customer dashboard
+                return '/CustomerDashBoard';
             default:
                 return '/';
         }
@@ -57,7 +59,6 @@ const Navbar = () => {
     return (
         <nav style={{ backgroundColor: navBackground }} className="navbar">
             <div className="navbar-container">
-                {/* Left Side: Logo and Navigation Links */}
                 <div className="left-side">
                     <Link to="/">
                         <img src={logo} alt="MFAH" className="logo" style={{cursor: 'pointer'}}/>
@@ -91,11 +92,13 @@ const Navbar = () => {
                     </ul>
                 </div>
 
-                {/* Right Side: Buttons and Cart Icon */}
                 <div className="nav-buttons">
                     {role ? (
                         <>
                             <span className="welcome-message">Welcome, {username}!</span>
+                            {(role.toLowerCase() === 'customer' || role === '3') && (
+                                <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
+                            )}
                             <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
                                 Dashboard
                             </Link>
