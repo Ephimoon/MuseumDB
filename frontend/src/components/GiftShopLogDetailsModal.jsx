@@ -81,8 +81,8 @@ const GiftShopLogDetailsModal = ({ log, onClose }) => {
                     <p><strong>Timestamp:</strong> {new Date(log.timestamp).toLocaleString()}</p>
                     <p><strong>Action:</strong> {log.action}</p>
                     <p><strong>Item ID:</strong> {log.item_id}</p>
-                    <p><strong>User:</strong> {log.username || 'Unknown'}</p>
-                    <p><strong>Role:</strong> {log.role}</p>
+                    <p><strong>User:</strong> {log.username || 'customer'}</p>
+                    <p><strong>Role:</strong> {log.role || 'customer'}</p>
 
                     {changedFields.length > 0 ? (
                         <div className={styles.changedFields}>
