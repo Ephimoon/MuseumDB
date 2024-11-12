@@ -8,7 +8,6 @@ import Art from './pages/Art';
 import MFAShop from './pages/MFAShop';
 import BecomeAMember from './pages/BecomeAMember';
 import BuyTickets from './pages/BuyTickets';
-import AdminReport from './pages/Dashboards/AdminReport';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyPage from './pages/VerifyPage';
@@ -29,6 +28,7 @@ import Settings from './pages/Dashboards/MemberDashboard/Settings';
 import Report from './pages/Report';
 import TicketCheckout from './pages/TicketCheckout';
 import { TicketCartProvider } from './components/TicketCartContext';
+import AdminDashboard from "./pages/Dashboards/AdminDashboard";
 
 const App = () => {
     const isAuthenticated = Boolean(localStorage.getItem('username')); // Check if a user is logged in
@@ -63,7 +63,7 @@ const App = () => {
 
                     {/* Admin Routes */}
                     <Route element={<PrivateRoute roles={['admin']} />}>
-                        <Route path="/admin-report" element={<AdminReport />} />
+                        <Route path="/AdminDashBoard" element={<AdminDashboard />} />
 
                     </Route>
 
