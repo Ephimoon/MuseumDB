@@ -114,13 +114,20 @@ const Navbar = () => {
                     {role ? (
                         <>
                             <span className="welcome-message">Welcome, {username}!</span>
+
                             {(role.toLowerCase() === 'customer' || role === '3') && (
                                 <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
                             )}
+
                             <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
-                            <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
-                                Dashboard
-                            </Link>
+
+                            {/* Conditionally render the Dashboard button for all roles except role ID '3' */}
+                            {role !== '3' && (
+                                <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
+                                    Dashboard
+                                </Link>
+                            )}
+
                             <Link to="/profile" className="btn-outline">Profile</Link>
                             <Link to="/login" onClick={handleLogout} className="btn-outline">Logout</Link>
                         </>
@@ -130,14 +137,6 @@ const Navbar = () => {
                             <Link to="/login" className="btn-outline">Login</Link>
                             <Link to="/register" className="btn-outline">Register</Link>
                         </>
-                    )}
-                    {location.pathname !== '/checkout' && (
-                        <div className="cart-icon" style={{position: 'relative', cursor: 'pointer'}}>
-                            <Link to="/cart">
-                                <ShoppingCartIcon fontSize="large" style={{color: '#FFFFFF'}}/>
-                                {cartItems.length > 0 && (<span className="cart-count">{cartItems.length}</span>)}
-                            </Link>
-                        </div>
                     )}
                 </div>
             </div>
