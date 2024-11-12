@@ -35,11 +35,12 @@ import AdminDashboard from "./pages/Dashboards/AdminDashboard";
 import ManageUsers from '../src/components/ManageUsers';
 const App = () => {
     const isAuthenticated = Boolean(localStorage.getItem('username')); // Check if a user is logged in
-
+    const username = localStorage.getItem('username'); // Check if a user is logged in
+    const role = localStorage.getItem('role'); // Get user role
     return (
         <BrowserRouter>
-            <ToastContainer />
-            <TicketCartProvider> {/* Wrapping Routes with TicketCartProvider */}
+            <TicketCartProvider>
+                <ToastContainer />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/Visit" element={<Visit />} />
