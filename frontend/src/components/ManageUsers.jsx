@@ -182,8 +182,6 @@ const ManageUsers = () => {
                     </div>
                 )}
             </div>
-            {/* Add ToastContainer */}
-            <ToastContainer />
         </div>
     );
 };
