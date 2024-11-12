@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser } from '../components/ArtworkCard';
+import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser, DepartmentCard, EditDepartmentModal, ConfirmDeleteDepartmentModal } from '../components/ArtworkCard';
 import styles from '../css/Art.module.css';
 import axios from 'axios';
 
@@ -487,4 +487,117 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     );
 };
 
-export default ArtLookUp;
+const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
+    const [departments, setDepartments] = useState([]);
+    const [sortOption, setSortOption] = useState('department_asc');
+    const [filterType, setFilterType] = useState('all'); // 'all', 'withArtwork', 'withoutArtwork'
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    useEffect(() => {
+        fetchDepartments();
+    }, [isDepartmentDeletedOpen, filterType, refreshDepartments]);
+
+    const fetchDepartments = async () => {
+        let endpoint = 'http://localhost:5000/department';
+        if (filterType === 'withArtwork') {
+            endpoint = 'http://localhost:5000/department-with-artwork';
+        } else if (filterType === 'withoutArtwork') {
+            endpoint = 'http://localhost:5000/department-null-artwork';
+        }
+
+        try {
+            const response = await axios.get(`${endpoint}?isDeleted=${isDepartmentDeletedOpen}`);
+            const validDepartments = response.data.flat().filter(department => department.DepartmentID);
+            setDepartments(validDepartments);
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+        }
+    };
+
+    const handleEditClick = (department) => {
+        if (!isDepartmentDeletedOpen) { // Prevent editing if department is in deleted view
+            setSelectedDepartment(department);
+            setIsEditModalOpen(true);
+        }
+    };
+
+    const handleDeleteClick = (departmentId) => {
+        if (!isDepartmentDeletedOpen) { // Prevent deletion if department is in deleted view
+            setSelectedDepartment(departmentId);
+            setIsDeleteModalOpen(true);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await axios.delete(`http://localhost:5000/department/${selectedDepartment}`);
+            fetchDepartments(); // Refresh the department list after deletion
+            setIsDeleteModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting department:", error);
+        }
+    };
+
+    const sortedDepartments = [...departments].sort((a, b) => {
+        return sortOption === 'department_asc'
+            ? a.Name.localeCompare(b.Name)
+            : b.Name.localeCompare(a.Name);
+    });
+
+    return (
+        <div>
+            <div className={styles.FilterContainer}>
+                <h1>{isDepartmentDeletedOpen ? 'Deleted Departments' : 'Departments'}</h1>
+
+                {/* Filter by artwork association */}
+                <div>
+                    <label>Filter Departments:</label>
+                    <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
+                        <option value="all">All</option>
+                        <option value="withArtwork">With Artwork</option>
+                        <option value="withoutArtwork">Without Artwork</option>
+                    </select>
+                </div>
+
+                {/* Sort Departments */}
+                <div className={styles.sortSection}>
+                    <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                        <option value="department_asc">Department A-Z</option>
+                        <option value="department_desc">Department Z-A</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Display Department Cards */}
+            <DepartmentCard
+                department_={sortedDepartments}
+                onRefresh={fetchDepartments}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+                isDepartmentDeletedOpen={isDepartmentDeletedOpen} // Pass the prop here
+            />
+
+            {/* Edit Department Modal */}
+            {isEditModalOpen && selectedDepartment && (
+                <EditDepartmentModal
+                    department={selectedDepartment}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onRefresh={fetchDepartments}
+                />
+            )}
+
+            {/* Confirm Delete Department Modal */}
+            {isDeleteModalOpen && (
+                <ConfirmDeleteDepartmentModal
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                />
+            )}
+        </div>
+    );
+};
+
+
+export {ArtLookUp, DepartmentLookUp};

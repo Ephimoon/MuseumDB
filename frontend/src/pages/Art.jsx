@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HomeNavBar from '../components/HomeNavBar';
 import ArtImage from '../assets/art.png';
 import styles from '../css/Art.module.css';
-import ArtLookUp from '../components/ArtLookUp';
+import {ArtLookUp} from '../components/ArtLookUp';
 
 const Art = () => {
     return (

@@ -81,6 +81,7 @@ const Navbar = () => {
                                                 <li><Link to="/giftshop-admin">Manage Gift Shop</Link></li>
                                                 <li><Link to="/manage-users">Manage Users</Link></li>
                                                 <li><Link to="/curate-art">Curate Art</Link></li>
+                                                <li><Link to="/curate-exhibitions">Curate Exhibitions</Link></li>
                                             </>
                                         )}
                                         <li><Link to="/reports">Reports</Link></li>
