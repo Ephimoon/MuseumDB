@@ -216,11 +216,11 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                 {/* Search */}
                 <div className={styles.search}>
                     <input
-                    type="text"
-                    placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
-                    value={query}
-                    className='search'
-                    onChange={(e) => setQuery(e.target.value)}
+                        type="text"
+                        placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
+                        value={query}
+                        className='search'
+                        onChange={(e) => setQuery(e.target.value)}
                     />
                 </div>
 

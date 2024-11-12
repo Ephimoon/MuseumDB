@@ -5,20 +5,20 @@ import axios from 'axios';
 
 const ArtworkCard = ({ artwork_, onCardClick }) => {
   return (
-    <div className={styles.cards}>
-      {artwork_.map((art) => (
-        <div
-          key={art.ArtworkID}
-          className={styles.card}
-          onClick={() => onCardClick(art)}
-        >
-          <img src={`${process.env.REACT_APP_API_URL}/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
-          <h1>{art.Title}</h1>
-          <p>{art.artist_name || 'Unknown Artist'}</p>
-          <p>{art.CreationYear}</p>
-        </div>
-      ))}
-    </div>
+      <div className={styles.cards}>
+        {artwork_.map((art) => (
+            <div
+                key={art.ArtworkID}
+                className={styles.card}
+                onClick={() => onCardClick(art)}
+            >
+              <img src={`${process.env.REACT_APP_API_URL}/assets/artworks/${art.image}`} alt={art.Title} className={styles.image} />
+              <h1>{art.Title}</h1>
+              <p>{art.artist_name || 'Unknown Artist'}</p>
+              <p>{art.CreationYear}</p>
+            </div>
+        ))}
+      </div>
   );
 };
 
@@ -60,57 +60,57 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
   };
 
   return (
-    <div className={styles.modal} onClick={handleOverlayClick}>
-      <div className={styles.modal_content}>
-        {!isEditMode && (
-          <span className={styles.close_button} onClick={onClose}>
+      <div className={styles.modal} onClick={handleOverlayClick}>
+        <div className={styles.modal_content}>
+          {!isEditMode && (
+              <span className={styles.close_button} onClick={onClose}>
             &times;
           </span>
-        )}
+          )}
 
-        {!isEditMode ? (
-          <>
-            <img src={`${process.env.REACT_APP_API_URL}/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
-            <h2>{artwork.Title}</h2>
-            <p><strong>Artist:</strong> {artwork.artist_name || 'Unknown Artist'}</p>
-            <p><strong>Year:</strong> {artwork.CreationYear}</p>
-            <p><strong>Department:</strong> {artwork.department_name || 'Unknown Department'}</p>
-            <p><strong>Medium:</strong> {artwork.Medium}</p>
-            <p><strong>Height:</strong> {artwork.height} inches</p>
-            <p><strong>Width:</strong> {artwork.width} inches</p>
-            <p><strong>Depth:</strong> {artwork.depth || 'N/A'} inches</p>
-            <p><strong>Acquisition Date:</strong> {artwork.acquisition_date ? new Date(artwork.acquisition_date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            }) : 'N/A'}</p>
-            <p><strong>Condition:</strong> {artwork.ArtworkCondition}</p>
-            <p><strong>Location:</strong> {artwork.location || 'Not Specified'}</p>
-            <p><strong>Price:</strong> {artwork.price ? `$${artwork.price}` : 'N/A'}</p>
-            <p><strong>Description:</strong> {artwork.Description}</p>
-            {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
+          {!isEditMode ? (
               <>
-                <button onClick={openEditMode}>Edit Artwork</button>
-                <button onClick={openConfirmDelete}>Delete Artwork</button>
+                <img src={`${process.env.REACT_APP_API_URL}/assets/artworks/${artwork.image}`} alt={artwork.Title} className={styles.image} />
+                <h2>{artwork.Title}</h2>
+                <p><strong>Artist:</strong> {artwork.artist_name || 'Unknown Artist'}</p>
+                <p><strong>Year:</strong> {artwork.CreationYear}</p>
+                <p><strong>Department:</strong> {artwork.department_name || 'Unknown Department'}</p>
+                <p><strong>Medium:</strong> {artwork.Medium}</p>
+                <p><strong>Height:</strong> {artwork.height} inches</p>
+                <p><strong>Width:</strong> {artwork.width} inches</p>
+                <p><strong>Depth:</strong> {artwork.depth || 'N/A'} inches</p>
+                <p><strong>Acquisition Date:</strong> {artwork.acquisition_date ? new Date(artwork.acquisition_date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                }) : 'N/A'}</p>
+                <p><strong>Condition:</strong> {artwork.ArtworkCondition}</p>
+                <p><strong>Location:</strong> {artwork.location || 'Not Specified'}</p>
+                <p><strong>Price:</strong> {artwork.price ? `$${artwork.price}` : 'N/A'}</p>
+                <p><strong>Description:</strong> {artwork.Description}</p>
+                {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
+                    <>
+                      <button onClick={openEditMode}>Edit Artwork</button>
+                      <button onClick={openConfirmDelete}>Delete Artwork</button>
+                    </>
+                )}
               </>
-            )}
-          </>
-        ) : (
-          <EditArtworkModal
-            artwork={artwork}
-            onClose={() => setIsEditMode(false)}
-            onRefresh={onRefresh}
-            onModalRefresh={handleModalRefresh}
-          />
-        )}
-        {showConfirmDelete && (
-          <ConfirmDeleteArtworkModal
-            onConfirm={handleDelete}
-            onCancel={closeConfirmDelete}
-          />
-        )}
+          ) : (
+              <EditArtworkModal
+                  artwork={artwork}
+                  onClose={() => setIsEditMode(false)}
+                  onRefresh={onRefresh}
+                  onModalRefresh={handleModalRefresh}
+              />
+          )}
+          {showConfirmDelete && (
+              <ConfirmDeleteArtworkModal
+                  onConfirm={handleDelete}
+                  onCancel={closeConfirmDelete}
+              />
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 
@@ -167,20 +167,20 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
   const checkIfChanged = () => {
     const originalDate = artwork.acquisition_date ? artwork.acquisition_date.split("T")[0] : '';
     return (
-      Title !== artwork.Title ||
-      artistId !== artwork.artist_id ||
-      departmentId !== artwork.department_id ||
-      CreationYear !== artwork.CreationYear ||
-      medium !== artwork.Medium ||
-      height !== artwork.height ||
-      width !== artwork.width ||
-      (depth || '') !== (artwork.depth || '') ||  // Normalize depth comparison
-      acquisitionDate !== originalDate ||
-      condition !== artwork.ArtworkCondition ||
-      (location || '') !== (artwork.location || '') ||  // Normalize location comparison
-      (price || '') !== (artwork.price || '') ||  // Normalize price comparison
-      description !== artwork.Description ||
-      image !== null
+        Title !== artwork.Title ||
+        artistId !== artwork.artist_id ||
+        departmentId !== artwork.department_id ||
+        CreationYear !== artwork.CreationYear ||
+        medium !== artwork.Medium ||
+        height !== artwork.height ||
+        width !== artwork.width ||
+        (depth || '') !== (artwork.depth || '') ||  // Normalize depth comparison
+        acquisitionDate !== originalDate ||
+        condition !== artwork.ArtworkCondition ||
+        (location || '') !== (artwork.location || '') ||  // Normalize location comparison
+        (price || '') !== (artwork.price || '') ||  // Normalize price comparison
+        description !== artwork.Description ||
+        image !== null
     );
   };
 
@@ -269,137 +269,137 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
   };
 
   return (
-    <div>
-      <h2>Edit Artwork</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div>
+        <h2>Edit Artwork</h2>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <label>Image
-        <input type="file" accept="image/*" onChange={handleImageChange} />
-      </label>
+        <label>Image
+          <input type="file" accept="image/*" onChange={handleImageChange} />
+        </label>
 
-      <label>Title *
-        <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
-        {errors.Title && <p style={{ color: 'red' }}>{errors.Title}</p>}
-      </label>
+        <label>Title *
+          <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
+          {errors.Title && <p style={{ color: 'red' }}>{errors.Title}</p>}
+        </label>
 
-      <label>Artist *
-        <select value={artistId} onChange={(e) => setArtistId(e.target.value)}>
-          <option value="">Select Artist</option>
-          {artists.map((artist) => (
-            <option key={artist.ArtistID} value={artist.ArtistID}>{artist.name_}</option>
-          ))}
-        </select>
-        {errors.artistId && <p style={{ color: 'red' }}>{errors.artistId}</p>}
-      </label>
+        <label>Artist *
+          <select value={artistId} onChange={(e) => setArtistId(e.target.value)}>
+            <option value="">Select Artist</option>
+            {artists.map((artist) => (
+                <option key={artist.ArtistID} value={artist.ArtistID}>{artist.name_}</option>
+            ))}
+          </select>
+          {errors.artistId && <p style={{ color: 'red' }}>{errors.artistId}</p>}
+        </label>
 
-      <label>Department *
-        <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
-          <option value="">Select Department</option>
-          {departments.map((department) => (
-            <option key={department.DepartmentID} value={department.DepartmentID}>{department.Name}</option>
-          ))}
-        </select>
-        {errors.departmentId && <p style={{ color: 'red' }}>{errors.departmentId}</p>}
-      </label>
+        <label>Department *
+          <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
+            <option value="">Select Department</option>
+            {departments.map((department) => (
+                <option key={department.DepartmentID} value={department.DepartmentID}>{department.Name}</option>
+            ))}
+          </select>
+          {errors.departmentId && <p style={{ color: 'red' }}>{errors.departmentId}</p>}
+        </label>
 
-      <label>Creation Year *
-        <input type="number" value={CreationYear} onChange={(e) => setCreationYear(e.target.value)} />
-        {errors.CreationYear && <p style={{ color: 'red' }}>{errors.CreationYear}</p>}
-      </label>
+        <label>Creation Year *
+          <input type="number" value={CreationYear} onChange={(e) => setCreationYear(e.target.value)} />
+          {errors.CreationYear && <p style={{ color: 'red' }}>{errors.CreationYear}</p>}
+        </label>
 
-      <label>Medium *
-        <select value={medium} onChange={(e) => setMedium(e.target.value)}>
-          <option value="">Select Medium</option>
-          {mediums.map((med) => <option key={med} value={med}>{med}</option>)}
-          <option value="Other">Other</option>
-        </select>
-        {medium === 'Other' && (
-          <input type="text" placeholder="Specify medium" value={customMedium} onChange={(e) => setCustomMedium(e.target.value)} />
-        )}
-        {errors.medium && <p style={{ color: 'red' }}>{errors.medium}</p>}
-        {errors.customMedium && <p style={{ color: 'red' }}>{errors.customMedium}</p>}
-      </label>
+        <label>Medium *
+          <select value={medium} onChange={(e) => setMedium(e.target.value)}>
+            <option value="">Select Medium</option>
+            {mediums.map((med) => <option key={med} value={med}>{med}</option>)}
+            <option value="Other">Other</option>
+          </select>
+          {medium === 'Other' && (
+              <input type="text" placeholder="Specify medium" value={customMedium} onChange={(e) => setCustomMedium(e.target.value)} />
+          )}
+          {errors.medium && <p style={{ color: 'red' }}>{errors.medium}</p>}
+          {errors.customMedium && <p style={{ color: 'red' }}>{errors.customMedium}</p>}
+        </label>
 
-      <label>Height (inches) *
-        <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
-        {errors.height && <p style={{ color: 'red' }}>{errors.height}</p>}
-      </label>
+        <label>Height (inches) *
+          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+          {errors.height && <p style={{ color: 'red' }}>{errors.height}</p>}
+        </label>
 
-      <label>Width (inches) *
-        <input type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
-        {errors.width && <p style={{ color: 'red' }}>{errors.width}</p>}
-      </label>
+        <label>Width (inches) *
+          <input type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
+          {errors.width && <p style={{ color: 'red' }}>{errors.width}</p>}
+        </label>
 
-      <label>Depth (inches)
-        <input type="number" value={depth} onChange={(e) => setDepth(e.target.value)} />
-      </label>
+        <label>Depth (inches)
+          <input type="number" value={depth} onChange={(e) => setDepth(e.target.value)} />
+        </label>
 
-      <label>Acquisition Date *
-        <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)} />
-        {errors.acquisitionDate && <p style={{ color: 'red' }}>{errors.acquisitionDate}</p>}
-      </label>
+        <label>Acquisition Date *
+          <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)} />
+          {errors.acquisitionDate && <p style={{ color: 'red' }}>{errors.acquisitionDate}</p>}
+        </label>
 
-      <label>Condition *
-        <select value={condition} onChange={(e) => setCondition(e.target.value)}>
-          <option value="">Select Condition</option>
-          {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
-          <option value="Other">Other</option>
-        </select>
-        {condition === 'Other' && (
-          <input type="text" placeholder="Specify condition" value={customCondition} onChange={(e) => setCustomCondition(e.target.value)} />
-        )}
-        {errors.condition && <p style={{ color: 'red' }}>{errors.condition}</p>}
-        {errors.customCondition && <p style={{ color: 'red' }}>{errors.customCondition}</p>}
-      </label>
+        <label>Condition *
+          <select value={condition} onChange={(e) => setCondition(e.target.value)}>
+            <option value="">Select Condition</option>
+            {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
+            <option value="Other">Other</option>
+          </select>
+          {condition === 'Other' && (
+              <input type="text" placeholder="Specify condition" value={customCondition} onChange={(e) => setCustomCondition(e.target.value)} />
+          )}
+          {errors.condition && <p style={{ color: 'red' }}>{errors.condition}</p>}
+          {errors.customCondition && <p style={{ color: 'red' }}>{errors.customCondition}</p>}
+        </label>
 
-      <label>Location
-        <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
-      </label>
+        <label>Location
+          <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+        </label>
 
-      <label>Price
-        <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
-      </label>
+        <label>Price
+          <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
+        </label>
 
-      <label>Description *
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-        {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-      </label>
+        <label>Description *
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+          {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
+        </label>
 
-      <button onClick={onClose}>Cancel</button>
-      <button onClick={handleSave} disabled={!hasChanges}>Save</button>
-    </div>
+        <button onClick={onClose}>Cancel</button>
+        <button onClick={handleSave} disabled={!hasChanges}>Save</button>
+      </div>
   );
 };
 
 const ConfirmDeleteArtworkModal = ({ onConfirm, onCancel }) => {
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h2>Are you sure you want to delete this artwork?</h2>
-        <p>This action cannot be undone.</p>
-        <div className={styles.buttonContainer}>
-          <button onClick={onCancel}>Cancel</button>
-          <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+      <div className={styles.modalOverlay}>
+        <div className={styles.modalContent}>
+          <h2>Are you sure you want to delete this artwork?</h2>
+          <p>This action cannot be undone.</p>
+          <div className={styles.buttonContainer}>
+            <button onClick={onCancel}>Cancel</button>
+            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
 const ArtistCard = ({ artist_, onCardClick }) => {
   return (
-    <div className={styles.cards}>
-      {artist_.map((artist) => (
-        <div
-          key={artist.ArtistID}
-          className={styles.card}
-          onClick={() => onCardClick(artist)}
-        >
-          <img src={`${process.env.REACT_APP_API_URL}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
-          <h1>{artist.name_}</h1>
-        </div>
-      ))}
-    </div>
+      <div className={styles.cards}>
+        {artist_.map((artist) => (
+            <div
+                key={artist.ArtistID}
+                className={styles.card}
+                onClick={() => onCardClick(artist)}
+            >
+              <img src={`${process.env.REACT_APP_API_URL}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
+              <h1>{artist.name_}</h1>
+            </div>
+        ))}
+      </div>
   );
 };
 
@@ -443,46 +443,46 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
   };
 
   return (
-    <div className={styles.modal} onClick={handleOverlayClick}>
-      <div className={styles.modal_content}>
-        {!isEditMode && (
-          <span className={styles.close_button} onClick={onClose}>
+      <div className={styles.modal} onClick={handleOverlayClick}>
+        <div className={styles.modal_content}>
+          {!isEditMode && (
+              <span className={styles.close_button} onClick={onClose}>
             &times;
           </span>
-        )}
+          )}
 
-        {!isEditMode ? (
-          <>
-            <img src={`${process.env.REACT_APP_API_URL}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
-            <h2>{artist.name_}</h2>
-            <p><strong>Gender:</strong> {artist.gender}</p>
-            <p><strong>Nationality:</strong> {artist.nationality || 'Not specified'}</p>
-            <p><strong>Birth Year:</strong> {artist.birth_year || 'Not specified'}</p>
-            <p><strong>Death Year:</strong> {artist.death_year || 'N/A'}</p>
-            <p><strong>Description:</strong> {artist.description || 'No description provided'}</p>
-            {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
+          {!isEditMode ? (
               <>
-                <button onClick={openEditMode}>Edit Artist</button>
-                <button onClick={openConfirmDelete}>Delete Artist</button>
+                <img src={`${process.env.REACT_APP_API_URL}/assets/artists/${artist.image}`} alt={artist.name_} className={styles.image} />
+                <h2>{artist.name_}</h2>
+                <p><strong>Gender:</strong> {artist.gender}</p>
+                <p><strong>Nationality:</strong> {artist.nationality || 'Not specified'}</p>
+                <p><strong>Birth Year:</strong> {artist.birth_year || 'Not specified'}</p>
+                <p><strong>Death Year:</strong> {artist.death_year || 'N/A'}</p>
+                <p><strong>Description:</strong> {artist.description || 'No description provided'}</p>
+                {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
+                    <>
+                      <button onClick={openEditMode}>Edit Artist</button>
+                      <button onClick={openConfirmDelete}>Delete Artist</button>
+                    </>
+                )}
               </>
-            )}
-          </>
-        ) : (
-          <EditArtistModal
-            artist={artist}
-            onClose={() => setIsEditMode(false)}
-            onRefresh={onRefresh}
-            onModalRefresh={handleModalRefresh}
-          />
-        )}
-        {showConfirmDelete && (
-          <ConfirmDeleteArtistModal
-            onConfirm={handleDelete}
-            onCancel={closeConfirmDelete}
-          />
-        )}
+          ) : (
+              <EditArtistModal
+                  artist={artist}
+                  onClose={() => setIsEditMode(false)}
+                  onRefresh={onRefresh}
+                  onModalRefresh={handleModalRefresh}
+              />
+          )}
+          {showConfirmDelete && (
+              <ConfirmDeleteArtistModal
+                  onConfirm={handleDelete}
+                  onCancel={closeConfirmDelete}
+              />
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 
@@ -523,37 +523,37 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
   // Update `hasChanges` when any field changes
   useEffect(() => {
     const changesMade =
-      name !== initialValues.current.name ||
-      gender !== initialValues.current.gender ||
-      nationality !== initialValues.current.nationality ||
-      birthYear !== initialValues.current.birthYear ||
-      deathYear !== initialValues.current.deathYear ||
-      description !== initialValues.current.description ||
-      image !== null; // Add image to check for new image selection
+        name !== initialValues.current.name ||
+        gender !== initialValues.current.gender ||
+        nationality !== initialValues.current.nationality ||
+        birthYear !== initialValues.current.birthYear ||
+        deathYear !== initialValues.current.deathYear ||
+        description !== initialValues.current.description ||
+        image !== null; // Add image to check for new image selection
 
     setHasChanges(changesMade);
   }, [name, gender, nationality, birthYear, deathYear, description, image]);
 
   const handleSave = () => {
     if (!name) {
-        setError('Name is required');
-        return;
+      setError('Name is required');
+      return;
     }
     if (!gender) {
-        setError('Gender is required');
-        return;
+      setError('Gender is required');
+      return;
     }
     if (!nationality) {
-        setError('Nationality is required');
-        return;
+      setError('Nationality is required');
+      return;
     }
     if (!birthYear) {
-        setError('Birth year is required');
-        return;
+      setError('Birth year is required');
+      return;
     }
     if (!description) {
-        setError('Description is required');
-        return;
+      setError('Description is required');
+      return;
     }
 
     setError(null);
@@ -566,113 +566,113 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
     formData.append('deathYear', deathYear || '');
     formData.append('description', description);
     if (image) {
-        formData.append('image', image); // Append the file only if it's selected
+      formData.append('image', image); // Append the file only if it's selected
     }
 
     axios.patch(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
-    .then(() => {
-        console.log('Artist updated successfully');
-        onRefresh();
-        onModalRefresh();
-        onClose();
-    })
-    .catch(err => {
-        console.error('Error updating artist:', err);
-        setError('Failed to update artist');
-    });
-};
+        .then(() => {
+          console.log('Artist updated successfully');
+          onRefresh();
+          onModalRefresh();
+          onClose();
+        })
+        .catch(err => {
+          console.error('Error updating artist:', err);
+          setError('Failed to update artist');
+        });
+  };
 
   return (
-    <div>
-      <h2>Edit Artist</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <label>
+      <div>
+        <h2>Edit Artist</h2>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <label>
           Change Image
           <input
               type="file"
               onChange={(e) => setImage(e.target.files[0])}
           />
-      </label>
-      <label>
-        Name *
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-      </label>
-      <label>
-        Gender *
-        <select
-          value={gender}
-          onChange={(e) => setGender(e.target.value)}
-          required
-        >
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Other">Other</option>
-        </select>
-      </label>
-      <label>
-        Nationality *
-        <select
-          value={nationality}
-          onChange={(e) => setNationality(e.target.value)}
-          required
-        >
-          {nationalities.map((nat) => (
-            <option key={nat} value={nat}>{nat}</option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Birth Year *
-        <input
-          type="number"
-          value={birthYear}
-          onChange={(e) => setBirthYear(e.target.value)}
-          required
-        />
-      </label>
-      <label>
-        Death Year
-        <input
-          type="number"
-          value={deathYear}
-          onChange={(e) => setDeathYear(e.target.value)}
-        />
-      </label>
-      <label>
-        Description *
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </label>
-      <button onClick={onClose}>Cancel</button>
-      <button onClick={handleSave} disabled={!hasChanges}>Save</button>
-    </div>
+        </label>
+        <label>
+          Name *
+          <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+          />
+        </label>
+        <label>
+          Gender *
+          <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              required
+          >
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label>
+          Nationality *
+          <select
+              value={nationality}
+              onChange={(e) => setNationality(e.target.value)}
+              required
+          >
+            {nationalities.map((nat) => (
+                <option key={nat} value={nat}>{nat}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Birth Year *
+          <input
+              type="number"
+              value={birthYear}
+              onChange={(e) => setBirthYear(e.target.value)}
+              required
+          />
+        </label>
+        <label>
+          Death Year
+          <input
+              type="number"
+              value={deathYear}
+              onChange={(e) => setDeathYear(e.target.value)}
+          />
+        </label>
+        <label>
+          Description *
+          <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+          />
+        </label>
+        <button onClick={onClose}>Cancel</button>
+        <button onClick={handleSave} disabled={!hasChanges}>Save</button>
+      </div>
   );
 };
 
 const ConfirmDeleteArtistModal = ({ onConfirm, onCancel }) => {
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h2>Are you sure you want to delete this artist?</h2>
-        <p>WARNING: All artwork from this artist WILL be removed from the collection</p>
-        <p>This action cannot be undone.</p>
-        <div className={styles.buttonContainer}>
-          <button onClick={onCancel}>Cancel</button>
-          <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+      <div className={styles.modalOverlay}>
+        <div className={styles.modalContent}>
+          <h2>Are you sure you want to delete this artist?</h2>
+          <p>WARNING: All artwork from this artist WILL be removed from the collection</p>
+          <p>This action cannot be undone.</p>
+          <div className={styles.buttonContainer}>
+            <button onClick={onCancel}>Cancel</button>
+            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
