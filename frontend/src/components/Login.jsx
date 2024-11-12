@@ -10,7 +10,7 @@ import {
     Alert,
     IconButton
 } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
@@ -26,7 +26,7 @@ const Login = () => {
     const [warningOpen, setWarningOpen] = useState(false); // Added warningOpen state
     const [expiryDate, setExpiryDate] = useState(''); // Added expiryDate state
     const navigate = useNavigate();
-
+    const location = useLocation();
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -51,7 +51,8 @@ const Login = () => {
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
-
+                localStorage.setItem('firstName', data.firstName);
+                localStorage.setItem('lastName', data.lastName);
                 // Store warning data if exists
                 if (data.membershipWarning) {
                     const formattedDate = new Date(data.expireDate).toLocaleDateString('en-US', {
@@ -62,6 +63,7 @@ const Login = () => {
                     });
                     localStorage.setItem('membershipWarning', 'true');
                     localStorage.setItem('expiryDate', formattedDate);
+                    const redirectTo = location.state?.redirectTo || '/';
                     setExpiryDate(formattedDate); // Set expiryDate state
                     setWarningOpen(true); // Open warning Snackbar
                 }
@@ -70,7 +72,7 @@ const Login = () => {
                 if (data.role === 'admin') navigate('/AdminDashBoard');
                 else if (data.role === 'staff') navigate('/StaffDashboard');
                 else if (data.role === 'customer') navigate('/');
-                else if (data.role === 'member') navigate('/MemberDashboard');
+                else if (data.role === 'member') navigate('/');
                 else navigate('/');
 
                 toast.success('Login successful!');

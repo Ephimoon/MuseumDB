@@ -48,7 +48,7 @@ const Navbar = () => {
             case 'member':
                 return '/MemberDashBoard';
             case 'customer':
-                return '/CustomerDashBoard'; // Assuming you have a customer dashboard
+                return '/'; // Assuming you have a customer dashboard
             default:
                 return '/';
         }
@@ -76,14 +76,20 @@ const Navbar = () => {
                                 </span>
                                 {employeeMenuOpen && (
                                     <ul className="dropdown-menu">
-                                        {role === 'admin' && (
+                                        {/* Common menu items for both admin and staff */}
+                                        {(['admin', 'staff'].includes(role)) && (
                                             <>
                                                 <li><Link to="/giftshop-admin">Manage Gift Shop</Link></li>
-                                                <li><Link to="/manage-users">Manage Users</Link></li>
                                                 <li><Link to="/curate-art">Curate Art</Link></li>
+                                                <li><Link to="/reports">Reports</Link></li>
+                                                <li><Link to="/eventdirectordash">Manage Events</Link></li>
                                             </>
                                         )}
-                                        <li><Link to="/reports">Reports</Link></li>
+
+                                        {/* Additional menu item exclusively for admin */}
+                                        {role === 'admin' && (
+                                            <li><Link to="/manage-users">Manage Users</Link></li>
+                                        )}
                                     </ul>
                                 )}
                             </li>
@@ -96,6 +102,7 @@ const Navbar = () => {
                     {role ? (
                         <>
                             <span className="welcome-message">Welcome, {username}!</span>
+                            <Link to="/BuyTickets" className="btn-outline">Buy Tickets</Link>
                             <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
                                 Dashboard
                             </Link>

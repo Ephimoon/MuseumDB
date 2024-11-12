@@ -6,48 +6,64 @@ import styles from '../css/UserFormModal.module.css';
 import ChangePasswordModal from './ChangePasswordModal';
 
 const UserFormModal = ({ user, onClose }) => {
+    // Initialize form data with camelCase field names
     const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        date_of_birth: '',
+        firstName: '',
+        lastName: '',
+        dateOfBirth: '',
         username: '',
         email: '',
-        role_id: 3, // Default to 'customer'
+        roleId: 3, // Default to 'Customer'
     });
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [error, setError] = useState('');
 
+    // Retrieve role and userId from localStorage
     const role = localStorage.getItem('role');
     const userId = localStorage.getItem('userId');
 
     useEffect(() => {
         if (user) {
             setFormData({
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                date_of_birth: user.date_of_birth || '',
+                firstName: user.first_name || '',
+                lastName: user.last_name || '',
+                dateOfBirth: user.date_of_birth || '',
                 username: user.username || '',
                 email: user.email || '',
-                role_id: user.role_id || 3,
+                roleId: user.role_id || 3,
             });
         }
     }, [user]);
 
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         setFormData((prevFormData) => ({
             ...prevFormData,
-            [name]: name === 'role_id' ? parseInt(value, 10) : value,
+            [name]: name === 'roleId' ? parseInt(value, 10) : value,
         }));
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(''); // Reset error state
+
+        // Prepare payload with camelCase field names
+        const payload = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            dateOfBirth: formData.dateOfBirth,
+            username: formData.username,
+            email: formData.email,
+            roleId: formData.roleId,
+        };
 
         try {
             if (user && user.user_id) {
                 // Update existing user
-                await axios.put(`${process.env.REACT_APP_API_URL}//users/${user.user_id}`, formData, {
+                await axios.put(`${process.env.REACT_APP_API_URL}/users/${user.user_id}`, payload, {
                     headers: {
                         role: role,
                         'user-id': userId,
@@ -55,19 +71,24 @@ const UserFormModal = ({ user, onClose }) => {
                 });
             } else {
                 // Create new user
-                await axios.post(`${process.env.REACT_APP_API_URL}/register`, formData);
+                await axios.post(`${process.env.REACT_APP_API_URL}/register`, payload);
             }
-            onClose();
+            onClose(); // Close the modal upon successful submission
         } catch (error) {
             console.error('Error submitting form:', error);
-            // Handle error appropriately
+            // Display error message from server or a generic message
+            setError(
+                error.response?.data?.message || 'An error occurred while submitting the form.'
+            );
         }
     };
 
+    // Open the Change Password Modal
     const openPasswordModal = () => {
         setIsPasswordModalOpen(true);
     };
 
+    // Close the Change Password Modal
     const closePasswordModal = () => {
         setIsPasswordModalOpen(false);
     };
@@ -80,12 +101,13 @@ const UserFormModal = ({ user, onClose }) => {
                 </span>
                 <form onSubmit={handleSubmit} className={styles.formContainer}>
                     <h2>{user && user.user_id ? 'Edit User' : 'Add New User'}</h2>
+                    {error && <div className={styles.error}>{error}</div>}
                     <label>
                         First Name:
                         <input
                             type="text"
-                            name="first_name"
-                            value={formData.first_name}
+                            name="firstName"
+                            value={formData.firstName}
                             onChange={handleChange}
                             required
                         />
@@ -94,8 +116,8 @@ const UserFormModal = ({ user, onClose }) => {
                         Last Name:
                         <input
                             type="text"
-                            name="last_name"
-                            value={formData.last_name}
+                            name="lastName"
+                            value={formData.lastName}
                             onChange={handleChange}
                             required
                         />
@@ -104,8 +126,8 @@ const UserFormModal = ({ user, onClose }) => {
                         Date of Birth:
                         <input
                             type="date"
-                            name="date_of_birth"
-                            value={formData.date_of_birth}
+                            name="dateOfBirth"
+                            value={formData.dateOfBirth}
                             onChange={handleChange}
                             required
                         />
@@ -134,8 +156,8 @@ const UserFormModal = ({ user, onClose }) => {
                     <label>
                         Role:
                         <select
-                            name="role_id"
-                            value={formData.role_id}
+                            name="roleId"
+                            value={formData.roleId}
                             onChange={handleChange}
                         >
                             <option value={1}>Admin</option>
