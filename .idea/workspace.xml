@@ -8,7 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/ArtLookUp.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ArtLookUp.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/ArtworkCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ArtworkCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateArt.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateArt.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateExhibitions.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateExhibitions.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,7 +197,7 @@
       <workItem from="1731243416991" duration="5382000" />
       <workItem from="1731275400128" duration="31000" />
       <workItem from="1731363371517" duration="4448000" />
-      <workItem from="1731370029114" duration="13987000" />
+      <workItem from="1731370029114" duration="14790000" />
     </task>
     <task id="LOCAL-00001" summary="Updated server.js">
       <option name="closed" value="true" />
