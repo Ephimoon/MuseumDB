@@ -39,8 +39,8 @@ const App = () => {
     const role = localStorage.getItem('role'); // Get user role
     return (
         <BrowserRouter>
+            <ToastContainer />
             <TicketCartProvider>
-                <ToastContainer />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/Visit" element={<Visit />} />
