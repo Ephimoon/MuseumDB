@@ -1,5 +1,6 @@
 import React from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
 import PrivateRoute from './components/PrivateRoute';
 import Home from './pages/Home';
 import Visit from './pages/Visit';
@@ -37,6 +38,7 @@ const App = () => {
     return (
         <BrowserRouter>
             <TicketCartProvider> {/* Wrapping Routes with TicketCartProvider */}
+                <ToastContainer />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/Visit" element={<Visit />} />
