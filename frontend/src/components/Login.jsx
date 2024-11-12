@@ -4,6 +4,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';

@@ -69,7 +69,7 @@ const App = () => {
 
                     {/* Admin Routes */}
                     <Route element={<PrivateRoute roles={['admin']} />}>
-                        <Route path="/admin-report" element={<AdminReport />} />
+                        {/* <Route path="/admin-report" element={<AdminReport />} /> */}
                         <Route path="/giftshop-admin" element={<GiftShopAdmin />} />
                     </Route>
 

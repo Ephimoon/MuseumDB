@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 
 import React, {useContext, useEffect, useState} from 'react';
-import {Link, useLocation} from 'react-router-dom'; // Using Link for navigation
+import {Link, useLocation, useNavigate} from 'react-router-dom'; // Using Link for navigation
 import '../css/HomeNavBar.css';
 import logo from '../assets/LOGO.png';
 import {CartContext} from './CartContext';
@@ -10,6 +10,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const Navbar = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const {cartItems} = useContext(CartContext);
     const [navBackground, setNavBackground] = useState('transparent');
