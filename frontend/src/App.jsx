@@ -38,8 +38,8 @@ const App = () => {
 
     return (
         <BrowserRouter>
+            <ToastContainer />
             <TicketCartProvider> {/* Wrapping Routes with TicketCartProvider */}
-                <ToastContainer />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/Visit" element={<Visit />} />
