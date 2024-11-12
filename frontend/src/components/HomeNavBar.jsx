@@ -115,14 +115,14 @@ const Navbar = () => {
                         <>
                             <span className="welcome-message">Welcome, {username}!</span>
 
-                            {(role.toLowerCase() === 'customer' || role === '3') && (
+                            {(role.toLowerCase() === 'customer') && (
                                 <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
                             )}
 
                             <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
 
                             {/* Conditionally render the Dashboard button for all roles except role ID '3' */}
-                            {role !== '3' && (
+                            {role !== 'customer' && (
                                 <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
                                     Dashboard
                                 </Link>
