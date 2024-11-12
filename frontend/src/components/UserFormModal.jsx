@@ -1,9 +1,9 @@
-// src/components/UserFormModal.jsx
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from '../css/UserFormModal.module.css';
 import ChangePasswordModal from './ChangePasswordModal';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserFormModal = ({ user, onClose }) => {
     // Initialize form data with camelCase field names
@@ -58,15 +58,21 @@ const UserFormModal = ({ user, onClose }) => {
         // Password validation when creating a new user
         if (!user || !user.user_id) {
             if (!formData.password || !formData.confirmPassword) {
-                setError('Please enter and confirm the password.');
+                const errorMessage = 'Please enter and confirm the password.';
+                setError(errorMessage);
+                toast.error(errorMessage);
                 return;
             }
             if (formData.password !== formData.confirmPassword) {
-                setError('Passwords do not match.');
+                const errorMessage = 'Passwords do not match.';
+                setError(errorMessage);
+                toast.error(errorMessage);
                 return;
             }
-            if (formData.password.length < 8) {
-                setError('Password must be at least 8 characters long.');
+            if (formData.password.length < 6) {
+                const errorMessage = 'Password must be at least 6 characters long.';
+                setError(errorMessage);
+                toast.error(errorMessage);
                 return;
             }
         }
@@ -91,6 +97,7 @@ const UserFormModal = ({ user, onClose }) => {
                         'user-id': userId,
                     },
                 });
+                toast.success('User updated successfully');
             } else {
                 // Create new user via admin endpoint
                 await axios.post(`${process.env.REACT_APP_API_URL}/users`, payload, {
@@ -99,14 +106,16 @@ const UserFormModal = ({ user, onClose }) => {
                         'user-id': userId,
                     },
                 });
+                toast.success('User created successfully');
             }
             onClose(); // Close the modal upon successful submission
         } catch (error) {
             console.error('Error submitting form:', error);
             // Display error message from server or a generic message
-            setError(
-                error.response?.data?.message || 'An error occurred while submitting the form.'
-            );
+            const errorMessage =
+                error.response?.data?.message || 'An error occurred while submitting the form.';
+            setError(errorMessage);
+            toast.error(errorMessage);
         }
     };
 
@@ -123,9 +132,9 @@ const UserFormModal = ({ user, onClose }) => {
     return (
         <div className={styles.modal}>
             <div className={styles.modalContent}>
-        <span className={styles.closeButton} onClick={onClose}>
-          &times;
-        </span>
+                <span className={styles.closeButton} onClick={onClose}>
+                    &times;
+                </span>
                 <form onSubmit={handleSubmit} className={styles.formContainer}>
                     <h2>{user && user.user_id ? 'Edit User' : 'Add New User'}</h2>
                     {error && <div className={styles.error}>{error}</div>}
@@ -183,11 +192,7 @@ const UserFormModal = ({ user, onClose }) => {
                     {role === 'admin' && (
                         <label>
                             Role:
-                            <select
-                                name="roleId"
-                                value={formData.roleId}
-                                onChange={handleChange}
-                            >
+                            <select name="roleId" value={formData.roleId} onChange={handleChange}>
                                 <option value={1}>Admin</option>
                                 <option value={2}>Staff</option>
                                 <option value={3}>Customer</option>
@@ -224,11 +229,7 @@ const UserFormModal = ({ user, onClose }) => {
                         <button type="submit" className={styles.formButton}>
                             {user && user.user_id ? 'Update' : 'Create'}
                         </button>
-                        <button
-                            type="button"
-                            className={styles.formButton}
-                            onClick={onClose}
-                        >
+                        <button type="button" className={styles.formButton} onClick={onClose}>
                             Cancel
                         </button>
                         {user && user.user_id && (
@@ -243,7 +244,8 @@ const UserFormModal = ({ user, onClose }) => {
                     </div>
                 </form>
             </div>
-
+            {/* Add ToastContainer */}
+            <ToastContainer />
             {/* Change Password Modal */}
             {isPasswordModalOpen && (
                 <ChangePasswordModal
