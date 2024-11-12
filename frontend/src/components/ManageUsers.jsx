@@ -54,10 +54,9 @@ const ManageUsers = () => {
 
     const handleDelete = (user, isHardDelete) => {
         // Ensure the base URL is included
-        const baseURL = '${process.env.REACT_APP_API_URL}';
         const endpoint = isHardDelete
-            ? `${baseURL}/users/${user.user_id}`
-            : `${baseURL}/users/${user.user_id}/soft-delete`;
+            ? `${process.env.REACT_APP_API_URL}/users/${user.user_id}`
+            : `${process.env.REACT_APP_API_URL}/users/${user.user_id}/soft-delete`;
 
         const method = isHardDelete ? 'delete' : 'put';
 
