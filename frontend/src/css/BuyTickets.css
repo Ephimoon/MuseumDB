@@ -122,4 +122,39 @@
 .purchase-button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.visit-date {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.visit-date label {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.custom-date-picker {
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 250px;
+  background-color: #f8f8f8;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  color: #333;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-date-picker:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
 }

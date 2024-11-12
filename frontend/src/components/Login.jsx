@@ -1,19 +1,10 @@
 import React, { useState } from 'react';
-import {
-    Box,
-    Button,
-    TextField,
-    Typography,
-    InputAdornment,
-    CssBaseline,
-    Snackbar,
-    Alert,
-    IconButton
-} from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
+import { Box, Button, TextField, Typography, InputAdornment, CssBaseline, Alert, Snackbar } from '@mui/material';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LockIcon from '@mui/icons-material/Lock';
 import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
 import HomeNavBar from '../components/HomeNavBar';
 import '../css/Auth.module.css';
 import TicketBackground from '../assets/TicketsBackground.png';
@@ -26,6 +17,7 @@ const Login = () => {
     const [warningOpen, setWarningOpen] = useState(false); // Added warningOpen state
     const [expiryDate, setExpiryDate] = useState(''); // Added expiryDate state
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -51,7 +43,9 @@ const Login = () => {
                 localStorage.setItem('role', data.role);
                 localStorage.setItem('userId', data.userId);
                 localStorage.setItem('username', username);
-
+                localStorage.setItem('firstName', data.firstName); 
+                localStorage.setItem('lastName', data.lastName);
+    
                 // Store warning data if exists
                 if (data.membershipWarning) {
                     const formattedDate = new Date(data.expireDate).toLocaleDateString('en-US', {
@@ -66,14 +60,20 @@ const Login = () => {
                     setWarningOpen(true); // Open warning Snackbar
                 }
 
+                // Check if we have a redirect path
+                const redirectTo = location.state?.redirectTo || '/';
+    
                 // Navigate based on role
-                if (data.role === 'admin') navigate('/AdminDashBoard');
-                else if (data.role === 'staff') navigate('/StaffDashboard');
-                else if (data.role === 'customer') navigate('/');
-                else if (data.role === 'member') navigate('/MemberDashboard');
-                else navigate('/');
-
-                toast.success('Login successful!');
+                if (data.role === 'customer' || data.role === 'member') {
+                    navigate(redirectTo); // Redirect to Buy Tickets page if provided
+                } else if (data.role === 'admin') {
+                    navigate('/');
+                } else if (data.role === 'staff') {
+                    navigate('/giftshop-admin');
+                } else {
+                    navigate('/');
+                }
+    
             } else {
                 const data = await response.json();
                 setErrors({ server: data.message });

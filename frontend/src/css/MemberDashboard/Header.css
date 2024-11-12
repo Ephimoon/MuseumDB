@@ -1,20 +1,49 @@
 .header {
-    background-color: #fff;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 20px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .header .member-info {
-    font-size: 25px;
-  }
-  
-  .header .cart button {
-    background-color: red;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-  }
-  
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-info {
+  font-size: 25px;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.icon-button .MuiSvgIcon-root {
+  color: #DC4A38; 
+  transition: transform 0.2s ease, color 0.2s ease; 
+  cursor: pointer;
+}
+
+.icon-button:hover .MuiSvgIcon-root {
+  transform: scale(1.1); 
+  color: #A82D2A; 
+}
+
+.cart-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #A82D2A; 
+  color: white;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

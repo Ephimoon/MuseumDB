@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 
 import React, {useContext, useEffect, useState} from 'react';
-import {Link, useLocation} from 'react-router-dom'; // Using Link for navigation
+import {Link, useLocation, useNavigate} from 'react-router-dom'; // Using Link for navigation
 import '../css/HomeNavBar.css';
 import logo from '../assets/LOGO.png';
 import {CartContext} from './CartContext';
@@ -10,13 +10,15 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const Navbar = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const {cartItems} = useContext(CartContext);
     const [navBackground, setNavBackground] = useState('transparent');
     const [employeeMenuOpen, setEmployeeMenuOpen] = useState(false);
 
     const role = localStorage.getItem('role');
-    const username = localStorage.getItem('username');
+    //const username = localStorage.getItem('username');
+    const firstName = localStorage.getItem('firstName');
 
     const handleScroll = () => {
         setNavBackground(window.scrollY > 50 ? '#352F36' : 'transparent');
@@ -51,6 +53,19 @@ const Navbar = () => {
                 return '/CustomerDashBoard'; // Assuming you have a customer dashboard
             default:
                 return '/';
+        }
+    };
+
+    // Handle Buy Tickets button click
+    const handleBuyTicketsClick = () => {
+        if (!role) {
+            // If not logged in, redirect to login page with a redirect state
+            navigate('/login', { state: { redirectTo: '/BuyTickets' } });
+        } else if (role === 'customer' || role === 'member') {
+            // If logged in and user is customer or member, go to buy tickets page
+            navigate('/BuyTickets');
+        } else {
+            alert('Only members and customers can purchase tickets.');
         }
     };
 
@@ -95,19 +110,27 @@ const Navbar = () => {
                 <div className="nav-buttons">
                     {role ? (
                         <>
-                            <span className="welcome-message">Welcome, {username}!</span>
-                            <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
-                                Dashboard
-                            </Link>
-                            <Link to="/profile" className="btn-outline">Profile</Link>
-                            <Link to="/login" onClick={handleLogout} className="btn-outline">Logout</Link>
+                            <span className="welcome-message">Welcome, {firstName}!</span>
+                            <div className="dropdown">
+                                <button className="btn-outline">Profile</button>
+                                <div className="dropdown-content">
+                                    <button onClick={() => navigate('/profile')}>Profile</button>
+                                    {(role === 'customer' || role === 'member') && (
+                                        <button onClick={() => navigate('/MemberDashboard')}>Dashboard</button>
+                                    )}
+                                    <button onClick={handleLogout}>Logout</button>
+                                </div>
+                            </div>
+                            {(role === 'customer' || role === 'member') && (
+                                <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
+                            )}
                         </>
                     ) : (
                         <>
-                            <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
-                            <Link to="/BuyTickets" className="btn-outline">Buy Tickets</Link>
-                            <Link to="/login" className="btn-outline">Login</Link>
-                            <Link to="/register" className="btn-outline">Register</Link>
+                            <a href="/BecomeAMember" className="becomeamember">Become a Member</a>
+                            <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
+                            <button onClick={() => navigate('/login')} className="btn-outline">Login</button>
+                            <button onClick={() => navigate('/register')} className="btn-outline">Register</button>
                         </>
                     )}
                     {location.pathname !== '/checkout' && (

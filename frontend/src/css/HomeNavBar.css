@@ -234,3 +234,60 @@ button, a, p, li, span {
     align-items: center;
     justify-content: center;
 }
+
+/* Dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/* Dropdown button styling */
+.dropdown > .btn-outline {
+    padding: 8px 20px;
+    border-radius: 12px;
+    border: 2px solid #FCFCFC;
+    color: #FCFCFC;
+    background-color: transparent;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Dropdown content styling */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #352F36; /* Match navbar background color */
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    top: 40px; /* Position below the Profile button */
+    right: 0; /* Align dropdown to the right of the button */
+}
+
+/* Dropdown item buttons */
+.dropdown-content button {
+    width: 100%;
+    padding: 10px 16px;
+    color: #FFFFFF;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+/* Hover effect for dropdown items */
+.dropdown-content button:hover {
+    background-color: #DC4A38; /* Accent color on hover */
+}
+
+/* Show dropdown content on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
