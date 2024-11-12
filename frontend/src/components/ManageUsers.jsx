@@ -1,6 +1,6 @@
 // src/pages/ManageUsers.jsx
 
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import UserFormModal from '../components/UserFormModal';
 import ChangePasswordModal from '../components/AdminResetPasswordModal';
@@ -25,7 +25,7 @@ const ManageUsers = () => {
 
     const fetchUsers = () => {
         axios.get(`${process.env.REACT_APP_API_URL}/users`, {
-            headers: {role, 'user-id': userId},
+            headers: { role, 'user-id': userId },
         })
             .then(response => setUsers(response.data))
             .catch(error => console.error('Error fetching users:', error));
@@ -53,11 +53,18 @@ const ManageUsers = () => {
     };
 
     const handleDelete = (user, isHardDelete) => {
-        const endpoint = isHardDelete ? `/users/${user.user_id}` : `/users/${user.user_id}/soft-delete`;
+        // Ensure the base URL is included
+        const baseURL = '${process.env.REACT_APP_API_URL}';
+        const endpoint = isHardDelete
+            ? `${baseURL}/users/${user.user_id}`
+            : `${baseURL}/users/${user.user_id}/soft-delete`;
+
         const method = isHardDelete ? 'delete' : 'put';
 
-        axios[method](endpoint, {}, {
-            headers: {role, 'user-id': userId},
+        axios({
+            method,
+            url: endpoint,
+            headers: { role, 'user-id': userId },
         })
             .then(() => {
                 fetchUsers();
@@ -67,8 +74,10 @@ const ManageUsers = () => {
     };
 
     const handleRestore = (user) => {
-        axios.put(`${process.env.REACT_APP_API_URL}/users/${user.user_id}/restore`, {}, {
-            headers: {role, 'user-id': userId},
+        const endpoint = `${process.env.REACT_APP_API_URL}/users/${user.user_id}/restore`;
+
+        axios.put(endpoint, {}, {
+            headers: { role, 'user-id': userId },
         })
             .then(() => fetchUsers())
             .catch(error => console.error('Error restoring user:', error));
@@ -84,9 +93,10 @@ const ManageUsers = () => {
         setIsPasswordModalOpen(false);
     };
 
-    return (<div style={{backgroundColor: '#FFFFFF', minHeight: '100vh', padding: '20px'}}>
+    return (
+        <div style={{ backgroundColor: '#FFFFFF', minHeight: '100vh', padding: '20px' }}>
             <div className={styles.adminContainer}>
-                <HomeNavBar/>
+                <HomeNavBar />
                 <h1 className={styles.title}>Manage Users</h1>
                 <button className={styles.addButton} onClick={() => openFormModal()}>
                     Add New User
@@ -106,7 +116,8 @@ const ManageUsers = () => {
                     </tr>
                     </thead>
                     <tbody>
-                    {users.map(user => (<tr key={user.user_id}>
+                    {users.map(user => (
+                        <tr key={user.user_id}>
                             <td>{user.first_name}</td>
                             <td>{user.last_name}</td>
                             <td>{user.username}</td>
@@ -114,52 +125,54 @@ const ManageUsers = () => {
                             <td>{user.role_name}</td>
                             <td>{user.is_deleted ? 'Deleted' : 'Active'}</td>
                             <td>
-                                <button className={styles.actionButton} onClick={() => openFormModal(user)}>Edit
-                                </button>
-                                <button className={styles.actionButton} onClick={() => openPasswordModal(user)}>Change
-                                    Password
-                                </button>
-                                {user.is_deleted ? (<button className={styles.actionButton}
-                                                            onClick={() => handleRestore(user)}>Restore</button>) : (
-                                    <button className={styles.actionButton}
-                                            onClick={() => confirmDelete(user)}>Delete</button>)}
+                                <button className={styles.actionButton} onClick={() => openFormModal(user)}>Edit</button>
+                                <button className={styles.actionButton} onClick={() => openPasswordModal(user)}>Change Password</button>
+                                {user.is_deleted ? (
+                                    <button className={styles.actionButton} onClick={() => handleRestore(user)}>Restore</button>
+                                ) : (
+                                    <button className={styles.actionButton} onClick={() => confirmDelete(user)}>Delete</button>
+                                )}
                             </td>
-                        </tr>))}
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
 
                 {/* Modals */}
-                {isFormModalOpen && (<UserFormModal
+                {isFormModalOpen && (
+                    <UserFormModal
                         user={selectedUser}
                         onClose={closeFormModal}
-                    />)}
+                    />
+                )}
 
-                {isPasswordModalOpen && (<ChangePasswordModal
+                {isPasswordModalOpen && (
+                    <ChangePasswordModal
                         open={isPasswordModalOpen}
                         onClose={closePasswordModal}
                         userId={userToChangePassword.user_id}
                         role={role}
                         isAdmin={true}
-                    />)}
+                    />
+                )}
 
-                {showDeleteModal && (<div className={styles.modal}>
+                {showDeleteModal && (
+                    <div className={styles.modal}>
                         <div className={styles.modalContent}>
                             <span className={styles.closeButton} onClick={cancelDelete}>&times;</span>
                             <h2>Confirm Deletion</h2>
                             <p>Do you want to soft delete or permanently delete this user?</p>
                             <div className={styles.buttonGroup}>
-                                <button className={styles.formButton}
-                                        onClick={() => handleDelete(userToDelete, false)}>Soft Delete
-                                </button>
-                                <button className={styles.formButton}
-                                        onClick={() => handleDelete(userToDelete, true)}>Hard Delete
-                                </button>
+                                <button className={styles.formButton} onClick={() => handleDelete(userToDelete, false)}>Soft Delete</button>
+                                <button className={styles.formButton} onClick={() => handleDelete(userToDelete, true)}>Hard Delete</button>
                                 <button className={styles.formButton} onClick={cancelDelete}>Cancel</button>
                             </div>
                         </div>
-                    </div>)}
+                    </div>
+                )}
             </div>
-        </div>);
+        </div>
+    );
 };
 
 export default ManageUsers;

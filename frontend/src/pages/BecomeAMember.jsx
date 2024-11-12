@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -11,37 +11,89 @@ import {
     Select,
     FormControl,
     InputLabel,
-    Alert,
-    Snackbar,
-    CircularProgress
+    CircularProgress,
+    IconButton
 } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
 import LockIcon from '@mui/icons-material/Lock';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import EmailIcon from '@mui/icons-material/Email';
+import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import HomeNavBar from '../components/HomeNavBar';
 import BecomeMemberBackground from '../assets/BecomeAMemberBackground.png';
 
 const BecomeAMember = () => {
     const navigate = useNavigate();
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [userRole, setUserRole] = useState(null);
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
         dob: '',
-        username: '',
         password: '',
-        email: '',
         membershipType: '',
     });
 
     const [errors, setErrors] = useState({});
-    const [snackbar, setSnackbar] = useState({
+    const [membershipMessage, setMembershipMessage] = useState({
         open: false,
-        message: '',
-        severity: 'success'
+        message: 'You do not have a membership. Please login or register to continue',
     });
+
+    // Retrieve data from localStorage with fallbacks
+    const firstName = localStorage.getItem('firstName') || 'Unknown';
+    const lastName = localStorage.getItem('lastName') || 'Unknown';
+    const username = localStorage.getItem('username');
+
+    useEffect(() => {
+        const checkAccess = async () => {
+            try {
+                const userId = localStorage.getItem('userId');
+                const role = localStorage.getItem('role');
+
+                setUserRole(role);
+
+                if (!userId || !role) {
+                    setMembershipMessage({
+                        open: true,
+                        message: 'You do not have a membership. Please login or register to continue',
+                    });
+
+                    setTimeout(() => {
+                        navigate('/login', {
+                            state: {
+                                returnTo: '/become-member',
+                                showMessage: true,
+                                message: 'You do not have a membership. Please login or register to continue',
+                            },
+                        });
+                    }, 4000);
+                    return;
+                }
+
+                if (role !== 'customer') {
+                    setMembershipMessage({
+                        open: true,
+                        message: 'Access denied. Only customers can register for membership.',
+                    });
+                    setTimeout(() => {
+                        navigate('/');
+                    }, 4000);
+                    return;
+                }
+
+                setIsLoading(false);
+            } catch (error) {
+                console.error('Access check error:', error);
+                setMembershipMessage({
+                    open: true,
+                    message: 'Error checking access',
+                });
+                setTimeout(() => {
+                    navigate('/');
+                }, 4000);
+            }
+        };
+
+        checkAccess();
+    }, [navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -50,16 +102,12 @@ const BecomeAMember = () => {
             [name]: value,
         });
         if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
+            setErrors((prev) => ({ ...prev, [name]: '' }));
         }
     };
 
-    const handleSnackbarClose = () => {
-        setSnackbar(prev => ({ ...prev, open: false }));
-        // If it was a success message, navigate after closing
-        if (snackbar.severity === 'success') {
-            navigate('/');
-        }
+    const handleMembershipMessageClose = () => {
+        setMembershipMessage((prev) => ({ ...prev, open: false }));
     };
 
     const handleSubmit = async (e) => {
@@ -67,11 +115,28 @@ const BecomeAMember = () => {
         setErrors({});
         setIsLoading(true);
 
+        const userId = localStorage.getItem('userId');
+        const userRole = localStorage.getItem('role');
+        // Get names from localStorage with proper keys
+        const firstName = localStorage.getItem('firstName');  // matches the key we set in Login.jsx
+        const lastName = localStorage.getItem('lastName');    // matches the key we set in Login.jsx
+
+        // Debug log to verify data
+        console.log('Data from localStorage:', {
+            firstName,
+            lastName,
+            userId,
+            userRole,
+            formData
+        });
+
         const submitData = {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            username: formData.username,
-            type_of_membership: formData.membershipType
+            first_name: firstName,  // using the values from localStorage
+            last_name: lastName,    // using the values from localStorage
+            username: username,
+            dob: formData.dob,
+            password: formData.password,
+            type_of_membership: formData.membershipType,
         };
 
         try {
@@ -79,277 +144,230 @@ const BecomeAMember = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'user-id': userId,
+                    'role': userRole,
                 },
-                body: JSON.stringify(submitData)
+                body: JSON.stringify(submitData),
             });
+
+            // Log what we're sending to the server
+            console.log('Sending to server:', submitData);
 
             const data = await response.json();
 
             if (!response.ok) {
                 if (data.errors) {
                     setErrors(data.errors);
-                    setSnackbar({
+                    setMembershipMessage({
                         open: true,
                         message: 'Please fix the errors in the form',
-                        severity: 'error'
                     });
-                    setIsLoading(false);
                     return;
                 }
                 throw new Error(data.error || 'Registration failed');
             }
 
-            setSnackbar({
+            localStorage.setItem('role', 'member');
+
+            setMembershipMessage({
                 open: true,
                 message: 'Membership registration successful! Redirecting to home page...',
-                severity: 'success'
             });
 
-            // Clear form after success
-            setFormData({
-                firstName: '',
-                lastName: '',
-                dob: '',
-                username: '',
-                password: '',
-                email: '',
-                membershipType: '',
-            });
-
-            // Navigate after delay
             setTimeout(() => {
+                window.location.reload();
                 navigate('/');
             }, 1500);
-
         } catch (error) {
             console.error('Error during registration:', error);
-            setSnackbar({
+            setMembershipMessage({
                 open: true,
                 message: error.message || 'An error occurred during registration',
-                severity: 'error'
             });
         } finally {
             setIsLoading(false);
         }
     };
 
-    return (
-        <div
-            className="become-member-container"
-            style={{
-                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${BecomeMemberBackground})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-            }}
-        >
-            <HomeNavBar />
-            <div className="register-container" style={{
-                marginTop: '100px',
-                textAlign: 'center',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                padding: '30px',
-                borderRadius: '10px',
-                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
-                width: '500px',
-                maxWidth: '90%',
-            }}>
-                <CssBaseline />
-                <Typography component="h1" variant="h5" style={{ color: '#333', marginBottom: '20px' }}>
-                    Become a Member
-                </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="First Name"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                name="firstName"
-                                error={!!errors.firstName}
-                                helperText={errors.firstName}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <PersonIcon />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Last Name"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                name="lastName"
-                                error={!!errors.lastName}
-                                helperText={errors.lastName}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <PersonIcon />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                            />
-                        </Grid>
-                    </Grid>
-
-                    <TextField
-                        fullWidth
-                        label="Date of Birth"
-                        type="date"
-                        value={formData.dob}
-                        onChange={handleChange}
-                        name="dob"
-                        InputLabelProps={{ shrink: true }}
-                        sx={{ mt: 2 }}
-                        error={!!errors.dob}
-                        helperText={errors.dob}
-                    />
-
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        name="username"
-                        error={!!errors.username}
-                        helperText={errors.username}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <AccountBoxIcon />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Password"
-                        type="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        name="password"
-                        error={!!errors.password}
-                        helperText={errors.password}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <LockIcon />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        label="Email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        name="email"
-                        error={!!errors.email}
-                        helperText={errors.email}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <EmailIcon />
-                                </InputAdornment>
-                            ),
-                        }}
-                    />
-
-                    <FormControl fullWidth sx={{ mt: 2 }}>
-                        <InputLabel id="membership-type-label">Membership Type</InputLabel>
-                        <Select
-                            labelId="membership-type-label"
-                            id="membershipType"
-                            name="membershipType"
-                            value={formData.membershipType}
-                            onChange={handleChange}
-                            label="Membership Type"
-                            error={!!errors.membershipType}
-                        >
-                            <MenuItem value="family">Family</MenuItem>
-                            <MenuItem value="individual">Individual</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        disabled={isLoading}
-                        sx={{
-                            mt: 2,
-                            mb: 2,
-                            height: 48,
-                            position: 'relative'
-                        }}
-                    >
-                        {isLoading ? (
-                            <>
-                                <CircularProgress
-                                    size={24}
-                                    sx={{
-                                        position: 'absolute',
-                                        left: '50%',
-                                        marginLeft: '-12px'
-                                    }}
-                                />
-                                Processing...
-                            </>
-                        ) : (
-                            'Complete Membership Registration'
-                        )}
-                    </Button>
-                </Box>
-            </div>
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={6000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                sx={{
-                    '& .MuiAlert-root': {
-                        width: '100%',
-                        maxWidth: '600px',
-                        fontSize: '1rem'
-                    }
+    if (isLoading) {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100vh',
                 }}
             >
-                <Alert
-                    onClose={handleSnackbarClose}
-                    severity={snackbar.severity}
-                    variant="filled"
-                    sx={{
-                        width: '100%',
-                        '& .MuiAlert-message': {
-                            width: '100%',
-                            textAlign: 'center'
-                        }
+                <CircularProgress />
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <div
+                className="become-member-container"
+                style={{
+                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${BecomeMemberBackground})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    minHeight: '100vh',
+                    position: 'relative',
+                    marginTop: '-14px',
+                }}
+            >
+                <HomeNavBar />
+                <div
+                    className="register-container"
+                    style={{
+                        margin: '100px auto',
+                        textAlign: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        padding: '30px',
+                        borderRadius: '10px',
+                        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
+                        width: '500px',
+                        maxWidth: '90%',
                     }}
                 >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
-        </div>
+                    <CssBaseline />
+                    <Typography
+                        component="h1"
+                        variant="h5"
+                        style={{ color: '#333', marginBottom: '20px' }}
+                    >
+                        Become a Member
+                    </Typography>
+                    <Box component="form" onSubmit={handleSubmit} noValidate>
+                        <TextField
+                            fullWidth
+                            label="Date of Birth"
+                            type="date"
+                            value={formData.dob}
+                            onChange={handleChange}
+                            name="dob"
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ mt: 2 }}
+                            error={!!errors.dob}
+                            helperText={errors.dob}
+                            required
+                        />
+
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            label="Password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            name="password"
+                            error={!!errors.password}
+                            helperText={errors.password}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <LockIcon />
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                            <InputLabel id="membership-type-label">Membership Type</InputLabel>
+                            <Select
+                                labelId="membership-type-label"
+                                id="membershipType"
+                                name="membershipType"
+                                value={formData.membershipType}
+                                onChange={handleChange}
+                                label="Membership Type"
+                                error={!!errors.membershipType}
+                                required
+                            >
+                                <MenuItem value="family">Family</MenuItem>
+                                <MenuItem value="individual">Individual</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            disabled={isLoading}
+                            sx={{
+                                mt: 2,
+                                mb: 2,
+                                height: 48,
+                                position: 'relative',
+                            }}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <CircularProgress
+                                        size={24}
+                                        sx={{
+                                            position: 'absolute',
+                                            left: '50%',
+                                            marginLeft: '-12px',
+                                        }}
+                                    />
+                                    Processing
+                                </>
+                            ) : (
+                                'Complete Membership Registration'
+                            )}
+                        </Button>
+                    </Box>
+                </div>
+
+                {membershipMessage.open && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: '89px',
+                            right: '16px',
+                            backgroundColor: '#2196F3',
+                            color: 'white',
+                            padding: '16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            zIndex: 1000,
+                            width: '330px',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                marginBottom: '4px',
+                            }}
+                        >
+                            <strong>Membership Access</strong>
+                            <IconButton
+                                size="small"
+                                onClick={handleMembershipMessageClose}
+                                style={{
+                                    color: 'white',
+                                    padding: '2px',
+                                    marginRight: '-8px',
+                                    marginTop: '-8px',
+                                }}
+                            >
+                                <CloseIcon style={{ fontSize: '16px' }} />
+                            </IconButton>
+                        </div>
+                        <div>{membershipMessage.message}</div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 

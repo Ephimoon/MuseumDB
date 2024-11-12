@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import HomeNavBar from '../../components/HomeNavBar';
-import ArtLookUp from '../../components/ArtLookUp';
+import {ArtLookUp, DepartmentLookUp} from '../../components/ArtLookUp';
 import styles from '../../css/Art.module.css';
 import axios from 'axios';
 
@@ -117,7 +117,9 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
         const fetchDepartments = async () => {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
-                setDepartments(response.data);
+                console.log("Fetch Departments Response:", response); // Log the response to check its structure
+                const validDepartments = response.data.flat().filter(department => department.DepartmentID);
+                setDepartments(validDepartments);
             } catch (error) {
                 console.error('Error fetching departments:', error);
             }
@@ -317,14 +319,78 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     );
 };
 
+const InsertDepartmentModal = ({ onClose, onSave }) => {
+    const [departmentName, setDepartmentName] = useState('');
+    const [departmentLocation, setDepartmentLocation] = useState('');
+    const [departmentDescription, setDepartmentDescription] = useState('');
+    const [errors, setErrors] = useState({});
+
+    const handleSave = () => {
+        const newErrors = {};
+        if (!departmentName) newErrors.departmentName = 'Department name is required.';
+        if (!departmentDescription) newErrors.departmentDescription = 'Description is required.';
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) return;
+
+        const departmentData = {
+            name: departmentName,
+            location: departmentLocation,
+            description: departmentDescription
+        };
+
+        onSave(departmentData);
+        onClose();
+    };
+
+    return (
+        <div className={styles.modalOverlay}>
+            <div className={styles.modalContent}>
+                <h2>Insert New Department</h2>
+                <label>Department Name *
+                    <input
+                        type="text"
+                        value={departmentName}
+                        onChange={(e) => setDepartmentName(e.target.value)}
+                    />
+                    {errors.departmentName && <p style={{ color: 'red' }}>{errors.departmentName}</p>}
+                </label>
+                <label>Location
+                    <input
+                        type="text"
+                        value={departmentLocation}
+                        onChange={(e) => setDepartmentLocation(e.target.value)}
+                    />
+                </label>
+                <label>Description *
+                    <textarea
+                        value={departmentDescription}
+                        onChange={(e) => setDepartmentDescription(e.target.value)}
+                    />
+                    {errors.departmentDescription && <p style={{ color: 'red' }}>{errors.departmentDescription}</p>}
+                </label>
+                <div className={styles.buttonContainer}>
+                    <button onClick={onClose}>Cancel</button>
+                    <button onClick={handleSave}>Save</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const CurateArt = () => {
     const [isInsertArtistOpen, setIsInsertArtistOpen] = useState(false);
     const [isInsertArtworkOpen, setIsInsertArtworkOpen] = useState(false);
+    const [isInsertDepartmentOpen, setIsInsertDepartmentOpen] = useState(false);
     const [isDeletedOpen, setIsDeletedOpen] = useState(false);
+    const [isDepartmentOpen, setIsDepartmentOpen] = useState(false);
+    const [isDepartmentDeletedOpen, setIsDepartmentDeletedOpen] = useState(false);
     const [artists, setArtists] = useState([]);
     const [artworks, setArtworks] = useState([]);
     const [refreshArtists, setRefreshArtists] = useState(false);
     const [refreshArtworks, setRefreshArtworks] = useState(false);
+    const [refreshDepartments, setRefreshDepartments] = useState(false); // State for refreshing departments
 
     useEffect(() => {
         fetchArtists();
@@ -333,9 +399,7 @@ const CurateArt = () => {
     const fetchArtists = () => {
         axios.get(`${process.env.REACT_APP_API_URL}/artist?isDeleted=${isDeletedOpen}`)
             .then(response => {
-                // Filter out any entries without a valid ArtistID
                 const validArtists = response.data.flat().filter(artist => artist.ArtistID);
-                console.log("Filtered valid artists:", validArtists);
                 setArtists(validArtists);
             })
             .catch(error => console.error('Error fetching artists:', error));
@@ -355,14 +419,16 @@ const CurateArt = () => {
     const closeInsertArtistModal = () => setIsInsertArtistOpen(false);
     const openInsertArtworkModal = () => setIsInsertArtworkOpen(true);
     const closeInsertArtworkModal = () => setIsInsertArtworkOpen(false);
+    const openInsertDepartmentModal = () => setIsInsertDepartmentOpen(true);
+    const closeInsertDepartmentModal = () => setIsInsertDepartmentOpen(false);
 
     const triggerArtistRefresh = () => setRefreshArtists(!refreshArtists);
     const triggerArtworkRefresh = () => setRefreshArtworks(!refreshArtworks);
+    const triggerDepartmentRefresh = () => setRefreshDepartments(!refreshDepartments); // Refresh function for departments
 
-    // refresh both artist lists after saving new artwork
     const saveInsertArtwork = (artworkData) => {
         axios.post(`${process.env.REACT_APP_API_URL}/artwork`, artworkData, {
-            headers: { 'Content-Type': 'multipart/form-data' } // Set proper header for file uploads
+            headers: { 'Content-Type': 'multipart/form-data' }
         })
             .then(() => {
                 triggerArtworkRefresh();
@@ -382,33 +448,70 @@ const CurateArt = () => {
             .catch(error => console.error('Error adding artist:', error));
     };
 
+    const saveInsertDepartment = (departmentData) => {
+        axios.post(`${process.env.REACT_APP_API_URL}/department`, departmentData)
+            .then(() => {
+                triggerDepartmentRefresh(); // Trigger department refresh
+                closeInsertDepartmentModal();
+            })
+            .catch(error => console.error('Error adding department:', error));
+    };
+
     return (
         <div className={styles.ArtContainer}>
             <HomeNavBar />
             <h1>Curate Art</h1>
             {!isDeletedOpen && (
                 <>
-                    <button onClick={openInsertArtworkModal}>Insert Artwork</button>
-                    <button onClick={openInsertArtistModal}>Insert Artist</button>
+                    {isDepartmentOpen ? (
+                        <>
+                            {!isDepartmentDeletedOpen && (
+                                <button onClick={openInsertDepartmentModal}>Insert Department</button>
+                            )}
+                            <button onClick={() => setIsDepartmentDeletedOpen(!isDepartmentDeletedOpen)}>
+                                {isDepartmentDeletedOpen ? 'View Active' : 'View Deleted'}
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button onClick={openInsertArtworkModal}>Insert Artwork</button>
+                            <button onClick={openInsertArtistModal}>Insert Artist</button>
+                        </>
+                    )}
+                    <button onClick={() => setIsDepartmentOpen(!isDepartmentOpen)}>
+                        {isDepartmentOpen ? 'View and Edit Artwork and Artists' : 'View and Edit Departments'}
+                    </button>
                 </>
             )}
-            <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
-                {isDeletedOpen ? 'View Active' : 'View Deleted'}
-            </button>
+            {!isDepartmentOpen && (
+                <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
+                    {isDeletedOpen ? 'View Active' : 'View Deleted'}
+                </button>
+            )}
 
-            <ArtLookUp
-                refreshArtists={refreshArtists}
-                refreshArtworks={refreshArtworks}
-                triggerRefreshArtists={triggerArtistRefresh}
-                triggerRefreshArtworks={triggerArtworkRefresh}
-                isDeletedView={isDeletedOpen}
-            />
+            {!isDepartmentOpen ? (
+                <ArtLookUp
+                    refreshArtists={refreshArtists}
+                    refreshArtworks={refreshArtworks}
+                    triggerRefreshArtists={triggerArtistRefresh}
+                    triggerRefreshArtworks={triggerArtworkRefresh}
+                    isDeletedView={isDeletedOpen}
+                />
+            ) : (
+                <DepartmentLookUp
+                    isDepartmentDeletedOpen={isDepartmentDeletedOpen}
+                    refreshDepartments={refreshDepartments} // Pass refresh state for departments
+                />
+            )}
 
             {isInsertArtworkOpen && (
                 <InsertArtworkModal onClose={closeInsertArtworkModal} onSave={saveInsertArtwork} artists={artists} />
             )}
             {isInsertArtistOpen && (
                 <InsertArtistModal onClose={closeInsertArtistModal} onSave={saveInsertArtist} />
+            )}
+            {isInsertDepartmentOpen && (
+                <InsertDepartmentModal onClose={closeInsertDepartmentModal} onSave={saveInsertDepartment} />
             )}
         </div>
     );

@@ -1,7 +1,7 @@
 // src/components/Navbar.jsx
 
 import React, {useContext, useEffect, useState} from 'react';
-import {Link, useLocation} from 'react-router-dom'; // Using Link for navigation
+import {Link, useLocation, useNavigate} from 'react-router-dom'; // Using Link for navigation
 import '../css/HomeNavBar.css';
 import logo from '../assets/LOGO.png';
 import {CartContext} from './CartContext';
@@ -10,6 +10,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const Navbar = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const {cartItems} = useContext(CartContext);
     const [navBackground, setNavBackground] = useState('transparent');
@@ -38,7 +39,17 @@ const Navbar = () => {
     const toggleEmployeeMenu = () => {
         setEmployeeMenuOpen(!employeeMenuOpen);
     };
-
+    const handleBuyTicketsClick = () => {
+        if (!role) {
+            // If not logged in, redirect to login page with a redirect state
+            navigate('/login', { state: { redirectTo: '/BuyTickets' } });
+        } else if (role === 'customer' || role === 'member') {
+            // If logged in and user is customer or member, go to buy tickets page
+            navigate('/BuyTickets');
+        } else {
+            alert('Only members and customers can purchase tickets.');
+        }
+    };
     const getDashboardRoute = () => {
         switch (role) {
             case 'admin':
@@ -83,6 +94,7 @@ const Navbar = () => {
                                                 <li><Link to="/curate-art">Curate Art</Link></li>
                                                 <li><Link to="/reports">Reports</Link></li>
                                                 <li><Link to="/eventdirectordash">Manage Events</Link></li>
+                                                <li><Link to="/curate-exhibitions">Curate Exhibitions</Link></li>
                                             </>
                                         )}
 
@@ -102,7 +114,10 @@ const Navbar = () => {
                     {role ? (
                         <>
                             <span className="welcome-message">Welcome, {username}!</span>
-                            <Link to="/BuyTickets" className="btn-outline">Buy Tickets</Link>
+                            {(role.toLowerCase() === 'customer' || role === '3') && (
+                                <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
+                            )}
+                            <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
                             <Link to={getDashboardRoute()} className="btn-outline dashboard-button">
                                 Dashboard
                             </Link>
@@ -111,8 +126,7 @@ const Navbar = () => {
                         </>
                     ) : (
                         <>
-                            <Link to="/BecomeAMember" className="becomeamember">Become a Member</Link>
-                            <Link to="/BuyTickets" className="btn-outline">Buy Tickets</Link>
+                            <button onClick={handleBuyTicketsClick} className="btn-outline">Buy Tickets</button>
                             <Link to="/login" className="btn-outline">Login</Link>
                             <Link to="/register" className="btn-outline">Register</Link>
                         </>

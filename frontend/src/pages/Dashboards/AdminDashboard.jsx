@@ -15,6 +15,11 @@ const AdminDashboard = () => {
     const [showRestoreModal, setShowRestoreModal] = useState(false);
     const [announcementToRestore, setAnnouncementToRestore] = useState(null);
 
+    // New state variables for tiles
+    const [purchasesToday, setPurchasesToday] = useState(0);
+    const [revenueToday, setRevenueToday] = useState(0);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
     // Pagination state variables
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10; // Adjust as needed
@@ -24,11 +29,19 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         fetchAnnouncements();
+        fetchPurchasesToday();
+        fetchRevenueToday();
     }, []);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [announcements]);
+
+    // Update current time every second
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const fetchAnnouncements = () => {
         axios.get(`${process.env.REACT_APP_API_URL}/announcements/all`, {
@@ -36,6 +49,72 @@ const AdminDashboard = () => {
         })
             .then(response => setAnnouncements(response.data))
             .catch(error => console.error('Error fetching announcements:', error));
+    };
+
+    // Fetch the number of purchases made today
+    const fetchPurchasesToday = () => {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+
+        const reportRequest = {
+            report_category: 'GiftShopReport',
+            report_type: 'transaction_details',
+            report_period_type: 'single_day',
+            selected_date: today,
+            // Include other filters if needed
+        };
+
+        axios.post(`${process.env.REACT_APP_API_URL}/reports`, reportRequest, {
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': userId,
+                role: role,
+            },
+        })
+            .then(response => {
+                const reportData = response.data.reportData;
+                // Process the reportData to get the number of unique transactions (purchases)
+                const transactionIds = new Set();
+                if (Array.isArray(reportData)) {
+                    reportData.forEach(item => {
+                        transactionIds.add(item.transaction_id);
+                    });
+                }
+                setPurchasesToday(transactionIds.size);
+            })
+            .catch(error => console.error('Error fetching purchases:', error));
+    };
+
+    // Fetch the total revenue made today
+    const fetchRevenueToday = () => {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+
+        const reportRequest = {
+            report_category: 'GiftShopReport',
+            report_type: 'revenue',
+            report_period_type: 'single_day',
+            selected_date: today,
+            // Include other filters if needed
+        };
+
+        axios.post(`${process.env.REACT_APP_API_URL}/reports`, reportRequest, {
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': userId,
+                role: role,
+            },
+        })
+            .then(response => {
+                const reportData = response.data.reportData;
+                // Process the reportData to calculate total revenue
+                let totalRevenue = 0;
+                if (Array.isArray(reportData)) {
+                    reportData.forEach(item => {
+                        totalRevenue += parseFloat(item.item_total) || 0;
+                    });
+                }
+                setRevenueToday(totalRevenue);
+            })
+            .catch(error => console.error('Error fetching revenue:', error));
     };
 
     // Confirm Delete
@@ -103,6 +182,23 @@ const AdminDashboard = () => {
         <div className={styles.adminContainer}>
             <HomeNavBar />
             <h1 className={styles.title}>Admin Dashboard</h1>
+
+            {/* Tiles Container */}
+            <div className={styles.tilesContainer}>
+                <div className={styles.tile}>
+                    <h2>Purchases Today</h2>
+                    <p>{purchasesToday}</p>
+                </div>
+                <div className={styles.tile}>
+                    <h2>Revenue Today</h2>
+                    <p>${revenueToday.toFixed(2)}</p>
+                </div>
+                <div className={styles.tile}>
+                    <h2>Current Time</h2>
+                    <p>{currentTime.toLocaleString()}</p>
+                </div>
+            </div>
+
             <button className={styles.addButton} onClick={() => openFormModal()}>
                 Add New Announcement
             </button>

@@ -29,7 +29,8 @@ import Report from './pages/Report';
 import TicketCheckout from './pages/TicketCheckout';
 import { TicketCartProvider } from './components/TicketCartContext';
 import AdminDashboard from "./pages/Dashboards/AdminDashboard";
-
+// Manage Users
+import ManageUsers from '../src/components/ManageUsers';
 const App = () => {
     const isAuthenticated = Boolean(localStorage.getItem('username')); // Check if a user is logged in
 
@@ -64,6 +65,7 @@ const App = () => {
                     {/* Admin Routes */}
                     <Route element={<PrivateRoute roles={['admin']} />}>
                         <Route path="/AdminDashBoard" element={<AdminDashboard />} />
+                        <Route path="/manage-users" element={<ManageUsers />} />
 
                     </Route>
 

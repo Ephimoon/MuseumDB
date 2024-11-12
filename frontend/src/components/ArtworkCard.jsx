@@ -77,19 +77,39 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
     }
   };
 
-  const handleRestore = async () => {
+  const handleRestore = async (artistId, departmentId) => {
     try {
-      // Fetch the artist information to check if the artist is deleted
-      const artistResponse = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artwork.artist_id}`);
-      const artistData = artistResponse.data;
+      // Fetch both the artist and department information in parallel
+      const [artistResponse, departmentResponse] = await Promise.all([
+        axios.get(`${process.env.REACT_APP_API_URL}/artist/${artistId}`),
+        axios.get(`${process.env.REACT_APP_API_URL}/department/${departmentId}`)
+      ]);
 
+      const artistData = artistResponse.data;
+      const departmentData = departmentResponse.data[0]; // Access the first element if response is an array
+
+      let errorMessages = [];
+
+      // Check artist deletion status
       if (artistData.is_deleted === 1) {
-        // Show an error message if the artist is deleted
-        setErrorMessage("Cannot restore this artwork because the assigned artist is deleted. Please restore the artist first.");
+        errorMessages.push("Cannot restore this artwork because the assigned artist is deleted. Please restore the artist first.");
+      }
+
+      // Check department deletion status
+      if (departmentData.is_deleted === 1) {
+        console.log("Department is marked as deleted."); // Debug log
+        errorMessages.push("Cannot restore this artwork because the assigned department is deleted. Please restore the department first.");
+      } else {
+        console.log("Department is not deleted or missing is_deleted field."); // Debug log
+      }
+
+      // If there are error messages, show them and stop here
+      if (errorMessages.length > 0) {
+        setErrorMessage(errorMessages.join(" "));
         return;
       }
 
-      // Proceed with restoring the artwork if the artist is active
+      // Proceed with restoring the artwork if the artist and department are active
       await axios.patch(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}/restore`);
       console.log("Artwork restored successfully");
       onRefresh(); // Refresh the artwork list
@@ -138,7 +158,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
                       ) : (
                           <>
                             {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                            <button onClick={handleRestore}>Restore</button>
+                            <button onClick={() => handleRestore(artwork.artist_id, artwork.department_id)}>Restore</button>
                           </>
                       )}
                     </>
@@ -205,8 +225,11 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
         const validArtists = Array.isArray(artistRes.data)
             ? artistRes.data.flat().filter(artist => artist.ArtistID)
             : [];
+        const validDepartments = Array.isArray(departmentsRes.data)
+            ? departmentsRes.data.flat().filter(department => department.DepartmentID)
+            : [];
         setArtists(validArtists);
-        setDepartments(departmentsRes.data);
+        setDepartments(validDepartments);
         setMediums(mediumsRes.data);
         setConditions(conditionsRes.data);
       } catch (error) {
@@ -745,4 +768,113 @@ const ConfirmDeleteArtistModal = ({ onConfirm, onCancel }) => {
   );
 };
 
-export {ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser} ;
+const DepartmentCard = ({ department_, onRefresh, onEditClick, onDeleteClick, isDepartmentDeletedOpen }) => {
+
+  const handleRestoreClick = async (departmentId) => {
+    try {
+      await axios.patch(`${process.env.REACT_APP_API_URL}/department/${departmentId}/restore`);
+      onRefresh();
+    } catch (error) {
+      console.error('Error restoring department:', error);
+    }
+  };
+
+  return (
+      <div className={styles.cards}>
+        {department_.map((department) => (
+            <div key={department.DepartmentID} className={styles.card}>
+              <h1>{department.Name}</h1>
+              <p>{department.Description}</p>
+              <p>{department.Location}</p>
+              {!isDepartmentDeletedOpen ? (
+                  <>
+                    <button onClick={(e) => { e.stopPropagation(); onEditClick(department); }}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); onDeleteClick(department.DepartmentID); }}>Delete</button>
+                  </>
+              ) : (
+                  <button onClick={(e) => { e.stopPropagation(); handleRestoreClick(department.DepartmentID); }}>Restore</button>
+              )}
+            </div>
+        ))}
+      </div>
+  );
+};
+
+const EditDepartmentModal = ({ department, onClose, onRefresh }) => {
+  const [name, setName] = useState(department.Name || '');
+  const [location, setLocation] = useState(department.Location || '');
+  const [description, setDescription] = useState(department.Description || '');
+  const [errors, setErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Function to validate fields
+  const validateFields = () => {
+    const newErrors = {};
+    if (!name) newErrors.name = "Department name is required.";
+    if (!description) newErrors.description = "Description is required.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validateFields()) return;
+    setIsSaving(true);
+
+    const updatedDepartmentData = {
+      name,
+      location,
+      description
+    };
+
+    try {
+      await axios.patch(`${process.env.REACT_APP_API_URL}/department/${department.DepartmentID}`, updatedDepartmentData);
+      onRefresh();
+      onClose();
+    } catch (error) {
+      console.error("Error updating department:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+      <div className={styles.modal}>
+        <div className={styles.modal_content}>
+          <h2>Edit Department</h2>
+          <label>Department Name *
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
+          </label>
+          <label>Location
+            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+            {errors.location && <p style={{ color: 'red' }}>{errors.location}</p>}
+          </label>
+          <label>Description *
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+            {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
+          </label>
+          <button onClick={onClose}>Cancel</button>
+          <button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</button>
+        </div>
+      </div>
+  );
+};
+
+const ConfirmDeleteDepartmentModal = ({ onConfirm, onCancel }) => {
+  return (
+      <div className={styles.modal}>
+        <div className={styles.modal_content}>
+          <h2>Are you sure you want to delete this department? This will also delete the artwork associated with this department</h2>
+          <p>This action can be undone. Go to 'View Deleted' to restore.</p>
+          <div className={styles.buttonContainer}>
+            <button onClick={onCancel}>Cancel</button>
+            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          </div>
+        </div>
+      </div>
+  );
+};
+
+
+export {ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser, DepartmentCard, EditDepartmentModal, ConfirmDeleteDepartmentModal};

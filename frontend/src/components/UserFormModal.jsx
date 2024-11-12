@@ -14,7 +14,10 @@ const UserFormModal = ({ user, onClose }) => {
         username: '',
         email: '',
         roleId: 3, // Default to 'Customer'
+        password: '',
+        confirmPassword: '',
     });
+
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [error, setError] = useState('');
 
@@ -31,6 +34,8 @@ const UserFormModal = ({ user, onClose }) => {
                 username: user.username || '',
                 email: user.email || '',
                 roleId: user.role_id || 3,
+                password: '', // Reset password fields when editing
+                confirmPassword: '',
             });
         }
     }, [user]);
@@ -50,6 +55,22 @@ const UserFormModal = ({ user, onClose }) => {
         e.preventDefault();
         setError(''); // Reset error state
 
+        // Password validation when creating a new user
+        if (!user || !user.user_id) {
+            if (!formData.password || !formData.confirmPassword) {
+                setError('Please enter and confirm the password.');
+                return;
+            }
+            if (formData.password !== formData.confirmPassword) {
+                setError('Passwords do not match.');
+                return;
+            }
+            if (formData.password.length < 8) {
+                setError('Password must be at least 8 characters long.');
+                return;
+            }
+        }
+
         // Prepare payload with camelCase field names
         const payload = {
             firstName: formData.firstName,
@@ -58,6 +79,7 @@ const UserFormModal = ({ user, onClose }) => {
             username: formData.username,
             email: formData.email,
             roleId: formData.roleId,
+            password: formData.password, // Include password in payload when creating new user
         };
 
         try {
@@ -70,8 +92,13 @@ const UserFormModal = ({ user, onClose }) => {
                     },
                 });
             } else {
-                // Create new user
-                await axios.post(`${process.env.REACT_APP_API_URL}/register`, payload);
+                // Create new user via admin endpoint
+                await axios.post(`${process.env.REACT_APP_API_URL}/users`, payload, {
+                    headers: {
+                        role: role,
+                        'user-id': userId,
+                    },
+                });
             }
             onClose(); // Close the modal upon successful submission
         } catch (error) {
@@ -96,9 +123,9 @@ const UserFormModal = ({ user, onClose }) => {
     return (
         <div className={styles.modal}>
             <div className={styles.modalContent}>
-                <span className={styles.closeButton} onClick={onClose}>
-                    &times;
-                </span>
+        <span className={styles.closeButton} onClick={onClose}>
+          &times;
+        </span>
                 <form onSubmit={handleSubmit} className={styles.formContainer}>
                     <h2>{user && user.user_id ? 'Edit User' : 'Add New User'}</h2>
                     {error && <div className={styles.error}>{error}</div>}
@@ -153,19 +180,46 @@ const UserFormModal = ({ user, onClose }) => {
                             required
                         />
                     </label>
-                    <label>
-                        Role:
-                        <select
-                            name="roleId"
-                            value={formData.roleId}
-                            onChange={handleChange}
-                        >
-                            <option value={1}>Admin</option>
-                            <option value={2}>Staff</option>
-                            <option value={3}>Customer</option>
-                            <option value={4}>Member</option>
-                        </select>
-                    </label>
+                    {role === 'admin' && (
+                        <label>
+                            Role:
+                            <select
+                                name="roleId"
+                                value={formData.roleId}
+                                onChange={handleChange}
+                            >
+                                <option value={1}>Admin</option>
+                                <option value={2}>Staff</option>
+                                <option value={3}>Customer</option>
+                                <option value={4}>Member</option>
+                            </select>
+                        </label>
+                    )}
+                    {/* Only show password fields when creating a new user */}
+                    {(!user || !user.user_id) && (
+                        <>
+                            <label>
+                                Password:
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                            <label>
+                                Confirm Password:
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                        </>
+                    )}
                     <div className={styles.buttonGroup}>
                         <button type="submit" className={styles.formButton}>
                             {user && user.user_id ? 'Update' : 'Create'}
@@ -190,6 +244,7 @@ const UserFormModal = ({ user, onClose }) => {
                 </form>
             </div>
 
+            {/* Change Password Modal */}
             {isPasswordModalOpen && (
                 <ChangePasswordModal
                     open={isPasswordModalOpen}
