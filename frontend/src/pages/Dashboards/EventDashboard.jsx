@@ -318,8 +318,22 @@ const EventDirectorDashboard = () => {
                         {reportData && (
                             <div className="report">
                                 <h4>Report for Event:</h4>
-                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembersSignedUp}</p>
-                                <p><strong>Total Revenue Generated:</strong> ${reportData.totalRevenue}</p>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Event Name</th>
+                                            <th>Total Members Signed Up</th>
+                                            <th>Total Revenue Generated</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{reportData.eventName || 'N/A'}</td>
+                                            <td>{reportData.totalMembersSignedUp}</td>
+                                            <td>${reportData.totalRevenue}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </div>
