@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser } from '../components/ArtworkCard';
+import { ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser, DepartmentCard, EditDepartmentModal, ConfirmDeleteDepartmentModal } from './ArtworkCard';
 import styles from '../css/Art.module.css';
 import axios from 'axios';
 
-const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, triggerRefreshArtworks }) => {
+const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, triggerRefreshArtworks, isDeletedView }) => {
     const location = useLocation();
     const role = localStorage.getItem('role');
 
     const [artworks, setArtworks] = useState([]);
+    const [artists, setArtists] = useState([]);
     const [artistsWithArtwork, setArtistsWithArtwork] = useState([]);
     const [artistsWithoutArtwork, setArtistsWithoutArtwork] = useState([]);
 
@@ -34,7 +35,10 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     const [filteredArtistsWithArtwork, setFilteredArtistsWithArtwork] = useState([]);
     const [filteredArtistsWithoutArtwork, setFilteredArtistsWithoutArtwork] = useState([]);
 
-
+    const [artworkImages, setArtworkImages] = useState({});
+    const [artworkPreviewImages, setArtworkPreviewImages] = useState({});
+    const [artistImages, setArtistImages] = useState({});
+    const [artistPreviewImages, setArtistPreviewImages] = useState({});
 
     useEffect(() => {
         if (activeTab === 'artwork') {
@@ -49,32 +53,109 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         fetchArtwork();
         fetchArtists();
         fetchFilterOptions();
-    }, [refreshArtworks, refreshArtists]);
+    }, [isDeletedView, refreshArtworks, refreshArtists]);
 
     const fetchArtwork = () => {
-        axios.get(`http://localhost:5000/artwork`)
-            .then(response => setArtworks(response.data))
+        console.log("isDeletedView:", isDeletedView);
+        axios.get(`${process.env.REACT_APP_API_URL}/artwork?isDeleted=${isDeletedView}`)
+            .then(response => {
+                console.log("Artwork data:", response.data); // Log the data to see if it's fetched
+                setArtworks(response.data[0]);
+            })
             .catch(err => console.log('Error fetching artwork:', err));
+    };
+
+    useEffect(() => {
+        fetchAllArtworkImages();
+    }, [artworks]);
+
+    const fetchAllArtworkImages = async () => {
+        const images = {};
+        await Promise.all(
+            artworks.map(async (art_image) => {
+                try {
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${art_image.ArtworkID}/image`, {
+                        responseType: 'blob',
+                    });
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[art_image.ArtworkID] = imageUrl;
+                    console.log(`Fetched image for artwork ${art_image.ArtworkID}`);
+                } catch (error) {
+                    console.error(`Error fetching image for artwork ${art_image.ArtworkID}:, error`);
+                }
+            })
+        );
+        setArtworkImages(images); // Update artworkImages state with all images
+    };
+    // Update specific artwork preview in artworkPreviewImages
+    const handlePreviewImageChange = (artworkId, previewUrl) => {
+        setArtworkPreviewImages((prev) => ({
+            ...prev,
+            [artworkId]: previewUrl,
+        }));
     };
 
     const fetchArtists = async () => {
         try {
-            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork`);
-            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork`);
-            setArtistsWithArtwork(responseWithArtwork.data);
-            setArtistsWithoutArtwork(responseWithoutArtwork.data);
+            const responseWithArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-with-artwork?isDeleted=${isDeletedView}`);
+            const responseWithoutArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-null-artwork?isDeleted=${isDeletedView}`);
+
+            // Combine and filter out entries without ArtistID
+            const artistsWithArtwork = responseWithArtwork.data.flat().filter(artist => artist.ArtistID);
+            const artistsWithoutArtwork = responseWithoutArtwork.data.flat().filter(artist => artist.ArtistID);
+
+            console.log("Filtered Artists with artwork:", artistsWithArtwork);
+            console.log("Filtered Artists without artwork:", artistsWithoutArtwork);
+
+            setArtists([...artistsWithArtwork, ...artistsWithoutArtwork]);
+            setArtistsWithArtwork(artistsWithArtwork);
+            setArtistsWithoutArtwork(artistsWithoutArtwork);
         } catch (err) {
             console.log('Error fetching artists:', err);
         }
     };
 
+    useEffect(() => {
+        fetchAllArtistImages();
+    }, [artists]);
+
+    const fetchAllArtistImages = async () => {
+        const images = {};
+        await Promise.all(
+            artists.filter(artist_image => artist_image.ArtistID).map(async (artist_image) => {
+                try {
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist_image.ArtistID}/image`, {
+                        responseType: 'blob',
+                    });
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[artist_image.ArtistID] = imageUrl;
+                    console.log(`Fetched image for artist ${artist_image.ArtistID}`);
+                } catch (error) {
+                    console.error(`Error fetching image for artist ${artist_image.ArtistID}:`, error);
+                }
+            })
+        );
+        setArtistImages(images);
+    };
+    // Update specific artwork preview in artworkPreviewImages
+    const handlePreviewArtistImageChange = (artistId, previewUrl) => {
+        console.log(`Updating preview for artist ${artistId} with URL:`, previewUrl);
+        setArtistPreviewImages((prev) => ({
+            ...prev,
+            [artistId]: previewUrl,
+        }));
+    };
+
+
+
+
     const fetchFilterOptions = async () => {
         try {
-            const departmentRes = await axios.get(`http://localhost:5000/department`);
-            const mediumsRes = await axios.get(`http://localhost:5000/mediums`);
-            const yearsRes = await axios.get(`http://localhost:5000/creation-years`);
-            //const conditionsRes = await axios.get(`http://localhost:5000/artworkconditions`);
-            const nationalitiesRes = await axios.get(`http://localhost:5000/nationalities`);
+            const departmentRes = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
+            const mediumsRes = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
+            const yearsRes = await axios.get(`${process.env.REACT_APP_API_URL}/creation-years`);
+            //const conditionsRes = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
+            const nationalitiesRes = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
 
             setDepartments(departmentRes.data);
             setMediums(mediumsRes.data);
@@ -128,17 +209,17 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         }).sort((a, b) => {
             switch (sortOption) {
                 case 'title_asc':
-                    return a.Title.localeCompare(b.Title);
+                    return (a.Title || '').localeCompare(b.Title || '');
                 case 'title_desc':
-                    return b.Title.localeCompare(a.Title);
+                    return (b.Title || '').localeCompare(a.Title || '');
                 case 'year_asc':
-                    return a.CreationYear - b.CreationYear;
+                    return (a.CreationYear || 0) - (b.CreationYear || 0);
                 case 'year_desc':
-                    return b.CreationYear - a.CreationYear;
+                    return (b.CreationYear || 0) - (a.CreationYear || 0);
                 case 'artist_asc':
-                    return a.artist_name.localeCompare(b.artist_name);
+                    return (a.artist_name || '').localeCompare(b.artist_name || '');
                 case 'artist_desc':
-                    return b.artist_name.localeCompare(a.artist_name);
+                    return (b.artist_name || '').localeCompare(a.artist_name || '');
                 default:
                     return 0;
             }
@@ -182,8 +263,8 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     const [isArtworkModalOpen, setIsArtworkModalOpen] = useState(false);
     const [isArtistModalOpen, setIsArtistModalOpen] = useState(false);
 
-    const openArtworkModal = (artwork) => {
-        setSelectedArtwork(artwork);
+    const openArtworkModal = (artwork, refreshImage) => {
+        setSelectedArtwork({ ...artwork, refreshImage });
         setIsArtworkModalOpen(true);
     };
     const closeArtworkModal = () => {
@@ -191,8 +272,8 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         setIsArtworkModalOpen(false);
     };
 
-    const openArtistModal = (artist) => {
-        setSelectedArtist(artist);
+    const openArtistModal = (artist, refreshImage) => {
+        setSelectedArtist({ ...artist, refreshImage });
         setIsArtistModalOpen(true);
     };
     const closeArtistModal = () => {
@@ -203,7 +284,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     return (
         <div>
             <div className={styles.FilterContainer}>
-                <h1>Search Collection</h1>
+                <h1>{isDeletedView ? 'Deleted Collection' : 'Search Collection'}</h1>
                 <div className={styles.tabs}>
                     <button onClick={() => handleTabSwitch('artwork')} className={activeTab === 'artwork' ? styles.activeTab : ''}>
                         Artwork
@@ -216,11 +297,11 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                 {/* Search */}
                 <div className={styles.search}>
                     <input
-                    type="text"
-                    placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
-                    value={query}
-                    className='search'
-                    onChange={(e) => setQuery(e.target.value)}
+                        type="text"
+                        placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
+                        value={query}
+                        className='search'
+                        onChange={(e) => setQuery(e.target.value)}
                     />
                 </div>
 
@@ -316,16 +397,31 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
             {/* Display Artwork or Artist */}
             <div>
                 {activeTab === 'artwork' ? (
-                    searchArtwork(filteredArtworks).length > 0 ? (
-                        <>
-                            <ArtworkCard artwork_={filteredArtworks} onCardClick={openArtworkModal} />
-                            {isArtworkModalOpen && (
-                                <ArtworkModalUser artwork_={selectedArtwork} onClose={closeArtworkModal} onRefresh={triggerRefreshArtworks} />
-                            )}
-                        </>
-                    ) : (
-                        <p>No artwork found matching your search.</p>
-                    )
+                    <>
+                        <p>{isDeletedView ? 'Restore deleted artwork' : ''}</p>
+                        {searchArtwork(filteredArtworks).length > 0 ? (
+                            <>
+                                <ArtworkCard artwork_=
+                                                 {filteredArtworks}
+                                             onCardClick={openArtworkModal}
+                                             artworkImages={artworkImages}
+                                />
+                                {isArtworkModalOpen && (
+                                    <ArtworkModalUser
+                                        artwork_={selectedArtwork}
+                                        onClose={closeArtworkModal}
+                                        onRefresh={triggerRefreshArtworks}
+                                        artworkPreviewImages={artworkPreviewImages} // Pass preview images
+                                        handlePreviewImageChange={handlePreviewImageChange} // Pass function to update preview
+                                        isDeletedView={isDeletedView} // Pass function to open edit modal
+                                    />
+                                )}
+                            </>
+                        ) : (
+                            <p>No artwork found matching your search.</p>
+                        )}
+                    </>
+
                 ) : (
                     <>
                         {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
@@ -336,9 +432,20 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                                     searchArtists(filteredArtistsWithoutArtwork).length > 0 ? (
                                         // Display artists that match the search criteria
                                         <>
-                                            <ArtistCard artist_={filteredArtistsWithoutArtwork} onCardClick={openArtistModal} />
+                                            <ArtistCard artist_=
+                                                            {filteredArtistsWithoutArtwork}
+                                                        onCardClick={openArtistModal}
+                                                        artistImages={artistImages}
+                                            />
                                             {isArtistModalOpen && (
-                                                <ArtistModalUser artist_={selectedArtist} onClose={closeArtistModal} onRefresh={triggerRefreshArtists} />
+                                                <ArtistModalUser
+                                                    artist_={selectedArtist}
+                                                    onClose={closeArtistModal}
+                                                    onRefresh={triggerRefreshArtists}
+                                                    artistPreviewImages={artistPreviewImages} // Pass preview images
+                                                    handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
+                                                    isDeletedView={isDeletedView}
+                                                />
                                             )}
                                         </>
                                     ) : (
@@ -354,9 +461,20 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                         )}
                         {searchArtists(filteredArtistsWithArtwork).length > 0 ? (
                             <>
-                                <ArtistCard artist_={filteredArtistsWithArtwork} onCardClick={openArtistModal} />
+                                <ArtistCard
+                                    artist_={filteredArtistsWithArtwork}
+                                    onCardClick={openArtistModal}
+                                    artistImages={artistImages}
+                                />
                                 {isArtistModalOpen && (
-                                    <ArtistModalUser artist_={selectedArtist} onClose={closeArtistModal} onRefresh={triggerRefreshArtists} />
+                                    <ArtistModalUser
+                                        artist_={selectedArtist}
+                                        onClose={closeArtistModal}
+                                        onRefresh={triggerRefreshArtists}
+                                        artistPreviewImages={artistPreviewImages} // Pass preview images
+                                        handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
+                                        isDeletedView={isDeletedView}
+                                    />
                                 )}
                             </>
                         ) : (
@@ -369,4 +487,117 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     );
 };
 
-export default ArtLookUp;
+const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
+    const [departments, setDepartments] = useState([]);
+    const [sortOption, setSortOption] = useState('department_asc');
+    const [filterType, setFilterType] = useState('all'); // 'all', 'withArtwork', 'withoutArtwork'
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    useEffect(() => {
+        fetchDepartments();
+    }, [isDepartmentDeletedOpen, filterType, refreshDepartments]);
+
+    const fetchDepartments = async () => {
+        let endpoint = '${process.env.REACT_APP_API_URL}/department';
+        if (filterType === 'withArtwork') {
+            endpoint = '${process.env.REACT_APP_API_URL}/department-with-artwork';
+        } else if (filterType === 'withoutArtwork') {
+            endpoint = '${process.env.REACT_APP_API_URL}/department-null-artwork';
+        }
+
+        try {
+            const response = await axios.get(`${endpoint}?isDeleted=${isDepartmentDeletedOpen}`);
+            const validDepartments = response.data.flat().filter(department => department.DepartmentID);
+            setDepartments(validDepartments);
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+        }
+    };
+
+    const handleEditClick = (department) => {
+        if (!isDepartmentDeletedOpen) { // Prevent editing if department is in deleted view
+            setSelectedDepartment(department);
+            setIsEditModalOpen(true);
+        }
+    };
+
+    const handleDeleteClick = (departmentId) => {
+        if (!isDepartmentDeletedOpen) { // Prevent deletion if department is in deleted view
+            setSelectedDepartment(departmentId);
+            setIsDeleteModalOpen(true);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await axios.delete(`${process.env.REACT_APP_API_URL}/department/${selectedDepartment}`);
+            fetchDepartments(); // Refresh the department list after deletion
+            setIsDeleteModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting department:", error);
+        }
+    };
+
+    const sortedDepartments = [...departments].sort((a, b) => {
+        return sortOption === 'department_asc'
+            ? a.Name.localeCompare(b.Name)
+            : b.Name.localeCompare(a.Name);
+    });
+
+    return (
+        <div>
+            <div className={styles.FilterContainer}>
+                <h1>{isDepartmentDeletedOpen ? 'Deleted Departments' : 'Departments'}</h1>
+
+                {/* Filter by artwork association */}
+                <div>
+                    <label>Filter Departments:</label>
+                    <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
+                        <option value="all">All</option>
+                        <option value="withArtwork">With Artwork</option>
+                        <option value="withoutArtwork">Without Artwork</option>
+                    </select>
+                </div>
+
+                {/* Sort Departments */}
+                <div className={styles.sortSection}>
+                    <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                        <option value="department_asc">Department A-Z</option>
+                        <option value="department_desc">Department Z-A</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Display Department Cards */}
+            <DepartmentCard
+                department_={sortedDepartments}
+                onRefresh={fetchDepartments}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+                isDepartmentDeletedOpen={isDepartmentDeletedOpen} // Pass the prop here
+            />
+
+            {/* Edit Department Modal */}
+            {isEditModalOpen && selectedDepartment && (
+                <EditDepartmentModal
+                    department={selectedDepartment}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onRefresh={fetchDepartments}
+                />
+            )}
+
+            {/* Confirm Delete Department Modal */}
+            {isDeleteModalOpen && (
+                <ConfirmDeleteDepartmentModal
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                />
+            )}
+        </div>
+    );
+};
+
+
+export {ArtLookUp, DepartmentLookUp};

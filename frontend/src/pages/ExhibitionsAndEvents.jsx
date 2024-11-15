@@ -8,7 +8,7 @@ import axios from 'axios';
 const ExhibitionsAndEvents = () => {
 
     const exhibitions = [
-        {
+        /*{
             id: 1,
             image: "https://placehold.jp/500x500.png",
             name: 'Hockney-Van Gogh: The Joy of Nature',
@@ -66,7 +66,7 @@ const ExhibitionsAndEvents = () => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/api/events');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events`);
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,
@@ -77,7 +77,7 @@ const ExhibitionsAndEvents = () => {
                         description: event.description_
                     }));
                     setSelectedEvent(formattedEvents);
-                } 
+                }
             } catch (error) {
                 console.error('Error fetching events: ', error);
             }
@@ -113,7 +113,7 @@ const ExhibitionsAndEvents = () => {
                         onExploreClick={handleExploreClick}
                     />
                 ))}
-                 {event.map((exhibition) => (
+                {event.map((exhibition) => (
                     <ExhibitionsCardUser
                         key={exhibition.id}
                         exhibition={exhibition}

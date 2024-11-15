@@ -32,7 +32,7 @@ const MFAShop = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`http://localhost:5000/giftshopitems`)
+        fetch(`${process.env.REACT_APP_API_URL}/giftshopitems`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch shop items');

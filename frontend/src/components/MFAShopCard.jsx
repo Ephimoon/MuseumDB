@@ -48,7 +48,7 @@ const MFAShopCard = ({ item, onCardClick }) => {
     const { addToCart } = useContext(CartContext);
 
     const getImageUrl = (itemId) => {
-        return `http://localhost:5000/giftshopitems/${itemId}/image`;
+        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
     };
 
     const isOutOfStock = item.quantity === 0;
