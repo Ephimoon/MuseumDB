@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const app = express();
 const port = 5000; // Change to 6000 when you push to GitHub
-require('dotenv').config();
+require('dotenv').config({path: path.resolve(__dirname, './.env')});
 const allowedOrigins = [
     'http://localhost:3000', // Local development frontend
     'http://localhost:3002', // Updated localhost port if needed
