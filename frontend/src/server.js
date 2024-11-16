@@ -1587,22 +1587,40 @@ app.get('/api/events/:id/members', async (req, res) => {
     }
 });
 
-// Fetch report data for a specific event
-app.get('/api/events/:id/report', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const [result] = await db.query('SELECT eventName, totalMembersSignedUp, totalRevenue FROM EventReport WHERE eventID = ?',
-            [id]);
-        if (result.length === 0) {
-            return res.status(404).json({ message: 'Report not found for the specified event.' });
-        }
-        res.json(result[0]);
+// Fetch report data for all events
+app.get('/api/events/report', async (req, res) => {
+    const { minRevenue, maxRevenue, minMembers, maxMembers } = req.query;
+    let query = 'SELECT eventName, totalMembersSignedUp, totalRevenue FROM EventReport WHERE 1=1';
+    let queryParams = [];
+
+    if (minRevenue) {
+        query += ' AND totalRevenue >= ?';
+        queryParams.push(minRevenue);
     }
-    catch (error){
+    if (maxRevenue) {
+        query += ' AND totalRevenue <= ?';
+        queryParams.push(maxRevenue);
+    }
+    if (minMembers) {
+        query += ' AND totalMembersSignedUp >= ?';
+        queryParams.push(minMembers);
+    }
+    if (maxMembers) {
+        query += ' AND totalMembersSignedUp <= ?';
+        queryParams.push(maxMembers);
+    }
+
+    try {
+        const [result] = await db.query(query, queryParams);
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'No reports found for the specified criteria.' });
+        }
+        res.json(result);
+    } catch (error) {
         console.error('Error fetching event report:', error);
         res.status(500).json({ message: 'Server error fetching event report.' });
     }
-})
+});
 
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
