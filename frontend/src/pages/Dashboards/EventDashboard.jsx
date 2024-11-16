@@ -346,7 +346,7 @@ const EventDirectorDashboard = () => {
                         </div>
 
                         {/* Button to generate the report */}
-                        <button onClick={fetchReport}>Generate Report</button>
+                        <button className="gen_report" onClick={fetchReport}>Generate Report</button>
 
                         {/* Display the report */}
                         {reportData.length > 0 && (

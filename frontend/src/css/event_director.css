@@ -185,3 +185,32 @@ button {
     background-color: white;
     color: black;
 }
+
+.report table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.report th, .report td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.report th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.report tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.report tr:hover {
+    background-color: #ddd;
+}
+
+.gen_report {
+    margin-top: 20px;
+}
