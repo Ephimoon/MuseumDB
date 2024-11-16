@@ -73,7 +73,7 @@ const ChangePasswordModal = ({ open, onClose, userId, role }) => {
         if (!validatePasswords()) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/users/${userId}/change-password`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${userId}/change-password`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -27,21 +27,14 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.static('public')); // Allows access to the public folder for images
-app.use(async (req, res, next) => {
+app.use((req, res, next) => {
     const userId = req.headers['user-id'];
     const role = req.headers['role'];
 
     if (userId && role) {
-        try {
-            // Set session variables for the current connection
-            await db.query(`SET @current_user_id = ?`, [userId]);
-            await db.query(`SET @current_user_role = ?`, [role]);
-        } catch (error) {
-            console.error('Error setting session variables:', error);
-            // Optionally, you can send an error response here
-        }
+        req.userId = userId;
+        req.userRole = role;
     }
-
     next();
 });
 // ----- DATABASE CONNECTION ------------------------------------------------------------------------
@@ -52,7 +45,7 @@ const dbConfig = {
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 50,
     queueLimit: 0,
     decimalNumbers: true
 };
@@ -70,7 +63,6 @@ const storage = multer.diskStorage({
         cb(null, safeFileName);
     }
 });
-const upload = multer({storage});
 // ------------------------------------------------------------------------------------------------
 
 // ----- ROLE MAPPINGS -----------------------------------------------------------------------------
@@ -80,36 +72,50 @@ const roleMappings = {
 // ------------------------------------------------------------------------------------------------
 
 // ----- API CALLS --------------------------------------------------------------------------------
-
+const uploadArtistImage = multer({ storage: multer.memoryStorage() });
 // ----- (MELANIE) --------------------------------------------------------------------------------
-
-// rtwork images
-app.use('/assets/artworks', express.static(path.join(__dirname, 'assets/artworks')));
-const artworkStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'assets/artworks')); // Save to frontend/src/assets/artworks
-    },
-    filename: (req, file, cb) => {
-        const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-        cb(null, safeFileName);
-    }
-});
-const uploadArtworkImage = multer({ storage: artworkStorage });
-
 app.get('/artwork', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+
+    // Use the isDeleted parameter to filter records accordingly
+    const query = `
+        SELECT artwork.ArtworkID, artwork.Title, artwork.Description, artwork.CreationYear, artwork.price, 
+               artwork.Medium, artwork.height, artwork.width, artwork.depth, artwork.acquisition_date, 
+               artwork.location, artwork.ArtworkCondition, artwork.artist_id, artwork.department_id,
+               artist.name_ AS artist_name, 
+               department.Name AS department_name
+        FROM artwork
+        LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
+        LEFT JOIN department ON artwork.department_id = department.DepartmentID
+        WHERE artwork.is_deleted = ?
+    `;
+
     try {
-        const [rows] = await db.query(`
-            SELECT artwork.*, 
-                   artist.name_ AS artist_name, 
-                   department.Name AS department_name
-            FROM artwork
-            LEFT JOIN artist ON artwork.artist_id = artist.ArtistID
-            LEFT JOIN department ON artwork.department_id = department.DepartmentID
-        `);
-        res.json(rows);
+        // Execute the query with isDeleted as a boolean (0 for false, 1 for true)
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
     } catch (error) {
         console.error('Error fetching artwork table:', error);
         res.status(500).json({ message: 'Server error fetching artwork table.' });
+    }
+});
+
+
+app.get('/artwork/:id/image', async (req, res) => {
+    const artworkId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT image, image_type FROM artwork WHERE ArtworkID = ?', [artworkId]);
+        if (rows.length === 0 || !rows[0].image) {
+            return res.status(404).json({ message: 'Image not found' });
+        }
+
+        // Set the appropriate content type and send the image data
+        res.set('Content-Type', rows[0].image_type || 'application/octet-stream');
+        res.send(rows[0].image);
+    } catch (error) {
+        console.error('Error fetching artwork image:', error);
+        res.status(500).json({ message: 'Server error fetching artwork image.' });
     }
 });
 
@@ -169,15 +175,31 @@ app.get('/artworkconditions', async (req, res) => {
     }
 });
 
+const uploadArtworkImage = multer({ storage: multer.memoryStorage() }); // Use memory storage for image uploads
 app.post('/artwork', uploadArtworkImage.single('image'), async (req, res) => {
     try {
-        const { Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition } = req.body;
-        const image = req.file ? req.file.filename : null;
+        const {
+            Title, artist_id, department_id, Description, CreationYear, price,
+            Medium, height, width, depth, acquisition_date, location, ArtworkCondition
+        } = req.body;
+
+        let imageBlob = null;
+        let imageType = null;
+
+        // If an image was uploaded, process it
+        if (req.file) {
+            imageType = req.file.mimetype;
+
+            // Compress and resize image if it is too large
+            imageBlob = await sharp(req.file.buffer)
+                .resize({ width: 1000, withoutEnlargement: true }) // Resize to 800px width, maintaining aspect ratio
+                .toBuffer();
+        }
 
         const [result] = await db.query(
-            `INSERT INTO artwork (Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition, image) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [Title, artist_id, department_id, Description, CreationYear, price || null, Medium, height, width, depth || null, acquisition_date, location || null, ArtworkCondition, image]
+            `INSERT INTO artwork (Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition, image, image_type) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [Title, artist_id, department_id, Description, CreationYear, price || null, Medium, height, width, depth || null, acquisition_date, location || null, ArtworkCondition, imageBlob, imageType]
         );
 
         res.status(201).json({ message: 'Artwork added successfully', artworkId: result.insertId });
@@ -191,9 +213,20 @@ app.post('/artwork', uploadArtworkImage.single('image'), async (req, res) => {
 app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) => {
     const artworkId = req.params.id;
     const { Title, artist_id, department_id, Description, CreationYear, price, Medium, height, width, depth, acquisition_date, location, ArtworkCondition } = req.body;
-    const image = req.file ? req.file.filename : null;
+    let imageBlob = null;
+    let imageType = null;
 
-    // Build the SQL query dynamically based on provided fields
+    // If a new image is uploaded, process it with sharp
+    if (req.file) {
+        imageType = req.file.mimetype;
+
+        // Compress and resize the image before saving
+        imageBlob = await sharp(req.file.buffer)
+            .resize({ width: 1000, withoutEnlargement: true }) // Resize to a max width of 800 pixels
+            .toBuffer();
+    }
+
+    // Dynamically construct SQL query and values based on provided fields
     const fields = [];
     const values = [];
 
@@ -217,7 +250,7 @@ app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) =
         fields.push('CreationYear = ?');
         values.push(CreationYear);
     }
-    if (price !== undefined) {
+    if (price !== undefined) { // Allow `price` to be null
         fields.push('price = ?');
         values.push(price || null);
     }
@@ -233,7 +266,7 @@ app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) =
         fields.push('width = ?');
         values.push(width);
     }
-    if (depth !== undefined) {
+    if (depth !== undefined) { // Allow `depth` to be null
         fields.push('depth = ?');
         values.push(depth || null);
     }
@@ -249,16 +282,19 @@ app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) =
         fields.push('ArtworkCondition = ?');
         values.push(ArtworkCondition);
     }
-    if (image) { // Only update the image if a new one is provided
+    if (imageBlob && imageType) { // Add image fields only if a new image is provided
         fields.push('image = ?');
-        values.push(image);
+        values.push(imageBlob);
+        fields.push('image_type = ?');
+        values.push(imageType);
     }
 
+    // Check if any fields to update
     if (fields.length === 0) {
         return res.status(400).json({ message: 'No fields to update' });
     }
 
-    // Add the artworkId to the end of values array for the WHERE clause
+    // Add the artworkId for the WHERE clause
     values.push(artworkId);
 
     const query = `UPDATE artwork SET ${fields.join(', ')} WHERE ArtworkID = ?`;
@@ -272,15 +308,40 @@ app.patch('/artwork/:id', uploadArtworkImage.single('image'), async (req, res) =
     }
 });
 
+app.patch('/artwork/:id/restore', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Update the artwork's is_deleted status to false
+        await db.query('UPDATE artwork SET is_deleted = 0 WHERE ArtworkID = ?', [id]);
+        res.json({ message: 'Artwork restored successfully' });
+    } catch (error) {
+        console.error('Error restoring artwork:', error);
+        res.status(500).json({ message: 'Error restoring artwork' });
+    }
+});
+
 // only delete artwork
+// app.delete('/artwork/:id', async (req, res) => {
+//     const artworkId = req.params.id;
+//     try {
+//         await db.query('DELETE FROM artwork WHERE ArtworkID = ?', [artworkId]);
+//         res.status(200).json({ message: 'Artwork deleted successfully' });
+//     } catch (error) {
+//         console.error('Error deleting artwork:', error);
+//         res.status(500).json({ message: 'Server error deleting artwork' });
+//     }
+// });
+// Soft delete artwork only
 app.delete('/artwork/:id', async (req, res) => {
     const artworkId = req.params.id;
     try {
-        await db.query('DELETE FROM artwork WHERE ArtworkID = ?', [artworkId]);
-        res.status(200).json({ message: 'Artwork deleted successfully' });
+        // Soft delete the artwork
+        await db.query('UPDATE artwork SET is_deleted = 1 WHERE ArtworkID = ?', [artworkId]);
+
+        res.status(200).json({ message: 'Artwork soft deleted successfully' });
     } catch (error) {
-        console.error('Error deleting artwork:', error);
-        res.status(500).json({ message: 'Server error deleting artwork' });
+        console.error('Error soft deleting artwork:', error);
+        res.status(500).json({ message: 'Server error soft deleting artwork' });
     }
 });
 
@@ -294,26 +355,42 @@ app.get('/department', async (req, res) => {
     }
 });
 
-// artist images
-app.use('/assets/artists', express.static(path.join(__dirname, 'assets/artists')));
-const artistStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, 'assets/artists')); // Save to frontend/src/assets/artists
-    },
-    filename: (req, file, cb) => {
-        const safeFileName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-        cb(null, safeFileName);
-    }
-});
-const uploadArtistImage = multer({ storage: artistStorage });
-
 app.get('/artist', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+
+    // Use the isDeleted parameter to filter records accordingly
+    const query = `
+        SELECT ArtistID, name_, gender, nationality, birth_year, death_year, description, is_deleted
+            FROM artist
+            WHERE artist.is_deleted = ?
+            ORDER BY name_ ASC
+    `;
+
     try {
-        const [rows] = await db.query('SELECT * FROM artist ORDER BY name_ ASC');
-        res.json(rows);
+        // Execute the query with isDeleted as a boolean (0 for false, 1 for true)
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
     } catch (error) {
         console.error('Error fetching artist table:', error);
-        res.status(500).json({message: 'Server error fetching artist table.'});
+        res.status(500).json({ message: 'Server error fetching artist table.' });
+    }
+});
+
+app.get('/artist/:id/image', async (req, res) => {
+    const artistId = req.params.id;
+
+    try {
+        const [rows] = await db.query('SELECT image, image_type FROM artist WHERE ArtistID = ?', [artistId]);
+        if (rows.length === 0 || !rows[0].image) {
+            return res.status(404).json({ message: 'Image not found' });
+        }
+
+        // Set the correct content type for the image and send the binary data
+        res.set('Content-Type', rows[0].image_type || 'application/octet-stream');
+        res.send(rows[0].image);
+    } catch (error) {
+        console.error('Error fetching artist image:', error);
+        res.status(500).json({ message: 'Server error fetching artist image.' });
     }
 });
 
@@ -332,52 +409,111 @@ app.get('/artist/:id', async (req, res) => {
     }
 });
 
+// app.get('/artist-with-artwork', async (req, res) => {
+//     const isDeleted = req.query.isDeleted === 'true';
+
+//     // Use the isDeleted parameter to filter records accordingly
+//     const query = `
+//         SELECT DISTINCT artist.ArtistID, artist.name_, artist.description, artist.gender, artist.nationality,
+//             artist.birth_year, artist.death_year, artist.is_deleted
+//         FROM artist
+//         LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+//         WHERE artwork.ArtworkID IS NOT NULL AND artist.is_deleted = ?
+//         ORDER BY name_ ASC
+//     `;
+
+//     try {
+//         // Execute the query with isDeleted as a boolean (0 for false, 1 for true)
+//         const results = await db.query(query, [isDeleted ? 1 : 0]);
+//         res.json(results);
+//     } catch (error) {
+//         console.error('Error fetching artists with artwork:', error);
+//         res.status(500).json({ message: 'Server error fetching artists with artwork.' });
+//     }
+// });
+
+// app.get('/artist-null-artwork', async (req, res) => {
+//     const isDeleted = req.query.isDeleted === 'true';
+
+//     const query = `
+//         SELECT DISTINCT artist.ArtistID, artist.name_, artist.description, artist.gender, artist.nationality,
+//             artist.birth_year, artist.death_year, artist.is_deleted
+//         FROM artist
+//         LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+//         WHERE artwork.ArtworkID IS NULL AND artist.ArtistID IS NOT NULL AND artist.is_deleted = ?
+//         ORDER BY name_ ASC
+//     `;
+
+//     try {
+//         const results = await db.query(query, [isDeleted ? 1 : 0]);
+//         res.json(results);
+//     } catch (error) {
+//         console.error('Error fetching artists without artwork:', error);
+//         res.status(500).json({ message: 'Server error fetching artists without artwork.' });
+//     }
+// });
+
+
+// get nationalities
 app.get('/artist-with-artwork', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+
+    const query = `
+        SELECT DISTINCT artist.ArtistID, artist.name_, artist.description, artist.gender, artist.nationality, 
+            artist.birth_year, artist.death_year, artist.is_deleted
+        FROM artist
+        LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+        WHERE artist.is_deleted = ?
+        AND EXISTS (
+            SELECT 1 
+            FROM artwork a 
+            WHERE a.artist_id = artist.ArtistID 
+            AND a.is_deleted = 0
+        )
+        ORDER BY name_ ASC
+    `;
+
     try {
-        console.log("Attempting to fetch artists with artwork...");
-        const [rows] = await db.query(`
-            SELECT DISTINCT artist.*
-            FROM artist
-            LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
-            WHERE artwork.ArtworkID IS NOT NULL
-            ORDER BY name_ ASC
-        `);
-        if (rows.length === 0) {
-            console.log("No artists found with artwork.");
-            return res.json([]);  // Return an empty array instead of 404
-        }
-        console.log("Artists with artwork fetched successfully:", rows);
-        res.json(rows);
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
     } catch (error) {
         console.error('Error fetching artists with artwork:', error);
         res.status(500).json({ message: 'Server error fetching artists with artwork.' });
     }
 });
 
+
 app.get('/artist-null-artwork', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+
+    const query = `
+        SELECT DISTINCT artist.ArtistID, artist.name_, artist.description, artist.gender, artist.nationality, 
+            artist.birth_year, artist.death_year, artist.is_deleted
+        FROM artist
+        LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
+        WHERE artist.is_deleted = ? 
+        AND (artwork.ArtworkID IS NULL OR (
+            artist.ArtistID IS NOT NULL
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM artwork a 
+                WHERE a.artist_id = artist.ArtistID 
+                AND a.is_deleted = 0
+            )
+        ))
+        ORDER BY name_ ASC
+    `;
+
     try {
-        console.log("Attempting to fetch artists without artwork...");
-        const [rows] = await db.query(`
-            SELECT artist.*
-            FROM artist
-            LEFT JOIN artwork ON artist.ArtistID = artwork.artist_id
-            WHERE artwork.ArtworkID IS NULL
-            ORDER BY name_ ASC
-        `);
-        if (rows.length === 0) {
-            console.log("No artists found without artwork.");
-            return res.json([]);  // Return an empty array instead of 404
-        }
-        console.log("Artists without artwork fetched successfully:", rows);
-        res.json(rows);
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
     } catch (error) {
-        console.error('Error fetching artists without artwork:', error);
-        res.status(500).json({ message: 'Server error fetching artists without artwork.' });
+        console.error('Error fetching artists without artwork or with all artworks deleted:', error);
+        res.status(500).json({ message: 'Server error fetching artists without artwork or with all artworks deleted.' });
     }
 });
 
 
-// get nationalities
 app.get('/nationalities', async (req, res) => {
     try {
         const [rows] = await db.query(`
@@ -396,26 +532,27 @@ app.get('/nationalities', async (req, res) => {
     }
 });
 
-// Artist creation route with image upload
 app.post('/artist', uploadArtistImage.single('image'), async (req, res) => {
     try {
         const { name, gender, nationality, birthYear, description } = req.body;
         let deathYear = req.body.deathYear ? parseInt(req.body.deathYear) : null;
-        if (isNaN(deathYear)) {
-            deathYear = null;
-        }
-        const image = req.file ? req.file.filename : null;
+        deathYear = isNaN(deathYear) ? null : deathYear;
 
-        console.log("Received data:", { name, gender, nationality, birthYear, description, deathYear, image });
+        let imageBlob = null;
+        let imageType = null;
 
-        if (!name || !gender || !nationality || !birthYear || !description) {
-            return res.status(400).json({ message: 'All fields are required' });
+        // Process the uploaded image if provided
+        if (req.file) {
+            imageType = req.file.mimetype;
+            imageBlob = await sharp(req.file.buffer)
+                .resize({ width: 1000, withoutEnlargement: true }) // Resize to 1000px width max
+                .toBuffer();
         }
 
         const [result] = await db.query(
-            `INSERT INTO artist (name_, image, description, gender, nationality, birth_year, death_year) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [name, image, description, gender, nationality, birthYear, deathYear]
+            `INSERT INTO artist (name_, gender, nationality, birth_year, death_year, description, image, image_type)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [name, gender, nationality, birthYear, deathYear, description, imageBlob, imageType]
         );
 
         res.status(201).json({ message: 'Artist added successfully', artistId: result.insertId });
@@ -426,53 +563,40 @@ app.post('/artist', uploadArtistImage.single('image'), async (req, res) => {
 });
 
 app.patch('/artist/:id', uploadArtistImage.single('image'), async (req, res) => {
+
     const artistId = req.params.id;
     const { name, nationality, birthYear, deathYear, description, gender } = req.body;
-    const image = req.file ? req.file.filename : null; // Get the uploaded file, if available
+    let imageBlob = null;
+    let imageType = null;
 
-    // Handle deathYear - convert to null if it's empty or invalid
-    const parsedDeathYear = deathYear ? parseInt(deathYear) : null;
-    const finalDeathYear = isNaN(parsedDeathYear) ? null : parsedDeathYear;
+    // If a new image is uploaded, process it with sharp
+    if (req.file) {
+        imageType = req.file.mimetype;
+        imageBlob = await sharp(req.file.buffer)
+            .resize({ width: 1000, withoutEnlargement: true }) // Resize to 1000px max width
+            .toBuffer();
+    }
 
-    // Build the SQL query dynamically based on provided fields
     const fields = [];
     const values = [];
 
-    if (name) {
-        fields.push('name_ = ?');
-        values.push(name);
-    }
-    if (gender) {
-        fields.push('gender = ?');
-        values.push(gender);
-    }
-    if (nationality) {
-        fields.push('nationality = ?');
-        values.push(nationality);
-    }
-    if (birthYear) {
-        fields.push('birth_year = ?');
-        values.push(birthYear);
-    }
-    if (finalDeathYear !== undefined) { // Use finalDeathYear to handle null values
-        fields.push('death_year = ?');
-        values.push(finalDeathYear);
-    }
-    if (description) {
-        fields.push('description = ?');
-        values.push(description);
-    }
-    if (image) { // Only update the image if a new one is provided
+    if (name) fields.push('name_ = ?'), values.push(name);
+    if (gender) fields.push('gender = ?'), values.push(gender);
+    if (nationality) fields.push('nationality = ?'), values.push(nationality);
+    if (birthYear) fields.push('birth_year = ?'), values.push(birthYear);
+    if (deathYear !== undefined) fields.push('death_year = ?'), values.push(deathYear || null);
+    if (description) fields.push('description = ?'), values.push(description);
+    if (imageBlob && imageType) {
         fields.push('image = ?');
-        values.push(image);
+        fields.push('image_type = ?');
+        values.push(imageBlob, imageType);
     }
 
     if (fields.length === 0) {
         return res.status(400).json({ message: 'No fields to update' });
     }
 
-    // Add the artistId to the end of values array for the WHERE clause
-    values.push(artistId);
+    values.push(artistId); // Add artistId for the WHERE clause
 
     const query = `UPDATE artist SET ${fields.join(', ')} WHERE ArtistID = ?`;
 
@@ -485,18 +609,45 @@ app.patch('/artist/:id', uploadArtistImage.single('image'), async (req, res) => 
     }
 });
 
-// if i delete an artist, i want to delete all the artworks associated with that artist
-app.delete('/artist/:id', async (req, res) => {
-    const artistId = req.params.id;
+app.patch('/artist/:id/restore', async (req, res) => {
     try {
-        await db.query('DELETE FROM artist WHERE ArtistID = ?', [artistId]);
-        res.status(200).json({ message: 'Artist and associated artworks deleted successfully' });
+        const { id } = req.params;
+        await db.query('UPDATE artist SET is_deleted = 0 WHERE ArtistID = ?', [id]);
+        res.status(200).json({ message: 'Artist restored successfully' });
     } catch (error) {
-        console.error('Error deleting artist:', error);
-        res.status(500).json({ message: 'Server error deleting artist' });
+        console.error('Error restoring artist:', error);
+        res.status(500).json({ message: 'Failed to restore artist' });
     }
 });
 
+
+// if i delete an artist, i want to delete all the artworks associated with that artist
+// app.delete('/artist/:id', async (req, res) => {
+//     const artistId = req.params.id;
+//     try {
+//         await db.query('DELETE FROM artist WHERE ArtistID = ?', [artistId]);
+//         res.status(200).json({ message: 'Artist and associated artworks deleted successfully' });
+//     } catch (error) {
+//         console.error('Error deleting artist:', error);
+//         res.status(500).json({ message: 'Server error deleting artist' });
+//     }
+// });
+// Soft delete artist and associated artworks
+app.delete('/artist/:id', async (req, res) => {
+    const artistId = req.params.id;
+    try {
+        // Soft delete the artist
+        await db.query('UPDATE artist SET is_deleted = 1 WHERE ArtistID = ?', [artistId]);
+
+        // Soft delete all associated artworks
+        await db.query('UPDATE artwork SET is_deleted = 1 WHERE artist_id = ?', [artistId]);
+
+        res.status(200).json({ message: 'Artist and associated artworks soft deleted successfully' });
+    } catch (error) {
+        console.error('Error soft deleting artist:', error);
+        res.status(500).json({ message: 'Server error soft deleting artist' });
+    }
+});
 app.get('/ticket', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM ticket');
@@ -516,7 +667,298 @@ app.get('/user-type', async (req, res) => {
         res.status(500).json({ message: 'Server error fetching roles table.' });
     }
 });
-
+// ----(department)-----------------
+// Endpoint to get departments based on their is_deleted status
+app.get('/department', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+    const query = `
+        SELECT DepartmentID, Name, Description, Location, is_deleted
+        FROM department
+        WHERE is_deleted = ?
+        ORDER BY Name ASC
+    `;
+    try {
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching department table:', error);
+        res.status(500).json({ message: 'Server error fetching department table.' });
+    }
+});
+app.get('/department/:id', async (req, res) => {
+    const departmentId = req.params.id;
+    try {
+        const department = await db.query('SELECT * FROM department WHERE DepartmentID = ?', [departmentId]);
+        if (department.length === 0) {
+            return res.status(404).json({ message: 'Department not found' });
+        }
+        res.json(department[0]);
+    } catch (error) {
+        console.error('Error fetching department:', error);
+        res.status(500).json({ message: 'Error fetching department' });
+    }
+});
+app.get('/department-with-artwork', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+    const query = `
+        SELECT DISTINCT department.DepartmentID, department.Name, department.Description, department.Location, department.is_deleted
+        FROM department
+        LEFT JOIN artwork ON department.DepartmentID = artwork.department_id
+        WHERE department.is_deleted = ?
+        AND EXISTS (
+            SELECT 1
+            FROM artwork a
+            WHERE a.department_id = department.DepartmentID
+            AND a.is_deleted = 0
+        )
+        ORDER BY Name ASC
+    `;
+    try {
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching departments with artwork:', error);
+        res.status(500).json({ message: 'Server error fetching departments with artwork.' });
+    }
+});
+app.get('/department-null-artwork', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+    const query = `
+        SELECT DISTINCT department.DepartmentID, department.Name, department.Description, department.Location, department.is_deleted
+        FROM department
+        LEFT JOIN artwork ON department.DepartmentID = artwork.department_id
+        WHERE department.is_deleted = ?
+        AND (artwork.ArtworkID IS NULL OR (
+            department.DepartmentID IS NOT NULL
+            AND NOT EXISTS (
+                SELECT 1
+                FROM artwork a
+                WHERE a.department_id = department.DepartmentID
+                AND a.is_deleted = 0
+            )
+        ))
+        ORDER BY Name ASC
+    `;
+    try {
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching departments without artwork:', error);
+        res.status(500).json({ message: 'Server error fetching departments without artwork.' });
+    }
+});
+app.post('/department', async (req, res) => {
+    const { name, location, description } = req.body;
+    if (!name || !description) {
+        return res.status(400).json({ message: 'Name and Description are required.' });
+    }
+    try {
+        const result = await db.query(
+            'INSERT INTO department (Name, Location, Description) VALUES (?, ?, ?)',
+            [name, location, description]
+        );
+        res.status(201).json({ message: 'Department added successfully', departmentId: result.insertId });
+    } catch (error) {
+        console.error('Error inserting department:', error);
+        res.status(500).json({ message: 'Server error inserting department.' });
+    }
+});
+app.patch('/department/:id', async (req, res) => {
+    const departmentId = req.params.id;
+    const { name, location, description } = req.body;
+    const fields = [];
+    const values = [];
+    // Add only department-specific fields
+    if (name) fields.push('Name = ?'), values.push(name);
+    if (location) fields.push('Location = ?'), values.push(location);
+    if (description) fields.push('Description = ?'), values.push(description);
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+    values.push(departmentId); // Add departmentId for the WHERE clause
+    const query = `UPDATE department SET ${fields.join(', ')} WHERE DepartmentID = ?`;
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Department updated successfully.' });
+    } catch (error) {
+        console.error('Error updating department:', error);
+        res.status(500).json({ message: 'Server error updating department.' });
+    }
+});
+app.patch('/department/:id/restore', async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Restore the department
+        await db.query('UPDATE department SET is_deleted = 0 WHERE DepartmentID = ?', [id]);
+        res.status(200).json({ message: 'Department restored successfully' });
+    } catch (error) {
+        console.error('Error restoring department:', error);
+        res.status(500).json({ message: 'Failed to restore department' });
+    }
+});
+// Soft delete department and associated artworks
+app.delete('/department/:id', async (req, res) => {
+    const departmentId = req.params.id;
+    try {
+        // Soft delete the department
+        await db.query('UPDATE department SET is_deleted = 1 WHERE DepartmentID = ?', [departmentId]);
+        // Soft delete all associated artworks
+        await db.query('UPDATE artwork SET is_deleted = 1 WHERE department_id = ?', [departmentId]);
+        res.status(200).json({ message: 'Department and associated artworks soft deleted successfully' });
+    } catch (error) {
+        console.error('Error soft deleting department:', error);
+        res.status(500).json({ message: 'Server error soft deleting department' });
+    }
+});
+// ----(exhibition)-----------------
+app.get('/exhibition', async (req, res) => {
+    const isDeleted = req.query.isDeleted === 'true';
+    // Use the isDeleted parameter to filter records accordingly
+    const query = `
+        SELECT exhibition_id, name_, start_date, end_date, description_, is_deleted
+            FROM exhibition
+            WHERE exhibition.is_deleted = ?
+            ORDER BY name_ ASC
+    `;
+    try {
+        // Execute the query with isDeleted as a boolean (0 for false, 1 for true)
+        const results = await db.query(query, [isDeleted ? 1 : 0]);
+        res.json(results);
+    } catch (error) {
+        console.error('Error fetching exhibition table:', error);
+        res.status(500).json({ message: 'Server error fetching exhibition table.' });
+    }
+});
+app.get('/exhibition/:id/image', async (req, res) => {
+    const exhibitionId = req.params.id;
+    try {
+        const [rows] = await db.query('SELECT image, image_type FROM exhibition WHERE exhibition_id = ?', [exhibitionId]);
+        if (rows.length === 0 || !rows[0].image) {
+            return res.status(404).json({ message: 'Image not found' });
+        }
+        // Set the correct content type for the image and send the binary data
+        res.set('Content-Type', rows[0].image_type || 'application/octet-stream');
+        res.send(rows[0].image);
+    } catch (error) {
+        console.error('Error fetching exhibition image:', error);
+        res.status(500).json({ message: 'Server error fetching exhibition image.' });
+    }
+});
+app.get('/exhibition/:id', async (req, res) => {
+    const exhibitionId = req.params.id;
+    try {
+        const [rows] = await db.query('SELECT * FROM exhibition WHERE exhibition_id = ?', [exhibitionId]);
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'exhibition not found' });
+        }
+        res.json(rows[0]); // Return the single artist object
+    } catch (error) {
+        console.error('Error fetching exhibition by ID:', error);
+        res.status(500).json({ message: 'Server error fetching exhibition.' });
+    }
+});
+const uploadExhibitionImage = multer({ storage: multer.memoryStorage() }); // Use memory storage for image uploads
+app.post('/exhibition', uploadExhibitionImage.single('image'), async (req, res) => {
+    try {
+        const { name, sdate, edate, description } = req.body;
+        let imageBlob = null;
+        let imageType = null;
+        // If an image was uploaded, process it
+        if (req.file) {
+            imageType = req.file.mimetype;
+            // Compress and resize image if it is too large
+            imageBlob = await sharp(req.file.buffer)
+                .resize({ width: 800, withoutEnlargement: true }) // Resize to 800px width, maintaining aspect ratio
+                .toBuffer();
+        }
+        const [result] = await db.query(
+            `INSERT INTO exhibition (name_, start_date, end_date, description_, image, image_type) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [name, sdate, edate, description, imageBlob, imageType]
+        );
+        res.status(201).json({ message: 'Exhibition added successfully', exId: result.insertId });
+        console.log("Exhibition added successfully");
+    } catch (error) {
+        console.error('Error inserting exhibition:', error);
+        res.status(500).json({ message: 'Failed to add exhibition' });
+    }
+});
+app.patch('/exhibition/:id', uploadExhibitionImage.single('image'), async (req, res) => {
+    const exhibitionId = req.params.id;
+    const { name, start_date, end_date, description } = req.body;
+    let imageBlob = null;
+    let imageType = null;
+    // If a new image is uploaded, process it with sharp
+    if (req.file) {
+        imageType = req.file.mimetype;
+        // Compress and resize the image before saving
+        imageBlob = await sharp(req.file.buffer)
+            .resize({ width: 800, withoutEnlargement: true }) // Resize to a max width of 800 pixels
+            .toBuffer();
+    }
+    // Dynamically construct SQL query and values based on provided fields
+    const fields = [];
+    const values = [];
+    if (name) {
+        fields.push('name_ = ?');
+        values.push(name);
+    }
+    if (start_date) {
+        fields.push('start_date = ?');
+        values.push(start_date);
+    }
+    if (end_date) {
+        fields.push('end_date = ?');
+        values.push(end_date);
+    }
+    if (description) {
+        fields.push('description_ = ?');
+        values.push(description);
+    }
+    if (imageBlob && imageType) { // Add image fields only if a new image is provided
+        fields.push('image = ?');
+        values.push(imageBlob);
+        fields.push('image_type = ?');
+        values.push(imageType);
+    }
+    // Check if any fields to update
+    if (fields.length === 0) {
+        return res.status(400).json({ message: 'No fields to update' });
+    }
+    // Add the exhibitionId for the WHERE clause
+    values.push(exhibitionId);
+    const query = `UPDATE exhibition SET ${fields.join(', ')} WHERE exhibition_id = ?`;
+    try {
+        await db.query(query, values);
+        res.status(200).json({ message: 'Exhibition updated successfully.' });
+    } catch (error) {
+        console.error('Error updating exhibition:', error);
+        res.status(500).json({ message: 'Server error updating exhibition.' });
+    }
+});
+app.patch('/exhibition/:id/restore', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Update the exhibition's is_deleted status to false
+        await db.query('UPDATE exhibition SET is_deleted = 0 WHERE exhibition_id = ?', [id]);
+        res.json({ message: 'Exhibition restored successfully' });
+    } catch (error) {
+        console.error('Error restoring exhibition:', error);
+        res.status(500).json({ message: 'Error restoring exhibition' });
+    }
+});
+// Soft delete artwork only
+app.delete('/exhibition/:id', async (req, res) => {
+    const exhibitionId = req.params.id;
+    try {
+        // Soft delete the exhibition by setting `is_deleted` to 1
+        await db.query('UPDATE exhibition SET is_deleted = 1 WHERE exhibition_id = ?', [exhibitionId]);
+        res.status(200).json({ message: 'Exhibition soft deleted successfully' });
+    } catch (error) {
+        console.error('Error soft deleting exhibition:', error);
+        res.status(500).json({ message: 'Server error soft deleting exhibition' });
+    }
+});
 // ----- (MELANIE DONE) ---------------------------------------------------------------------------
 
 // ----- (LEO) ------------------------------------------------------------------------------------
@@ -562,78 +1004,136 @@ app.post('/register', async (req, res) => {
     }
 });
 app.post('/login', async (req, res) => {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
 
+    // Validate input
     if (!username || !password) {
-        return res.status(400).json({message: 'Username and password are required.'});
+        return res.status(400).json({ message: 'Username and password are required.' });
     }
 
     try {
+        console.log('Attempting login for username:', username);
+
+        // Query to fetch user details along with role name and membership status
         const [userRows] = await db.query(`
-            SELECT user_id, username, password, role_id, is_deleted
+            SELECT
+                users.user_id,
+                users.username,
+                users.password,
+                users.role_id,
+                users.is_deleted,
+                users.first_name,
+                users.last_name,
+                roles.role_name,
+                (users.role_id = 4) AS is_member
             FROM users
-            WHERE username = ?
+                     JOIN roles ON users.role_id = roles.id
+            WHERE users.username = ?
         `, [username]);
 
+        // Debug log the query result
+        console.log('Login query result:', {
+            rowCount: userRows.length,
+            userData: userRows[0]
+        });
+
+        // Check if user exists
         if (userRows.length === 0) {
-            return res.status(400).json({message: 'Invalid username or password.'});
+            return res.status(400).json({ message: 'Invalid username or password.' });
         }
 
         const user = userRows[0];
 
-        // Check if user is deleted
+        // Check if the account is deactivated
         if (user.is_deleted === 1) {
-            return res.status(403).json({message: 'Account has been deactivated. Please contact support.'});
+            return res.status(403).json({ message: 'Account has been deactivated. Please contact support.' });
         }
 
+        // Verify password
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
-            return res.status(400).json({message: 'Invalid username or password.'});
+            return res.status(400).json({ message: 'Invalid username or password.' });
         }
 
-        // Map role_id to role_name
-        const roleName = roleMappings[user.role_id] || 'unknown';
+        // Update the `updated_at` timestamp
+        await db.query(
+            'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+            [user.user_id]
+        );
 
-        res.status(200).json({
-            message: 'Login successful!', userId: user.user_id, role: roleName, username: user.username,
-        });
+        // Initialize membership information
+        let membershipInfo = null;
+
+        // If the user is a member, fetch membership details
+        if (user.is_member) {
+            const [membershipRows] = await db.query(`
+                SELECT 
+                    expiration_warning, 
+                    expire_date 
+                FROM membership 
+                WHERE user_id = ? 
+                  AND expire_date >= CURRENT_TIMESTAMP
+                ORDER BY expire_date ASC 
+                LIMIT 1
+            `, [user.user_id]);
+
+            membershipInfo = membershipRows[0] || null;
+        }
+
+        // Prepare the response payload
+        const responsePayload = {
+            message: 'Login successful!',
+            userId: user.user_id,
+            role: user.role_name,
+            username: user.username,
+            first_name: user.first_name || '', // Provide default empty string if null
+            last_name: user.last_name || '',   // Provide default empty string if null
+            // Only include membershipWarning and expireDate if the user is a member
+            ...(user.is_member && membershipInfo && {
+                membershipWarning: membershipInfo.expiration_warning === 1,
+                expireDate: membershipInfo.expire_date
+            })
+        };
+
+        // Debug log the user data being sent
+        console.log('User data being sent to frontend:', responsePayload);
+
+        // Send the successful response
+        res.status(200).json(responsePayload);
+
     } catch (error) {
         console.error('Server error during login:', error);
-        res.status(500).json({message: 'Server error.'});
+        res.status(500).json({ message: 'Server error.' });
     }
 });
 // ----- AUTHENTICATION MIDDLEWARE -----
 
-// Authenticate Admin and Staff Middleware
 function authenticateAdmin(req, res, next) {
-    const {role} = req.headers;
-    if (role === 'admin') {
+    if (req.userRole === 'admin') {
         next();
     } else {
-        res.status(403).json({message: 'Access denied. Admins only.'});
+        res.status(403).json({ message: 'Access denied. Admins only.' });
     }
 }
 
 async function authenticateUser(req, res, next) {
-    const userId = req.headers['user-id'];
-    const role = req.headers['role'];
+    const userId = req.userId;
+    const role = req.userRole;
 
     if (userId && role) {
         try {
             const [rows] = await db.query('SELECT is_deleted FROM users WHERE user_id = ?', [userId]);
             if (rows.length > 0 && rows[0].is_deleted === 0) {
-                req.userId = userId;
-                req.userRole = role;
                 next();
             } else {
-                res.status(403).json({message: 'Access denied. User is deleted.'});
+                res.status(403).json({ message: 'Access denied. User is deleted.' });
             }
         } catch (error) {
             console.error('Error in authenticateUser middleware:', error);
-            res.status(500).json({message: 'Server error during authentication.'});
+            res.status(500).json({ message: 'Server error during authentication.' });
         }
     } else {
-        res.status(401).json({message: 'Unauthorized access.'});
+        res.status(401).json({ message: 'Unauthorized access.' });
     }
 }
 
@@ -829,6 +1329,46 @@ app.get('/users', authenticateAdmin, async (req, res) => {
         res.status(500).json({message: 'Server error fetching users.'});
     }
 });
+app.post('/users', authenticateAdmin, async (req, res) => {
+    const { firstName, lastName, dateOfBirth, username, password, email, roleId } = req.body;
+
+    // Validate inputs
+    const newErrors = {};
+    if (!firstName) newErrors.firstName = 'First name is required';
+    if (!lastName) newErrors.lastName = 'Last name is required';
+    if (!dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
+    if (!username) newErrors.username = 'Username is required';
+    if (!password) newErrors.password = 'Password is required'; // Now password is required
+    if (!email) newErrors.email = 'Email is required';
+    if (!roleId) newErrors.roleId = 'Role is required';
+
+    if (Object.keys(newErrors).length > 0) {
+        return res.status(400).json({ message: 'Validation error', errors: newErrors });
+    }
+
+    // Validate roleId
+    if (!Object.keys(roleMappings).includes(String(roleId))) {
+        return res.status(400).json({ message: 'Invalid role_id provided.' });
+    }
+
+    try {
+        // Hash the password before storing it
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const sql = `
+            INSERT INTO users (first_name, last_name, date_of_birth, username, password, email, role_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        const values = [firstName, lastName, dateOfBirth, username, hashedPassword, email, roleId];
+
+        await db.query(sql, values);
+        res.status(201).json({ message: 'User created successfully.' });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ message: 'Server error creating user.' });
+    }
+});
+
 app.get('/giftshopitems/logs', authenticateAdmin, async (req, res) => {
     try {
         const [rows] = await db.query(`
@@ -841,7 +1381,7 @@ app.get('/giftshopitems/logs', authenticateAdmin, async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error fetching gift shop item logs:', error);
-        res.status(500).json({ message: 'Server error fetching logs.' });
+        res.status(500).json({message: 'Server error fetching logs.'});
     }
 });
 // Get user profile
@@ -923,7 +1463,19 @@ app.delete('/users/:id', authenticateAdmin, async (req, res) => {
         res.status(500).json({message: 'Server error hard deleting user.'});
     }
 });
+// Restore a user (Admin only)
+app.put('/users/:id/restore', authenticateAdmin, async (req, res) => {
+    const { id } = req.params;
 
+    try {
+        const sql = 'UPDATE users SET is_deleted = 0 WHERE user_id = ?';
+        await db.query(sql, [id]);
+        res.status(200).json({ message: 'User restored successfully.' });
+    } catch (error) {
+        console.error('Error restoring user:', error);
+        res.status(500).json({ message: 'Server error restoring user.' });
+    }
+});
 // Restore a gift shop item (Admin only)
 app.put('/giftshopitems/:id/restore', authenticateAdmin, async (req, res) => {
     const {id} = req.params;
@@ -1103,10 +1655,12 @@ app.post('/checkout', authenticateUser, async (req, res) => {
 // Updated /reports endpoint
 app.post('/reports', authenticateAdmin, async (req, res) => {
     const {
-        report_category, report_type, report_period_type, // 'date_range', 'month', 'year', or 'single_day'
-        start_date, end_date, selected_month, selected_year, // New field for 'year' report
-        selected_date, // New field for 'single_day' report
+        report_category, report_type, report_period_type,
+        start_date, end_date, selected_month, selected_year,
+        selected_date,
         item_category, payment_method, item_id,
+        report_option_tickets,
+        price_category, user_type_id
     } = req.body;
 
     console.log('Received /reports request with body:', req.body); // Debug log
@@ -1176,6 +1730,32 @@ app.post('/reports', authenticateAdmin, async (req, res) => {
                     console.error('Invalid report type:', report_type);
                     return res.status(400).json({message: 'Invalid report type.'});
             }
+        } else if (report_category === 'TicketsReport') {
+            if (report_type === 'revenue') {
+                switch (report_option_tickets) {
+                    case 'totalTickets':
+                        console.log('Generating Tickets Report - Total Tickets');
+                        reportData = await generateTotalTicketsReport(
+                            report_period_type, start_date, end_date, selected_month, selected_year, selected_date, price_category, user_type_id
+                        );
+                        break;
+                    case 'totalRevenue':
+                        console.log('Generating Tickets Report - Total Revenue');
+                        reportData = await generateTotalRevenueReport(
+                            report_period_type, start_date, end_date, selected_month, selected_year, selected_date, price_category, user_type_id
+                        );
+                        break;
+                    case 'peakDateSold':
+                        console.log('Generating Tickets Report - Peak Date Sold');
+                        reportData = await generatePeakDateSoldReport(
+                            report_period_type, start_date, end_date, selected_month, selected_year, selected_date, price_category, user_type_id
+                        );
+                        break;
+                    default:
+                        console.error('Invalid report type for TicketsReport:', report_option_tickets);
+                        return res.status(400).json({message: 'Invalid report type for TicketsReport.'});
+                }
+            }
         } else {
             console.error('Invalid report category:', report_category);
             return res.status(400).json({message: 'Invalid report category.'});
@@ -1187,6 +1767,255 @@ app.post('/reports', authenticateAdmin, async (req, res) => {
         res.status(500).json({message: 'Server error generating report.'});
     }
 });
+
+async function generateTotalTicketsReport(reportPeriodType, startDate, endDate, selectedMonth, selectedYear, selectedDate, priceCategory, userType) {
+    let query = '';
+    let params = [];
+    // Handle single or multiple price categories
+    const priceCategoryCondition = Array.isArray(priceCategory) && priceCategory.length > 1
+        ? `AND t.price_category IN (${priceCategory.map(() => '?').join(', ')})`
+        : `AND (t.price_category = ? OR ? IS NULL)`;
+    // Adjust the params based on priceCategory content
+    const priceCategoryParams = Array.isArray(priceCategory) ? priceCategory : [priceCategory];
+    if (reportPeriodType === 'date_range') {
+        query = `
+            SELECT
+                DATE (b.visit_date) AS date, COUNT (b.ticket_id) AS total_tickets
+            FROM
+                bought_tickets b
+                JOIN
+                ticket t
+            ON b.ticket_type_id = t.ticket_type_id
+                JOIN
+                transaction tt ON b.transaction_id = tt.transaction_id
+                LEFT JOIN
+                membership m ON b.membership_id = m.membership_id
+            WHERE
+                b.visit_date BETWEEN ?
+              AND ?
+              AND (t.price_category = ?
+               OR ? IS NULL) -- Optional filter for ticket type
+              AND (b.membership_id IS NOT NULL
+               OR ? IS NULL) -- Optional filter for user type
+            GROUP BY
+                DATE (b.visit_date)
+            ORDER BY
+                DATE (b.visit_date);
+        `;
+        params = [startDate, endDate, priceCategory, priceCategory, userType === 'member' ? 'member' : null];
+    } else if (reportPeriodType === 'month') {
+        query = `
+            SELECT
+                DATE (b.visit_date) AS date, COUNT (b.ticket_id) AS total_tickets
+            FROM
+                bought_tickets b
+                JOIN
+                ticket t
+            ON b.ticket_type_id = t.ticket_type_id
+                JOIN
+                transaction tt ON b.transaction_id = tt.transaction_id
+                LEFT JOIN
+                membership m ON b.membership_id = m.membership_id
+            WHERE
+                DATE_FORMAT(b.visit_date
+                , '%Y-%m') = ?
+              AND (t.price_category = ?
+               OR ? IS NULL)
+              AND (b.membership_id IS NOT NULL
+               OR ? IS NULL)
+            GROUP BY
+                DATE (b.visit_date)
+            ORDER BY
+                DATE (b.visit_date);
+        `;
+        params = [selectedMonth, priceCategory, priceCategory, userType === 'member' ? 'member' : null];
+    } else if (reportPeriodType === 'year') {
+        query = `
+            SELECT DATE_FORMAT(b.visit_date, '%Y-%m') AS date,
+                COUNT(b.ticket_id) AS total_tickets
+            FROM
+                bought_tickets b
+                JOIN
+                ticket t
+            ON b.ticket_type_id = t.ticket_type_id
+                JOIN
+                transaction tt ON b.transaction_id = tt.transaction_id
+                LEFT JOIN
+                membership m ON b.membership_id = m.membership_id
+            WHERE
+                YEAR (b.visit_date) = ?
+              AND (t.price_category = ?
+               OR ? IS NULL)
+              AND (b.membership_id IS NOT NULL
+               OR ? IS NULL)
+            GROUP BY
+                DATE_FORMAT(b.visit_date, '%Y-%m')
+            ORDER BY
+                DATE_FORMAT(b.visit_date, '%Y-%m');
+        `;
+        params = [selectedYear, priceCategory, priceCategory, userType === 'member' ? 'member' : null];
+    } else if (reportPeriodType === 'single_day') {
+        query = `
+            SELECT transaction_id,
+                   COUNT(b.ticket_id) AS total_tickets
+            FROM bought_tickets b
+                     JOIN
+                 ticket t ON b.ticket_type_id = t.ticket_type_id
+                     JOIN
+                 transaction tt ON b.transaction_id = tt.transaction_id
+                     LEFT JOIN
+                 membership m ON b.membership_id = m.membership_id
+            WHERE b.visit_date = ?
+              AND (t.price_category = ? OR ? IS NULL)
+              AND (b.membership_id IS NOT NULL OR ? IS NULL)
+            GROUP BY transaction_id
+            ORDER BY transaction_id;
+        `;
+        params = [selectedDate, priceCategory, priceCategory, userType === 'member' ? 'member' : null];
+    } else {
+        throw new Error('Invalid report period type for tickets report.');
+    }
+    console.log('Executing SQL Query:', query);
+    console.log('With Parameters:', params);
+    const [rows] = await db.query(query, params);
+    return rows;
+}
+
+// Function to generates a report on the total revenue from ticket sales
+async function generateTotalRevenueReport(reportPeriodType, startDate, endDate, selectedMonth, selectedYear, selectedDate, priceCategory, userType) {
+    let query = '';
+    let params = [];
+    if (reportPeriodType === 'date_range') {
+        // SQL query for a range of dates
+        query = `
+            SELECT
+                DATE (b.visit_date) AS date, SUM (t.total_amount) AS total_revenue
+            FROM
+                bought_tickets b
+                JOIN
+                transaction t
+            ON b.transaction_id = t.transaction_id
+            WHERE
+                b.visit_date BETWEEN ?
+              AND ?
+              AND (b.membership_id IS NOT NULL
+               OR ? = 'member')
+            GROUP BY
+                DATE (b.visit_date)
+            ORDER BY
+                DATE (b.visit_date);
+        `;
+        params = [startDate, endDate, userType];
+    } else if (reportPeriodType === 'month') {
+        // SQL query for a specific month
+        query = `
+            SELECT
+                DATE (b.visit_date) AS date, SUM (t.total_amount) AS total_revenue
+            FROM
+                bought_tickets b
+                JOIN
+                transaction t
+            ON b.transaction_id = t.transaction_id
+            WHERE
+                DATE_FORMAT(b.visit_date
+                , '%Y-%m') = ?
+              AND (b.membership_id IS NOT NULL
+               OR ? = 'member')
+            GROUP BY
+                DATE (b.visit_date)
+            ORDER BY
+                DATE (b.visit_date);
+        `;
+        params = [selectedMonth, userType];
+    } else if (reportPeriodType === 'year') {
+        // SQL query for a specific year
+        query = `
+            SELECT DATE_FORMAT(b.visit_date, '%Y-%m') AS date,
+                SUM(t.total_amount) AS total_revenue
+            FROM
+                bought_tickets b
+                JOIN
+                transaction t
+            ON b.transaction_id = t.transaction_id
+            WHERE
+                YEAR (b.visit_date) = ?
+              AND (b.membership_id IS NOT NULL
+               OR ? = 'member')
+            GROUP BY
+                DATE_FORMAT(b.visit_date, '%Y-%m')
+            ORDER BY
+                DATE_FORMAT(b.visit_date, '%Y-%m');
+        `;
+        params = [selectedYear, userType];
+    } else if (reportPeriodType === 'single_day') {
+        // SQL query for a specific day
+        query = `
+            SELECT transaction_id,
+                   SUM(t.total_amount) AS total_revenue
+            FROM bought_tickets b
+                     JOIN
+                 transaction t ON b.transaction_id = t.transaction_id
+            WHERE b.visit_date = ?
+              AND (b.membership_id IS NOT NULL OR ? = 'member')
+            GROUP BY transaction_id
+            ORDER BY transaction_id;
+        `;
+        params = [selectedDate, userType];
+    } else {
+        throw new Error('Invalid report period type for tickets report.');
+    }
+    console.log('Executing SQL Query for Total Revenue Report:', query);
+    console.log('With Parameters:', params);
+    const [rows] = await db.query(query, params);
+    return rows;
+}
+
+// Function finds the peak day with the most tickets sold
+async function generatePeakDateSoldReport(reportPeriodType, startDate, endDate, selectedMonth, selectedYear, selectedDate, priceCategory, userType) {
+    let query = '';
+    let params = [];
+    if (reportPeriodType === 'date_range' || reportPeriodType === 'month' || reportPeriodType === 'year') {
+        query = `
+            SELECT b.visit_date       AS peak_date,
+                   COUNT(b.ticket_id) AS tickets_sold
+            FROM bought_tickets b
+                     JOIN
+                 ticket t ON b.ticket_type_id = t.ticket_type_id
+                     JOIN
+                 transaction tt ON b.transaction_id = tt.transaction_id
+                     LEFT JOIN
+                 membership m ON b.membership_id = m.membership_id
+            WHERE b.visit_date BETWEEN ? AND ?
+              AND (t.price_category = ? OR ? IS NULL)
+              AND (b.membership_id IS NOT NULL OR ? = 'member')
+            GROUP BY b.visit_date
+            ORDER BY tickets_sold DESC LIMIT 1;
+        `;
+        params = [startDate, endDate, priceCategory, priceCategory, userType];
+    } else if (reportPeriodType === 'single_day') {
+        query = `
+            SELECT b.visit_date       AS peak_date,
+                   COUNT(b.ticket_id) AS tickets_sold
+            FROM bought_tickets b
+                     JOIN
+                 ticket t ON b.ticket_type_id = t.ticket_type_id
+                     JOIN
+                 transaction tt ON b.transaction_id = tt.transaction_id
+                     LEFT JOIN
+                 membership m ON b.membership_id = m.membership_id
+            WHERE b.visit_date = ?
+              AND (t.price_category = ? OR ? IS NULL)
+              AND (b.membership_id IS NOT NULL OR ? = 'member')
+            GROUP BY b.visit_date
+            ORDER BY tickets_sold DESC LIMIT 1;
+        `;
+        params = [selectedDate, priceCategory, priceCategory, userType];
+    } else {
+        throw new Error('Invalid report period type for tickets report.');
+    }
+    const [rows] = await db.query(query, params);
+    return rows;
+}
 
 // Updated Function to generate Gift Shop Revenue Report with filters
 async function generateGiftShopRevenueReport(reportPeriodType, startDate, endDate, selectedMonth, selectedYear, selectedDate, itemCategory, paymentMethod, itemId) {
@@ -1288,7 +2117,125 @@ async function generateGiftShopRevenueReport(reportPeriodType, startDate, endDat
         throw error;
     }
 }
+async function generateGiftShopTransactionDetailsReport(reportPeriodType, startDate, endDate, selectedMonth, selectedYear, selectedDate, itemCategory, paymentMethod, itemId) {
+    let query = '';
+    let params = [];
 
+    if (reportPeriodType === 'date_range') {
+        // SQL query for date range
+        query = `
+            SELECT t.transaction_id,
+                   t.transaction_date,
+                   t.transaction_type,
+                   t.payment_status,
+                   u.username,
+                   tgi.item_id,
+                   gsi.name_ AS item_name,
+                   tgi.quantity,
+                   tgi.price_at_purchase,
+                   (tgi.quantity * tgi.price_at_purchase) AS item_total
+            FROM \`transaction\` t
+            JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+            JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
+            JOIN users u ON t.user_id = u.user_id
+            WHERE t.transaction_date >= ? AND t.transaction_date <= ?
+        `;
+        params = [startDate, endDate];
+    } else if (reportPeriodType === 'month') {
+        // SQL query for month
+        query = `
+            SELECT t.transaction_id,
+                   t.transaction_date,
+                   t.transaction_type,
+                   t.payment_status,
+                   u.username,
+                   tgi.item_id,
+                   gsi.name_ AS item_name,
+                   tgi.quantity,
+                   tgi.price_at_purchase,
+                   (tgi.quantity * tgi.price_at_purchase) AS item_total
+            FROM \`transaction\` t
+            JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+            JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
+            JOIN users u ON t.user_id = u.user_id
+            WHERE DATE_FORMAT(t.transaction_date, '%Y-%m') = ?
+        `;
+        params = [selectedMonth];
+    } else if (reportPeriodType === 'year') {
+        // SQL query for year
+        query = `
+            SELECT t.transaction_id,
+                   t.transaction_date,
+                   t.transaction_type,
+                   t.payment_status,
+                   u.username,
+                   tgi.item_id,
+                   gsi.name_ AS item_name,
+                   tgi.quantity,
+                   tgi.price_at_purchase,
+                   (tgi.quantity * tgi.price_at_purchase) AS item_total
+            FROM \`transaction\` t
+            JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+            JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
+            JOIN users u ON t.user_id = u.user_id
+            WHERE YEAR(t.transaction_date) = ?
+        `;
+        params = [selectedYear];
+    } else if (reportPeriodType === 'single_day') {
+        // SQL query for single day
+        query = `
+            SELECT t.transaction_id,
+                   t.transaction_date,
+                   t.transaction_type,
+                   t.payment_status,
+                   u.username,
+                   tgi.item_id,
+                   gsi.name_ AS item_name,
+                   tgi.quantity,
+                   tgi.price_at_purchase,
+                   (tgi.quantity * tgi.price_at_purchase) AS item_total
+            FROM \`transaction\` t
+            JOIN transaction_giftshopitem tgi ON t.transaction_id = tgi.transaction_id
+            JOIN giftshopitem gsi ON tgi.item_id = gsi.item_id
+            JOIN users u ON t.user_id = u.user_id
+            WHERE DATE(t.transaction_date) = ?
+        `;
+        params = [selectedDate];
+    } else {
+        throw new Error('Invalid report period type for transaction details report.');
+    }
+
+    // Apply filters if provided
+    if (paymentMethod) {
+        query += ' AND t.transaction_type = ?';
+        params.push(paymentMethod);
+    }
+    if (itemCategory) {
+        query += ' AND gsi.category = ?';
+        params.push(itemCategory);
+    }
+    if (itemId) {
+        query += ' AND tgi.item_id = ?';
+        params.push(itemId);
+    }
+
+    // Order by transaction date
+    query += `
+        ORDER BY t.transaction_date
+    `;
+
+    console.log('Executing SQL Query for Transaction Details Report:', query);
+    console.log('With Parameters:', params);
+
+    try {
+        const [rows] = await db.query(query, params);
+        console.log('Transaction Details Report Query Result:', rows);
+        return rows;
+    } catch (error) {
+        console.error('Error in generateGiftShopTransactionDetailsReport:', error);
+        throw error;
+    }
+}
 // Endpoint to get all gift shop items
 app.get('/giftshopitemsreport', async (req, res) => {
     try {
@@ -1505,12 +2452,24 @@ app.put('/announcements/:id/restore', authenticateUser, async (req, res) => {
 // ----- (LEO DONE) --------------------------------------------------------------------------------
 
 // ----- (MUNA) ------------------------------------------------------------------------------------
-
+app.get('/api/member/profile', authenticateUser, async (req, res) => {
+    const memberId = req.userId;  // `authenticateUser` middleware attaches userId to req
+    try {
+        const [result] = await db.query('SELECT first_name, last_name FROM users WHERE user_id = ?', [memberId]);
+        if (result.length > 0) {
+            const member = result[0];
+            res.json({firstName: member.first_name, lastName: member.last_name});
+        } else {
+            res.status(404).json({error: 'Member not found'});
+        }
+    } catch (error) {
+        res.status(500).json({error: 'Database error'});
+    }
+});
 // (Assuming MUNA's endpoints are already correctly implemented)
 // ----- (MUNA DONE) ------------------------------------------------------------------------------
 
 // ----- (TYLER) ----------------------------------------------------------------------------------
-
 // Add a new event
 app.post('/api/events', async (req, res) => {
     const {name, description, location, status, start_date, end_date} = req.body;
@@ -1576,10 +2535,11 @@ app.get('/api/events', async (req, res) => {
 app.get('/api/events/:id/members', async (req, res) => {
     const eventId = req.params.id;
     try {
-        const [result] = await db.query(`SELECT DISTINCT membership.fname, membership.lname 
-                                        FROM events_transaction 
-                                        JOIN membership ON events_transaction.membership_id = membership.membership_id
-                                        WHERE event_id = ?`, [eventId]);
+        const [result] = await db.query(`SELECT DISTINCT membership.fname, membership.lname
+                                         FROM events_transaction
+                                                  JOIN membership
+                                                       ON events_transaction.membership_id = membership.membership_id
+                                         WHERE event_id = ?`, [eventId]);
         res.json(result);
     } catch (error) {
         console.error('Error fetching members:', error);
@@ -1618,108 +2578,108 @@ app.get('/api/events/report', async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error fetching event report:', error);
-        res.status(500).json({ message: 'Server error fetching event report.' });
+        res.status(500).json({message: 'Server error fetching event report.'});
     }
 });
 
 // ----- (TYLER DONE) ---------------------------------------------------------------------------------
 
 // ----- (DENNIS) ---------------------------------------------------------------------------------
+// Keep middleware minimal - only check what's needed for access control
+async function authenticateMembershipAccess(req, res, next) {
+    const userId = req.headers['user-id'];
+    const role = req.headers['role'];
 
-
-// Membership registration endpoint
-app.post('/membership-registration', async (req, res) => {
-    console.log('Received membership registration request:', req.body);
-
-    const {
-        first_name,
-        last_name,
-        username,
-        type_of_membership
-    } = req.body;
+    if (!userId || !role) {
+        return res.status(401).json({ message: 'Please log in first.' });
+    }
 
     try {
-        // Start transaction
-        await db.query('START TRANSACTION');
-
-        // Check if user exists and get their role_id
-        const [existingUser] = await db.query(
-            'SELECT user_id, role_id FROM users WHERE username = ?',
-            [username]
+        // Only get what we need for authentication
+        const [user] = await db.query(
+            'SELECT role_id, is_deleted FROM users WHERE user_id = ?',
+            [userId]
         );
 
-        console.log('Existing user data:', existingUser);
-
-        if (existingUser.length === 0) {
-            await db.query('ROLLBACK');
-            console.log('User not found:', username);
-            return res.status(404).json({ error: 'User not found. Please register as a user first.' });
+        if (user.length === 0 || user[0].is_deleted === 1) {
+            return res.status(403).json({ message: 'User not found or deleted.' });
         }
 
-        const user = existingUser[0];
-        console.log('User role_id:', user.role_id);
+        if (user[0].role_id === 4) {
+            return res.status(403).json({ message: 'Already a member.' });
+        }
 
-        // Check if user already has a membership
+        if (user[0].role_id !== 3) {
+            return res.status(403).json({ message: 'Only customers can become members.' });
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error in authenticateMembershipAccess middleware:', error);
+        res.status(500).json({ message: 'Server error during authentication.' });
+    }
+}
+
+app.post('/membership-registration', authenticateMembershipAccess, async (req, res) => {
+    const userId = req.headers['user-id'];
+    const { first_name, last_name, type_of_membership } = req.body;
+
+    console.log('Received membership registration request:', {
+        userId,
+        first_name,
+        last_name,
+        type_of_membership
+    });
+
+    try {
+        await db.query('START TRANSACTION');
+
         const [existingMembership] = await db.query(
             'SELECT * FROM membership WHERE user_id = ?',
-            [user.user_id]
+            [userId]
         );
-
-        console.log('Existing membership:', existingMembership);
 
         if (existingMembership.length > 0) {
             await db.query('ROLLBACK');
-            console.log('User already has membership');
             return res.status(400).json({ error: 'User already has a membership' });
         }
 
-        if (user.role_id !== 3) {
-            await db.query('ROLLBACK');
-            console.log('Invalid role_id:', user.role_id);
-            return res.status(403).json({
-                error: user.role_id === 4
-                    ? 'User already has an active membership'
-                    : 'User must have role_id 3 to register for membership'
-            });
-        }
-
-        // Calculate expiration date (1 month from now)
         const expirationDate = new Date();
         expirationDate.setMonth(expirationDate.getMonth() + 1);
 
-        // Create membership record with correct column names (fname and lname)
-        const membershipResult = await db.query(
-            `INSERT INTO membership 
+        // Updated column names: fname and lname (no underscore)
+        const insertQuery = `
+            INSERT INTO membership 
             (user_id, type_of_membership, expire_date, expiration_warning, fname, lname)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [user.user_id, type_of_membership.toLowerCase(), expirationDate, 0, first_name, last_name]
-        );
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
 
-        console.log('Membership creation result:', membershipResult);
+        const insertParams = [
+            userId,
+            type_of_membership.toLowerCase(),
+            expirationDate.toISOString().slice(0, 19).replace('T', ' '),
+            0,
+            first_name,
+            last_name
+        ];
 
-        // Update user's role_id to 4
-        const userUpdateResult = await db.query(
-            'UPDATE users SET role_id = 4 WHERE user_id = ?',
-            [user.user_id]
-        );
+        console.log('Insert params:', insertParams);
 
-        console.log('User role update result:', userUpdateResult);
+        await db.query(insertQuery, insertParams);
 
-        // Commit transaction
+        // Update user's role using parameterized query
+        await db.query('UPDATE users SET role_id = ? WHERE user_id = ?', [4, userId]);
+
         await db.query('COMMIT');
-        console.log('Transaction committed successfully');
         res.status(201).json({ message: 'Membership registration successful' });
 
     } catch (error) {
-        // Rollback transaction on error
         await db.query('ROLLBACK');
         console.error('Error in membership registration:', error);
         res.status(500).json({ error: 'Internal server error during membership registration: ' + error.message });
     }
 });
-
 // Altered Leo's login backend to accomodate for membership expiration alert trigger
-
 
 
 // (Assuming DENNIS's endpoints are already correctly implemented)
