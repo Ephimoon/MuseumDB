@@ -8,17 +8,18 @@ const EventDirectorDashboard = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [userName, setUserName] = useState('User');
     const [selectedEventId, setSelectedEventId] = useState('');
-    const [reportData, setReportData] = useState(null); // State to store report data
+    const [reportData, setReportData] = useState([]); // State to store report data
     const [membersList, setMembersList] = useState([]); // State to store members list
     const [isMembersModalOpen, setIsMembersModalOpen] = useState(false); // State to control members modal
     const [isEventModalOpen, setIsEventModalOpen] = useState(false); // State to control event modal
     const [selectedEvent, setSelectedEvent] = useState({ id: '', name: '', description: '', location: '', status: 'upcoming', start_date: '', end_date: ''}); // State to store selected event for editing
+    const [filters, setFilters] = useState({minRevenue: '', maxRevenue: '', minMembers: '', maxMembers: ''}); // State to store filters
 
     useEffect(() => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events`);
+                const response = await axios.get(`http://localhost:5000/api/events`);
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,
@@ -53,12 +54,17 @@ const EventDirectorDashboard = () => {
         setSelectedEvent({ ...selectedEvent, [name]: value });
     };
 
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilters({ ...filters, [name]: value });
+    }
+
     const saveEventChanges = async () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
                 //const response = await axios.put(`http://${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
-                const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
+                const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
                 } else {
@@ -67,7 +73,7 @@ const EventDirectorDashboard = () => {
             } else {
                 // Add new event
                 //const response = await axios.post('http://${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
-                const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/events`, selectedEvent);
+                const response = await axios.post(`http://localhost:5000/api/events`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
                 } else {
@@ -83,7 +89,7 @@ const EventDirectorDashboard = () => {
 
     const removeEventCard = async (id) => {
         try {
-            const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/events/${id}`); // replace with http://${process.env.REACT_APP_API_URL}/api/events/${id}
+            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://${process.env.REACT_APP_API_URL}/api/events/${id}
             if (response.status === 200) {
                 setEventCards(eventCards.filter(event => event.id !== id));
             }
@@ -103,7 +109,7 @@ const EventDirectorDashboard = () => {
     const viewMembers = async (eventId) => {
         try {
             //const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
             if (response.status === 200) {
                 console.log('Members: ', response.data);
                 setMembersList(response.data);
@@ -129,26 +135,25 @@ const EventDirectorDashboard = () => {
         setSelectedEventId(e.target.value);
     };
 
-    // Simulate fetching report data for a specific event
-    const fetchReport = async (eventId) => {
-        if (!eventId) {
-            alert('Please select an event.');
-            return;
-        }
-        console.log('Fetching report for event: ', eventId);
-        setReportData(null);
+    // Fetch report data for all events or a specific event
+    const fetchReport = async () => {
+        console.log('Fetching report for all events');
+
+        // Reset report data before fetching new report
+        setReportData([]);
 
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/report`);
+            const response = await axios.get(`http://localhost:5000/api/events/report`, { params: filters });
             if (response.status === 200) {
+                console.log('Report data:', response.data);
                 setReportData(response.data);
             } else {
-                console.error('Failed to fetch report');
-                setReportData({totalMembersSignedUp: 0, totalRevenue: 0});
+                console.error('Failed to fetch report data');
+                setReportData([]);
             }
         } catch (error) {
-            console.error('Error fetching report: ', error);
-            setReportData({totalMembersSignedUp: 0, totalRevenue: 0});
+            console.error('Error fetching report data:', error);
+            setReportData([]);
         }
     };
 
@@ -254,7 +259,7 @@ const EventDirectorDashboard = () => {
                                     <label>
                                         Start Date:
                                         <input
-                                            type="text"
+                                            type="date"
                                             name="start_date"
                                             value={selectedEvent.start_date || ''}
                                             onChange={handleInputChange}
@@ -263,7 +268,7 @@ const EventDirectorDashboard = () => {
                                     <label>
                                         End Date:
                                         <input
-                                            type="text"
+                                            type="date"
                                             name="end_date"
                                             value={selectedEvent.end_date || ''}
                                             onChange={handleInputChange}
@@ -299,25 +304,54 @@ const EventDirectorDashboard = () => {
                 {activeTab === 'reports' && (
                     <div className="reports-section">
                         <h3>Generate Event Reports</h3>
-
-                        {/* Dropdown to select an event */}
-                        <label htmlFor="eventSelect">Select Event:</label>
-                        <select id="eventSelect" value={selectedEventId} onChange={handleEventSelection}>
-                            <option value="">-- Select an Event --</option>
-                            {eventCards.map(event => (
-                                <option key={event.id} value={event.id}>
-                                    {event.name}
-                                </option>
-                            ))}
-                        </select>
+                        
+                       {/* Filters */}
+                       <div className="filters">
+                            <label>
+                                Min Revenue:
+                                <input
+                                    type="number"
+                                    name="minRevenue"
+                                    value={filters.minRevenue}
+                                    onChange={handleFilterChange}
+                                />
+                            </label>
+                            <label>
+                                Max Revenue:
+                                <input
+                                    type="number"
+                                    name="maxRevenue"
+                                    value={filters.maxRevenue}
+                                    onChange={handleFilterChange}
+                                />
+                            </label>
+                            <label>
+                                Min Members:
+                                <input
+                                    type="number"
+                                    name="minMembers"
+                                    value={filters.minMembers}
+                                    onChange={handleFilterChange}
+                                />
+                            </label>
+                            <label>
+                                Max Members:
+                                <input
+                                    type="number"
+                                    name="maxMembers"
+                                    value={filters.maxMembers}
+                                    onChange={handleFilterChange}
+                                />
+                            </label>
+                        </div>
 
                         {/* Button to generate the report */}
-                        <button onClick={() => fetchReport(selectedEventId)}>Generate Report</button>
+                        <button className="gen_report" onClick={fetchReport}>Generate Report</button>
 
                         {/* Display the report */}
-                        {reportData && (
+                        {reportData.length > 0 && (
                             <div className="report">
-                                <h4>Report for Event:</h4>
+                                <h4>Report for Events:</h4>
                                 <table>
                                     <thead>
                                         <tr>
@@ -327,11 +361,13 @@ const EventDirectorDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>{reportData.eventName || 'N/A'}</td>
-                                            <td>{reportData.totalMembersSignedUp}</td>
-                                            <td>${reportData.totalRevenue}</td>
-                                        </tr>
+                                        {reportData.map((data, index) => (
+                                            <tr key={index}>
+                                                <td>{data.eventName || 'N/A'}</td>
+                                                <td>{data.totalMembersSignedUp}</td>
+                                                <td>${data.totalRevenue}</td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
