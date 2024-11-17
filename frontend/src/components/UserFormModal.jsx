@@ -47,15 +47,30 @@ const UserFormModal = ({ user, onClose }) => {
         try {
             if (user && user.user_id) {
                 // Update existing user
+<<<<<<< Updated upstream
                 await axios.put(`http://localhost:5000//users/${user.user_id}`, formData, {
+=======
+                await axios.put(`http://localhost:5000/users/${user.user_id}`, payload, {
+>>>>>>> Stashed changes
                     headers: {
                         role: role,
                         'user-id': userId,
                     },
                 });
             } else {
+<<<<<<< Updated upstream
                 // Create new user
                 await axios.post(`http://localhost:5000/register`, formData);
+=======
+                // Create new user via admin endpoint
+                await axios.post(`http://localhost:5000/users`, payload, {
+                    headers: {
+                        role: role,
+                        'user-id': userId,
+                    },
+                });
+                toast.success('User created successfully');
+>>>>>>> Stashed changes
             }
             onClose();
         } catch (error) {

@@ -53,6 +53,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     }, [refreshArtworks, refreshArtists]);
 
     const fetchArtwork = () => {
+<<<<<<< Updated upstream
         axios.get(`${config.backendUrl}/artwork`)
             .then(response => setArtworks(response.data))
             .catch(err => console.log('Error fetching artwork:', err));
@@ -64,11 +65,68 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
             const responseWithoutArtwork = await axios.get(`${config.backendUrl}/artist-null-artwork`);
             setArtistsWithArtwork(responseWithArtwork.data);
             setArtistsWithoutArtwork(responseWithoutArtwork.data);
+=======
+        console.log("isDeletedView:", isDeletedView);
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedView}`)
+            .then(response => {
+                console.log("Artwork data:", response.data); // Log the data to see if it's fetched
+                setArtworks(response.data[0]);
+            })
+            .catch(err => console.log('Error fetching artwork:', err));
+    };
+
+    useEffect(() => {
+        fetchAllArtworkImages();
+    }, [artworks]);
+
+    const fetchAllArtworkImages = async () => {
+        const images = {};
+        await Promise.all(
+            artworks.map(async (art_image) => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/artwork/${art_image.ArtworkID}/image`, {
+                        responseType: 'blob',
+                    });
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[art_image.ArtworkID] = imageUrl;
+                    console.log(`Fetched image for artwork ${art_image.ArtworkID}`);
+                } catch (error) {
+                    console.error(`Error fetching image for artwork ${art_image.ArtworkID}:, error`);
+                }
+            })
+        );
+        setArtworkImages(images); // Update artworkImages state with all images
+    };
+    // Update specific artwork preview in artworkPreviewImages
+    const handlePreviewImageChange = (artworkId, previewUrl) => {
+        setArtworkPreviewImages((prev) => ({
+            ...prev,
+            [artworkId]: previewUrl,
+        }));
+    };
+
+    const fetchArtists = async () => {
+        try {
+            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork?isDeleted=${isDeletedView}`);
+            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork?isDeleted=${isDeletedView}`);
+
+            // Combine and filter out entries without ArtistID
+            const artistsWithArtwork = responseWithArtwork.data.flat().filter(artist => artist.ArtistID);
+            const artistsWithoutArtwork = responseWithoutArtwork.data.flat().filter(artist => artist.ArtistID);
+
+            console.log("Filtered Artists with artwork:", artistsWithArtwork);
+            console.log("Filtered Artists without artwork:", artistsWithoutArtwork);
+
+            setArtists([...artistsWithArtwork, ...artistsWithoutArtwork]);
+            setArtistsWithArtwork(artistsWithArtwork);
+            setArtistsWithoutArtwork(artistsWithoutArtwork);
+>>>>>>> Stashed changes
         } catch (err) {
             console.log('Error fetching artists:', err);
         }
     };
 
+<<<<<<< Updated upstream
     const fetchFilterOptions = async () => {
         try {
             const departmentRes = await axios.get(`${config.backendUrl}/department`);
@@ -76,6 +134,49 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
             const yearsRes = await axios.get(`${config.backendUrl}/creation-years`);
             //const conditionsRes = await axios.get(`${config.backendUrl}/artworkconditions`);
             const nationalitiesRes = await axios.get(`${config.backendUrl}/nationalities`);
+=======
+    useEffect(() => {
+        fetchAllArtistImages();
+    }, [artists]);
+
+    const fetchAllArtistImages = async () => {
+        const images = {};
+        await Promise.all(
+            artists.filter(artist_image => artist_image.ArtistID).map(async (artist_image) => {
+                try {
+                    const response = await axios.get(`http://localhost:5000/artist/${artist_image.ArtistID}/image`, {
+                        responseType: 'blob',
+                    });
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[artist_image.ArtistID] = imageUrl;
+                    console.log(`Fetched image for artist ${artist_image.ArtistID}`);
+                } catch (error) {
+                    console.error(`Error fetching image for artist ${artist_image.ArtistID}:`, error);
+                }
+            })
+        );
+        setArtistImages(images);
+    };
+    // Update specific artwork preview in artworkPreviewImages
+    const handlePreviewArtistImageChange = (artistId, previewUrl) => {
+        console.log(`Updating preview for artist ${artistId} with URL:`, previewUrl);
+        setArtistPreviewImages((prev) => ({
+            ...prev,
+            [artistId]: previewUrl,
+        }));
+    };
+
+
+
+
+    const fetchFilterOptions = async () => {
+        try {
+            const departmentRes = await axios.get(`http://localhost:5000/department`);
+            const mediumsRes = await axios.get(`http://localhost:5000/mediums`);
+            const yearsRes = await axios.get(`http://localhost:5000/creation-years`);
+            //const conditionsRes = await axios.get(`http://localhost:5000/artworkconditions`);
+            const nationalitiesRes = await axios.get(`http://localhost:5000/nationalities`);
+>>>>>>> Stashed changes
 
             setDepartments(departmentRes.data);
             setMediums(mediumsRes.data);
@@ -370,4 +471,121 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     );
 };
 
+<<<<<<< Updated upstream
 export default ArtLookUp;
+=======
+const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
+    const [departments, setDepartments] = useState([]);
+    const [sortOption, setSortOption] = useState('department_asc');
+    const [filterType, setFilterType] = useState('all'); // 'all', 'withArtwork', 'withoutArtwork'
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    useEffect(() => {
+        fetchDepartments();
+    }, [isDepartmentDeletedOpen, filterType, refreshDepartments]);
+
+    const fetchDepartments = async () => {
+        let endpoint = 'http://localhost:5000/department';
+        if (filterType === 'withArtwork') {
+            endpoint = 'http://localhost:5000/department-with-artwork';
+        } else if (filterType === 'withoutArtwork') {
+            endpoint = 'http://localhost:5000/department-null-artwork';
+        }
+
+        try {
+            const response = await axios.get(`${endpoint}?isDeleted=${isDepartmentDeletedOpen}`);
+            const validDepartments = response.data.flat().filter(department => department.DepartmentID);
+            setDepartments(validDepartments);
+        } catch (error) {
+            console.error('Error fetching departments:', error);
+        }
+    };
+
+    const handleEditClick = (department) => {
+        if (!isDepartmentDeletedOpen) { // Prevent editing if department is in deleted view
+            setSelectedDepartment(department);
+            setIsEditModalOpen(true);
+        }
+    };
+
+    const handleDeleteClick = (departmentId) => {
+        if (!isDepartmentDeletedOpen) { // Prevent deletion if department is in deleted view
+            setSelectedDepartment(departmentId);
+            setIsDeleteModalOpen(true);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await axios.delete(`http://localhost:5000/department/${selectedDepartment}`);
+            fetchDepartments(); // Refresh the department list after deletion
+            setIsDeleteModalOpen(false);
+        } catch (error) {
+            console.error("Error deleting department:", error);
+        }
+    };
+
+    const sortedDepartments = [...departments].sort((a, b) => {
+        return sortOption === 'department_asc'
+            ? a.Name.localeCompare(b.Name)
+            : b.Name.localeCompare(a.Name);
+    });
+
+    return (
+        <div>
+            <div className={styles.FilterContainer}>
+                <h1>{isDepartmentDeletedOpen ? 'Deleted Departments' : 'Departments'}</h1>
+
+                {/* Filter by artwork association */}
+                <div>
+                    <label>Filter Departments:</label>
+                    <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
+                        <option value="all">All</option>
+                        <option value="withArtwork">With Artwork</option>
+                        <option value="withoutArtwork">Without Artwork</option>
+                    </select>
+                </div>
+
+                {/* Sort Departments */}
+                <div className={styles.sortSection}>
+                    <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                        <option value="department_asc">Department A-Z</option>
+                        <option value="department_desc">Department Z-A</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Display Department Cards */}
+            <DepartmentCard
+                department_={sortedDepartments}
+                onRefresh={fetchDepartments}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+                isDepartmentDeletedOpen={isDepartmentDeletedOpen} // Pass the prop here
+            />
+
+            {/* Edit Department Modal */}
+            {isEditModalOpen && selectedDepartment && (
+                <EditDepartmentModal
+                    department={selectedDepartment}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onRefresh={fetchDepartments}
+                />
+            )}
+
+            {/* Confirm Delete Department Modal */}
+            {isDeleteModalOpen && (
+                <ConfirmDeleteDepartmentModal
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setIsDeleteModalOpen(false)}
+                />
+            )}
+        </div>
+    );
+};
+
+
+export {ArtLookUp, DepartmentLookUp};
+>>>>>>> Stashed changes

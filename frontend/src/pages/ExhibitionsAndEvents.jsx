@@ -36,6 +36,33 @@ const ExhibitionsAndEvents = () => {
     const [selectedExhibition, setSelectedExhibition] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+<<<<<<< Updated upstream
+=======
+    useEffect(() => {
+        // Fetch event data
+        const fetchEventData = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/events`);
+                if (response.status === 200) {
+                    const formattedEvents = response.data.map(event => ({
+                        id: event.event_id,
+                        name: event.name_,
+                        image: "https://placehold.jp/500x500.png",
+                        date_start: event.start_date,
+                        date_end: event.end_date,
+                        description: event.description_
+                    }));
+                    setSelectedEvent(formattedEvents);
+                }
+            } catch (error) {
+                console.error('Error fetching events: ', error);
+            }
+        };
+        fetchEventData();
+    }, []);
+
+
+>>>>>>> Stashed changes
     const handleExploreClick = (exhibition) => {
         setSelectedExhibition(exhibition);
         setIsModalOpen(true);

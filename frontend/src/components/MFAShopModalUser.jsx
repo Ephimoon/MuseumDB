@@ -66,7 +66,11 @@ const MFAShopModalUser = ({ item, onClose, isEditing }) => {
                 });
             } else {
                 // Create new item
+<<<<<<< Updated upstream
                 await axios.post('http://localhost:5000/giftshopitems', formData, {
+=======
+                await axios.post(`http://localhost:5000/giftshopitems`, formData, {
+>>>>>>> Stashed changes
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },

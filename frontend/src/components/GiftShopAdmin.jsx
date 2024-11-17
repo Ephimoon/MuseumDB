@@ -6,6 +6,8 @@ import GiftShopFormModal from '../components/GiftShopForm';
 import GiftShopLogDetailsModal from '../components/GiftShopLogDetailsModal';
 import styles from '../css/GiftShopAdmin.module.css';
 import HomeNavBar from './HomeNavBar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GiftShopAdmin = () => {
     const [items, setItems] = useState([]);
@@ -47,13 +49,25 @@ const GiftShopAdmin = () => {
 
     // Fetch gift shop items (including deleted for admin view)
     const fetchItems = () => {
+<<<<<<< Updated upstream
         axios.get(`http://localhost:5000/giftshopitemsall`)
             .then(response => setItems(response.data))
             .catch(error => console.error('Error fetching items:', error));
+=======
+        axios
+            .get(`http://localhost:5000/giftshopitemsall`)
+            .then((response) => {
+                setItems(response.data);
+            })
+            .catch((error) => {
+                console.error('Error fetching items:', error);
+            });
+>>>>>>> Stashed changes
     };
 
     // Fetch logs
     const fetchLogs = () => {
+<<<<<<< Updated upstream
         axios.get(`http://localhost:5000/giftshopitems/logs`, {
             headers: {
                 'user-id': localStorage.getItem('userId'),
@@ -62,6 +76,23 @@ const GiftShopAdmin = () => {
         })
             .then(response => setLogs(response.data))
             .catch(error => console.error('Error fetching logs:', error));
+=======
+        axios
+            .get(`http://localhost:5000/giftshopitems/logs`, {
+                headers: {
+                    'user-id': localStorage.getItem('userId'),
+                    role: localStorage.getItem('role'),
+                },
+            })
+            .then((response) => {
+                setLogs(response.data);
+                toast.success('Logs fetched successfully!');
+            })
+            .catch((error) => {
+                console.error('Error fetching logs:', error);
+                toast.error('Failed to fetch logs.');
+            });
+>>>>>>> Stashed changes
     };
 
     const getImageUrl = (itemId) => {
@@ -88,20 +119,54 @@ const GiftShopAdmin = () => {
 
     const handleSoftDelete = (id) => {
         const role = localStorage.getItem('role');
+<<<<<<< Updated upstream
         axios.put(`http://localhost:5000/giftshopitems/${id}/soft-delete`, {}, {
             headers: {'role': role, 'user-id': localStorage.getItem('userId')}
         })
             .then(() => fetchItems())
             .catch(error => console.error('Error soft deleting item:', error));
+=======
+        axios
+            .put(
+                `http://localhost:5000/giftshopitems/${id}/soft-delete`,
+                {},
+                {
+                    headers: { role: role, 'user-id': localStorage.getItem('userId') },
+                }
+            )
+            .then(() => {
+                fetchItems();
+                toast.success('Item soft deleted successfully!');
+            })
+            .catch((error) => {
+                console.error('Error soft deleting item:', error);
+                toast.error('Failed to soft delete the item.');
+            });
+>>>>>>> Stashed changes
     };
 
     const handleHardDelete = (id) => {
         const role = localStorage.getItem('role');
+<<<<<<< Updated upstream
         axios.delete(`http://localhost:5000/giftshopitems/${id}/hard-delete`, {
             headers: {'role': role, 'user-id': localStorage.getItem('userId')}
         })
             .then(() => fetchItems())
             .catch(error => console.error('Error hard deleting item:', error));
+=======
+        axios
+            .delete(`http://localhost:5000/giftshopitems/${id}/hard-delete`, {
+                headers: { role: role, 'user-id': localStorage.getItem('userId') },
+            })
+            .then(() => {
+                fetchItems();
+                toast.success('Item hard deleted successfully!');
+            })
+            .catch((error) => {
+                console.error('Error hard deleting item:', error);
+                toast.error('Failed to hard delete the item.');
+            });
+>>>>>>> Stashed changes
     };
 
     // Confirm Restore
@@ -117,11 +182,30 @@ const GiftShopAdmin = () => {
 
     const handleRestore = (id) => {
         const role = localStorage.getItem('role');
+<<<<<<< Updated upstream
         axios.put(`http://localhost:5000/giftshopitems/${id}/restore`, {}, {
             headers: {'role': role, 'user-id': localStorage.getItem('userId')}
         })
             .then(() => fetchItems())
             .catch(error => console.error('Error restoring item:', error));
+=======
+        axios
+            .put(
+                `http://localhost:5000/giftshopitems/${id}/restore`,
+                {},
+                {
+                    headers: { role: role, 'user-id': localStorage.getItem('userId') },
+                }
+            )
+            .then(() => {
+                fetchItems();
+                toast.success('Item restored successfully!');
+            })
+            .catch((error) => {
+                console.error('Error restoring item:', error);
+                toast.error('Failed to restore the item.');
+            });
+>>>>>>> Stashed changes
         cancelRestore();
     };
 
@@ -166,13 +250,63 @@ const GiftShopAdmin = () => {
     const currentItemsToDisplay = isLogView ? logs.slice(indexOfFirstItem, indexOfLastItem) : filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
     // Extract unique categories for filter dropdown
+<<<<<<< Updated upstream
     const uniqueCategories = [...new Set(items.map(item => item.category))];
+=======
+    const uniqueCategories = [...new Set(items.map((item) => item.category))];
+
+    // Functions to switch views and reset filters
+    const switchToLogView = () => {
+        setIsLogView(true);
+        // Clear log filters
+        setFilterLogAction('');
+        setFilterLogItemName('');
+        setFilterLogUser('');
+        setFilterLogRole('');
+        setFilterLogDateFrom('');
+        setFilterLogDateTo('');
+        toast.info('Switched to Logs view.');
+    };
+
+    const switchToManageItemsView = () => {
+        setIsLogView(false);
+        // Clear item filters
+        setFilterName('');
+        setFilterCategory('');
+        setFilterPriceMin('');
+        setFilterPriceMax('');
+        setFilterQuantity('');
+        setFilterStatus('');
+        setFilterLowStock(false);
+        toast.info('Switched to Manage Items view.');
+    };
+
+    const clearItemFilters = () => {
+        setFilterName('');
+        setFilterCategory('');
+        setFilterPriceMin('');
+        setFilterPriceMax('');
+        setFilterQuantity('');
+        setFilterStatus('');
+        setFilterLowStock(false);
+        toast.info('Item filters cleared.');
+    };
+
+    const clearLogFilters = () => {
+        setFilterLogAction('');
+        setFilterLogItemName('');
+        setFilterLogUser('');
+        setFilterLogRole('');
+        setFilterLogDateFrom('');
+        setFilterLogDateTo('');
+        toast.info('Log filters cleared.');
+    };
+>>>>>>> Stashed changes
 
     return (
         <div className={styles.adminContainer}>
             <HomeNavBar/>
             <h1 className={styles.title}>Gift Shop Admin</h1>
-
             {/* Action Buttons */}
             <div className={styles.actionButtons}>
                 {!isLogView && (
@@ -275,6 +409,7 @@ const GiftShopAdmin = () => {
                             onChange={(e) => setFilterLowStock(e.target.checked)}
                         />
                     </div>
+<<<<<<< Updated upstream
                     <button className={styles.clearButton} onClick={() => {
                         setFilterName('');
                         setFilterCategory('');
@@ -284,11 +419,90 @@ const GiftShopAdmin = () => {
                         setFilterStatus('');
                         setFilterLowStock(false);
                     }}>
+=======
+                    <button
+                        className={styles.clearButton}
+                        onClick={clearItemFilters}
+                    >
+>>>>>>> Stashed changes
                         Clear Filters
                     </button>
                 </div>
             )}
 
+<<<<<<< Updated upstream
+=======
+            {/* Filter Section for Logs */}
+            {isLogView && (
+                <div className={styles.filterSection}>
+                    <div className={styles.filterGroup}>
+                        <label htmlFor="filterLogAction">Action:</label>
+                        <input
+                            type="text"
+                            id="filterLogAction"
+                            value={filterLogAction}
+                            onChange={(e) => setFilterLogAction(e.target.value)}
+                            placeholder="Search by action"
+                        />
+                    </div>
+                    <div className={styles.filterGroup}>
+                        <label htmlFor="filterLogItemName">Item Name:</label>
+                        <input
+                            type="text"
+                            id="filterLogItemName"
+                            value={filterLogItemName}
+                            onChange={(e) => setFilterLogItemName(e.target.value)}
+                            placeholder="Search by item name"
+                        />
+                    </div>
+                    <div className={styles.filterGroup}>
+                        <label htmlFor="filterLogUser">User:</label>
+                        <input
+                            type="text"
+                            id="filterLogUser"
+                            value={filterLogUser}
+                            onChange={(e) => setFilterLogUser(e.target.value)}
+                            placeholder="Search by user"
+                        />
+                    </div>
+                    <div className={styles.filterGroup}>
+                        <label htmlFor="filterLogRole">Role:</label>
+                        <input
+                            type="text"
+                            id="filterLogRole"
+                            value={filterLogRole}
+                            onChange={(e) => setFilterLogRole(e.target.value)}
+                            placeholder="Search by role"
+                        />
+                    </div>
+                    <div className={styles.filterGroup}>
+                        <label htmlFor="filterLogDateFrom">Date From:</label>
+                        <input
+                            type="date"
+                            id="filterLogDateFrom"
+                            value={filterLogDateFrom}
+                            onChange={(e) => setFilterLogDateFrom(e.target.value)}
+                        />
+                    </div>
+                    <div className={styles.filterGroup}>
+                        <label htmlFor="filterLogDateTo">Date To:</label>
+                        <input
+                            type="date"
+                            id="filterLogDateTo"
+                            value={filterLogDateTo}
+                            onChange={(e) => setFilterLogDateTo(e.target.value)}
+                        />
+                    </div>
+                    <button
+                        className={styles.clearButton}
+                        onClick={clearLogFilters}
+                    >
+                        Clear Filters
+                    </button>
+                </div>
+            )}
+
+>>>>>>> Stashed changes
             {/* Manage Items View */}
             {!isLogView && (
                 <>
@@ -461,7 +675,13 @@ const GiftShopAdmin = () => {
                     onClose={closeLogDetailsModal}
                 />
             )}
+<<<<<<< Updated upstream
         </div>)
+=======
+        </div>
+    );
+
+>>>>>>> Stashed changes
 };
 
 export default GiftShopAdmin;

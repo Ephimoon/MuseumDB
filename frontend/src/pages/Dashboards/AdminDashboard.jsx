@@ -31,13 +31,86 @@ const AdminDashboard = () => {
     }, [announcements]);
 
     const fetchAnnouncements = () => {
+<<<<<<< Updated upstream
         axios.get('http://localhost:5000/announcements/all', {
+=======
+        axios.get(`http://localhost:5000/announcements/all`, {
+>>>>>>> Stashed changes
             headers: { 'user-id': userId, role },
         })
             .then(response => setAnnouncements(response.data))
             .catch(error => console.error('Error fetching announcements:', error));
     };
 
+<<<<<<< Updated upstream
+=======
+    // Fetch the number of purchases made today
+    const fetchPurchasesToday = () => {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+
+        const reportRequest = {
+            report_category: 'GiftShopReport',
+            report_type: 'transaction_details',
+            report_period_type: 'single_day',
+            selected_date: today,
+            // Include other filters if needed
+        };
+
+        axios.post(`http://localhost:5000/reports`, reportRequest, {
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': userId,
+                role: role,
+            },
+        })
+            .then(response => {
+                const reportData = response.data.reportData;
+                // Process the reportData to get the number of unique transactions (purchases)
+                const transactionIds = new Set();
+                if (Array.isArray(reportData)) {
+                    reportData.forEach(item => {
+                        transactionIds.add(item.transaction_id);
+                    });
+                }
+                setPurchasesToday(transactionIds.size);
+            })
+            .catch(error => console.error('Error fetching purchases:', error));
+    };
+
+    // Fetch the total revenue made today
+    const fetchRevenueToday = () => {
+        const today = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+
+        const reportRequest = {
+            report_category: 'GiftShopReport',
+            report_type: 'revenue',
+            report_period_type: 'single_day',
+            selected_date: today,
+            // Include other filters if needed
+        };
+
+        axios.post(`http://localhost:5000/reports`, reportRequest, {
+            headers: {
+                'Content-Type': 'application/json',
+                'user-id': userId,
+                role: role,
+            },
+        })
+            .then(response => {
+                const reportData = response.data.reportData;
+                // Process the reportData to calculate total revenue
+                let totalRevenue = 0;
+                if (Array.isArray(reportData)) {
+                    reportData.forEach(item => {
+                        totalRevenue += parseFloat(item.item_total) || 0;
+                    });
+                }
+                setRevenueToday(totalRevenue);
+            })
+            .catch(error => console.error('Error fetching revenue:', error));
+    };
+
+>>>>>>> Stashed changes
     // Confirm Delete
     const confirmDelete = (id) => {
         setAnnouncementToDelete(id);

@@ -25,7 +25,11 @@ const ManageUsers = () => {
 
     const fetchUsers = () => {
         axios.get(`http://localhost:5000/users`, {
+<<<<<<< Updated upstream
             headers: {role, 'user-id': userId},
+=======
+            headers: { role, 'user-id': userId },
+>>>>>>> Stashed changes
         })
             .then(response => setUsers(response.data))
             .catch(error => console.error('Error fetching users:', error));
@@ -53,7 +57,14 @@ const ManageUsers = () => {
     };
 
     const handleDelete = (user, isHardDelete) => {
+<<<<<<< Updated upstream
         const endpoint = isHardDelete ? `/users/${user.user_id}` : `/users/${user.user_id}/soft-delete`;
+=======
+        const endpoint = isHardDelete
+            ? `http://localhost:5000/users/${user.user_id}`
+            : `http://localhost:5000/users/${user.user_id}/soft-delete`;
+
+>>>>>>> Stashed changes
         const method = isHardDelete ? 'delete' : 'put';
 
         axios[method](endpoint, {}, {
@@ -67,8 +78,15 @@ const ManageUsers = () => {
     };
 
     const handleRestore = (user) => {
+<<<<<<< Updated upstream
         axios.put(`http://localhost:5000/users/${user.user_id}/restore`, {}, {
             headers: {role, 'user-id': userId},
+=======
+        const endpoint = `http://localhost:5000/users/${user.user_id}/restore`;
+
+        axios.put(endpoint, {}, {
+            headers: { role, 'user-id': userId },
+>>>>>>> Stashed changes
         })
             .then(() => fetchUsers())
             .catch(error => console.error('Error restoring user:', error));

@@ -14,6 +14,9 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 // Import the Image Preview plugin
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 
+// Import toast from React Toastify
+import { toast } from 'react-toastify';
+
 // Register the plugin
 registerPlugin(FilePondPluginImagePreview);
 
@@ -25,7 +28,6 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         quantity: '',
     });
     const [imageFile, setImageFile] = useState([]);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         if (item && item.item_id) {
@@ -89,13 +91,35 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         if (item && item.item_id) {
             axios
                 .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
+<<<<<<< Updated upstream
                 .then(() => onClose())
                 .catch((error) => console.error('Error updating item:', error));
+=======
+                .then(() => {
+                    toast.success('Item updated successfully!');
+                    onClose(); // Close the modal and refresh items
+                })
+                .catch((error) => {
+                    console.error('Error updating item:', error);
+                    toast.error('Failed to update the item.');
+                });
+>>>>>>> Stashed changes
         } else {
             axios
                 .post(`http://localhost:5000/giftshopitems`, data, config)
+<<<<<<< Updated upstream
                 .then(() => onClose())
                 .catch((error) => console.error('Error creating item:', error));
+=======
+                .then(() => {
+                    toast.success('Item created successfully!');
+                    onClose(); // Close the modal and refresh items
+                })
+                .catch((error) => {
+                    console.error('Error creating item:', error);
+                    toast.error('Failed to create the item.');
+                });
+>>>>>>> Stashed changes
         }
     };
 

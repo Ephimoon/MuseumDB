@@ -1220,9 +1220,175 @@ app.put('/announcements/:id/restore', authenticateUser, async (req, res) => {
         res.status(500).json({message: 'Server error restoring announcement.'});
     }
 });
+// Endpoint to handle ticket purchases
+// Endpoint to handle ticket purchases
+app.post('/ticket-purchase', async (req, res) => {
+    const { payment_method, tickets } = req.body;
+    const user_id = req.userId; // Retrieved from the authenticateUser middleware
+
+    // Input Validation
+    if (!payment_method || !tickets || !Array.isArray(tickets) || tickets.length === 0) {
+        return res.status(400).json({ message: 'Invalid request. payment_method and tickets are required.' });
+    }
+
+    for (let ticket of tickets) {
+        if (!ticket.ticket_type_id || !ticket.quantity || ticket.quantity <= 0 || !ticket.visit_date) {
+            return res.status(400).json({ message: 'Each ticket must have a valid ticket_type_id, quantity greater than 0, and visit_date.' });
+        }
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Fetch ticket types with current prices
+        const ticketTypeIds = tickets.map(ticket => ticket.ticket_type_id);
+        const [dbTickets] = await connection.query(
+            `SELECT ticket_type_id, price FROM ticket WHERE ticket_type_id IN (?)`,
+            [ticketTypeIds]
+        );
+
+        // Check if all ticket types exist
+        if (dbTickets.length !== tickets.length) {
+            throw new Error('One or more ticket types do not exist.');
+        }
+
+        let calculatedSubtotal = 0;
+        const transactionTickets = [];
+
+        for (let cartTicket of tickets) {
+            const dbTicket = dbTickets.find(ticket => ticket.ticket_type_id === cartTicket.ticket_type_id);
+            const ticketSubtotal = parseFloat((cartTicket.quantity * dbTicket.price).toFixed(2));
+            calculatedSubtotal += ticketSubtotal;
+            transactionTickets.push({
+                ticket_type_id: cartTicket.ticket_type_id,
+                quantity: cartTicket.quantity,
+                price_at_purchase: dbTicket.price,
+                subtotal: ticketSubtotal,
+                visit_date: cartTicket.visit_date,
+            });
+        }
+
+        calculatedSubtotal = parseFloat(calculatedSubtotal.toFixed(2));
+        const taxRate = 0.0825; // 8.25% tax
+        const calculatedTax = parseFloat((calculatedSubtotal * taxRate).toFixed(2));
+        const calculatedTotal = parseFloat((calculatedSubtotal + calculatedTax).toFixed(2));
+
+        // Insert into transaction table
+        const [transactionResult] = await connection.query(
+            `INSERT INTO \`transaction\` (transaction_date, subtotal, tax, total_amount, transaction_type, user_id, payment_status)
+             VALUES (NOW(), ?, ?, ?, ?, ?, ?)`,
+            [calculatedSubtotal, calculatedTax, calculatedTotal, payment_method, user_id, 'completed']
+        );
+        const transactionId = transactionResult.insertId;
+
+        // Insert into transaction_ticket table
+        const transactionTicketsValues = transactionTickets.map(ticket => [
+            transactionId,
+            ticket.ticket_type_id,
+            ticket.quantity,
+            ticket.price_at_purchase,
+        ]);
+        await connection.query(
+            `INSERT INTO transaction_ticket (transaction_id, ticket_type_id, quantity, price_at_purchase)
+             VALUES ?`,
+            [transactionTicketsValues]
+        );
+
+        // Insert individual tickets into bought_tickets
+        const boughtTicketsValues = [];
+        for (let ticket of transactionTickets) {
+            for (let i = 0; i < ticket.quantity; i++) {
+                boughtTicketsValues.push([
+                    ticket.ticket_type_id,
+                    user_id,
+                    transactionId,
+                    ticket.visit_date,
+                    ticket.price_at_purchase,
+                ]);
+            }
+        }
+        await connection.query(
+            `INSERT INTO bought_tickets (ticket_type_id, user_id, transaction_id, visit_date, price_at_purchase)
+       VALUES ?`,
+            [boughtTicketsValues]
+        );
+
+        // Commit the transaction
+        await connection.commit();
+
+        res.status(201).json({
+            success: true,
+            message: 'Ticket purchase successful.',
+            transaction_id: transactionId,
+            total_amount: calculatedTotal,
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Ticket Purchase Error:', error.message);
+        res.status(400).json({ success: false, message: error.message });
+    } finally {
+        connection.release();
+    }
+});
+
+app.get('/users/:id/tickets', async (req, res) => {
+    const userId = req.params.id;
+
+    try {
+        const query = `
+            SELECT
+                bt.ticket_id,
+                bt.ticket_type_id,
+                bt.visit_date,
+                bt.price_at_purchase,
+                t.admission_type,
+                t.price_category,
+                tr.transaction_date,
+                tr.transaction_id
+            FROM bought_tickets bt
+                     JOIN ticket t ON bt.ticket_type_id = t.ticket_type_id
+                     JOIN \`transaction\` tr ON bt.transaction_id = tr.transaction_id
+            WHERE bt.user_id = ?
+            ORDER BY bt.visit_date DESC
+        `;
+        const [rows] = await db.query(query, [userId]);
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error fetching user tickets:', error);
+        res.status(500).json({ message: 'Server error fetching user tickets.' });
+    }
+});
+// Server-side code to fetch ticket types
+app.get('/ticket-types', async (req, res) => {
+    try {
+        const [ticketTypes] = await db.query('SELECT * FROM ticket');
+        res.json(ticketTypes);
+    } catch (error) {
+        console.error('Error fetching ticket types:', error);
+        res.status(500).json({ message: 'Server error fetching ticket types.' });
+    }
+});
 // ----- (LEO DONE) --------------------------------------------------------------------------------
 
 // ----- (MUNA) ------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
+=======
+app.get('/api/member/profile', authenticateUser, async (req, res) => {
+    const memberId = req.userId;  // `authenticateUser` middleware attaches userId to req
+    try {
+        const [result] = await db.query('SELECT first_name, last_name FROM users WHERE user_id = ?', [memberId]);
+        if (result.length > 0) {
+            const member = result[0];
+            res.json({firstName: member.first_name, lastName: member.last_name});
+        } else {
+            res.status(404).json({error: 'Member not found'});
+        }
+    } catch (error) {
+        res.status(500).json({error: 'Database error'});
+    }
+});
+>>>>>>> Stashed changes
 
 // (Assuming MUNA's endpoints are already correctly implemented)
 // ----- (MUNA DONE) ------------------------------------------------------------------------------

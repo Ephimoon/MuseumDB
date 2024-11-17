@@ -57,8 +57,13 @@ const EventDirectorDashboard = () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
+<<<<<<< Updated upstream
                 //const response = await axios.put(`http://http://localhost:8080/api/events/${selectedEvent.id}`, selectedEvent);
                 const response = await axios.put(`${config.backendUrl}/api/events/${selectedEvent.id}`, selectedEvent);
+=======
+                //const response = await axios.put(`http://http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
+                const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
+>>>>>>> Stashed changes
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
                 } else {
@@ -66,8 +71,13 @@ const EventDirectorDashboard = () => {
                 }
             } else {
                 // Add new event
+<<<<<<< Updated upstream
                 //const response = await axios.post('http://http://localhost:8080/api/events', selectedEvent);
                 const response = await axios.post(`${config.backendUrl}/api/events`, selectedEvent);
+=======
+                //const response = await axios.post('http://http://localhost:5000/api/events', selectedEvent);
+                const response = await axios.post(`http://localhost:5000/api/events`, selectedEvent);
+>>>>>>> Stashed changes
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
                 } else {
@@ -83,7 +93,11 @@ const EventDirectorDashboard = () => {
 
     const removeEventCard = async (id) => {
         try {
+<<<<<<< Updated upstream
             const response = await axios.delete(`${config.backendUrl}/api/events/${id}`); // replace with http://http://localhost:8080/api/events/${id}
+=======
+            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://http://localhost:5000/api/events/${id}
+>>>>>>> Stashed changes
             if (response.status === 200) {
                 setEventCards(eventCards.filter(event => event.id !== id));
             }
@@ -102,8 +116,13 @@ const EventDirectorDashboard = () => {
 
     const viewMembers = async (eventId) => {
         try {
+<<<<<<< Updated upstream
             //const response = await axios.get(`http://http://localhost:8080/api/events/${eventId}/members`);
             const response = await axios.get(`${config.backendUrl}/api/events/${eventId}/members`);
+=======
+            //const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
+            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
+>>>>>>> Stashed changes
             if (response.status === 200) {
                 console.log('Members: ', response.data);
                 setMembersList(response.data);

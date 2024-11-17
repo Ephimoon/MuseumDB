@@ -34,9 +34,30 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
   const openConfirmDelete = () => setShowConfirmDelete(true);
   const closeConfirmDelete = () => setShowConfirmDelete(false);
 
+<<<<<<< Updated upstream
   const handleDelete = async () => {
     try {
       await axios.delete(`${config.backendUrl}/artwork/${artwork.ArtworkID}`);
+=======
+  console.log("isDeletedView in ArtworkModalUser:", isDeletedView);
+
+  const fetchArtworkImage = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}/image`, {responseType: 'blob', });
+      setImageUrl(URL.createObjectURL(response.data));
+    } catch (error) {
+      console.error('Error fetching artwork image:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchArtworkImage();
+  }, [artwork.ArtworkID]); // Re-fetch the image when artwork ID changes
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
+>>>>>>> Stashed changes
       console.log("Artwork deleted successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -47,7 +68,11 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
 
   const handleModalRefresh = async () => {
     try {
+<<<<<<< Updated upstream
       const response = await axios.get(`${config.backendUrl}/artwork/${artwork.ArtworkID}`);
+=======
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
+>>>>>>> Stashed changes
       setArtwork(response.data);
     } catch (error) {
       console.error('Error fetching updated artwork data:', error);
@@ -60,6 +85,51 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh }) => {
     }
   };
 
+<<<<<<< Updated upstream
+=======
+  const handleRestore = async (artistId, departmentId) => {
+    try {
+      // Fetch both the artist and department information in parallel
+      const [artistResponse, departmentResponse] = await Promise.all([
+        axios.get(`http://localhost:5000/artist/${artistId}`),
+        axios.get(`http://localhost:5000/department/${departmentId}`)
+      ]);
+
+      const artistData = artistResponse.data;
+      const departmentData = departmentResponse.data[0]; // Access the first element if response is an array
+
+      let errorMessages = [];
+
+      // Check artist deletion status
+      if (artistData.is_deleted === 1) {
+        errorMessages.push("Cannot restore this artwork because the assigned artist is deleted. Please restore the artist first.");
+      }
+
+      // Check department deletion status
+      if (departmentData.is_deleted === 1) {
+        console.log("Department is marked as deleted."); // Debug log
+        errorMessages.push("Cannot restore this artwork because the assigned department is deleted. Please restore the department first.");
+      } else {
+        console.log("Department is not deleted or missing is_deleted field."); // Debug log
+      }
+
+      // If there are error messages, show them and stop here
+      if (errorMessages.length > 0) {
+        setErrorMessage(errorMessages.join(" "));
+        return;
+      }
+
+      // Proceed with restoring the artwork if the artist and department are active
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}/restore`);
+      console.log("Artwork restored successfully");
+      onRefresh(); // Refresh the artwork list
+      onClose(); // Close the modal
+    } catch (error) {
+      console.error("Error restoring artwork:", error);
+    }
+  };
+
+>>>>>>> Stashed changes
   return (
     <div className={styles.modal} onClick={handleOverlayClick}>
       <div className={styles.modal_content}>
@@ -146,10 +216,17 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
     const fetchData = async () => {
       try {
         const [artistRes, departmentsRes, mediumsRes, conditionsRes] = await Promise.all([
+<<<<<<< Updated upstream
           axios.get(`${config.backendUrl}/artist`),
           axios.get(`${config.backendUrl}/department`),
           axios.get(`${config.backendUrl}/mediums`),
           axios.get(`${config.backendUrl}/artworkconditions`)
+=======
+          axios.get(`http://localhost:5000/artist`),
+          axios.get(`http://localhost:5000/department`),
+          axios.get(`http://localhost:5000/mediums`),
+          axios.get(`http://localhost:5000/artworkconditions`)
+>>>>>>> Stashed changes
         ]);
         setArtists(artistRes.data);
         setDepartments(departmentsRes.data);
@@ -257,7 +334,11 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh }) => {
     if (image) formData.append('image', image);
 
     try {
+<<<<<<< Updated upstream
       await axios.patch(`${config.backendUrl}/artwork/${artwork.ArtworkID}`, formData, {
+=======
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}`, formData, {
+>>>>>>> Stashed changes
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onRefresh();
@@ -415,9 +496,28 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
   const openConfirmDelete = () => setShowConfirmDelete(true);
   const closeConfirmDelete = () => setShowConfirmDelete(false);
 
+<<<<<<< Updated upstream
   const handleDelete = async () => {
     try {
       await axios.delete(`${config.backendUrl}/artist/${artist.ArtistID}`);
+=======
+  const fetchArtistImage = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}/image`, { responseType: 'blob' });
+      setImageUrl(URL.createObjectURL(response.data));
+    } catch (error) {
+      console.error('Error fetching artist image:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchArtistImage();
+  }, [artist.ArtistID]);
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:5000/artist/${artist.ArtistID}`);
+>>>>>>> Stashed changes
       console.log("Artist deleted successfully");
       onRefresh(); // Refresh the artist list
       onClose(); // Close the modal
@@ -428,10 +528,16 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
 
   const handleModalRefresh = async () => {
     try {
+<<<<<<< Updated upstream
       const response = await axios.get(`${config.backendUrl}/artist/${artist.ArtistID}`);
       const updatedArtist = response.data;
       console.log('Fetched updated artist data from server:', updatedArtist);
       setArtist(updatedArtist);
+=======
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}`);
+      setArtist(response.data);
+      fetchArtistImage();
+>>>>>>> Stashed changes
     } catch (error) {
       console.error('Error fetching updated artist data:', error);
     }
@@ -443,6 +549,20 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh }) => {
     }
   };
 
+<<<<<<< Updated upstream
+=======
+  const handleRestoreArtist = async (artistId) => {
+    try {
+      await axios.patch(`http://localhost:5000/artist/${artistId}/restore`);
+
+      onRefresh();
+      onClose();
+    } catch (error) {
+      console.error('Error restoring artist:', error);
+    }
+  };
+
+>>>>>>> Stashed changes
   return (
     <div className={styles.modal} onClick={handleOverlayClick}>
       <div className={styles.modal_content}>
@@ -512,7 +632,11 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
   useEffect(() => {
     const fetchNationalities = async () => {
       try {
+<<<<<<< Updated upstream
         const response = await axios.get(`${config.backendUrl}/nationalities`);
+=======
+        const response = await axios.get(`http://localhost:5000/nationalities`);
+>>>>>>> Stashed changes
         setNationalities(response.data);
       } catch (error) {
         console.error('Error fetching nationalities:', error);
@@ -570,6 +694,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         formData.append('image', image); // Append the file only if it's selected
     }
 
+<<<<<<< Updated upstream
     axios.patch(`${config.backendUrl}/artist/${artist.ArtistID}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data'
@@ -586,6 +711,23 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
         setError('Failed to update artist');
     });
 };
+=======
+    try {
+      const response = await axios.patch(`http://localhost:5000/artist/${artist.ArtistID}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      console.log("Response from backend:", response.data);
+      onRefresh();
+      onModalRefresh();
+      onClose();
+    } catch (error) {
+      console.error('Error updating artwork:', error);
+      setError('Failed to update artwork');
+    } finally {
+      setIsSaving(false); // Reset saving state
+    }
+  };
+>>>>>>> Stashed changes
 
   return (
     <div>
@@ -663,6 +805,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh }) => {
 
 const ConfirmDeleteArtistModal = ({ onConfirm, onCancel }) => {
   return (
+<<<<<<< Updated upstream
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <h2>Are you sure you want to delete this artist?</h2>
@@ -671,6 +814,125 @@ const ConfirmDeleteArtistModal = ({ onConfirm, onCancel }) => {
         <div className={styles.buttonContainer}>
           <button onClick={onCancel}>Cancel</button>
           <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+=======
+      <div className={styles.modalOverlay}>
+        <div className={styles.modalContent}>
+          <h2>Are you sure you want to delete this artist?</h2>
+          <p>WARNING: All artwork from this artist WILL be removed from the collection</p>
+          <p>This action can be undone. Go to 'View Deleted' to restore.</p>
+          <div className={styles.buttonContainer}>
+            <button onClick={onCancel}>Cancel</button>
+            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          </div>
+        </div>
+      </div>
+  );
+};
+
+const DepartmentCard = ({ department_, onRefresh, onEditClick, onDeleteClick, isDepartmentDeletedOpen }) => {
+
+  const handleRestoreClick = async (departmentId) => {
+    try {
+      await axios.patch(`http://localhost:5000/department/${departmentId}/restore`);
+      onRefresh();
+    } catch (error) {
+      console.error('Error restoring department:', error);
+    }
+  };
+
+  return (
+      <div className={styles.cards}>
+        {department_.map((department) => (
+            <div key={department.DepartmentID} className={styles.card}>
+              <h1>{department.Name}</h1>
+              <p>{department.Description}</p>
+              <p>{department.Location}</p>
+              {!isDepartmentDeletedOpen ? (
+                  <>
+                    <button onClick={(e) => { e.stopPropagation(); onEditClick(department); }}>Edit</button>
+                    <button onClick={(e) => { e.stopPropagation(); onDeleteClick(department.DepartmentID); }}>Delete</button>
+                  </>
+              ) : (
+                  <button onClick={(e) => { e.stopPropagation(); handleRestoreClick(department.DepartmentID); }}>Restore</button>
+              )}
+            </div>
+        ))}
+      </div>
+  );
+};
+
+const EditDepartmentModal = ({ department, onClose, onRefresh }) => {
+  const [name, setName] = useState(department.Name || '');
+  const [location, setLocation] = useState(department.Location || '');
+  const [description, setDescription] = useState(department.Description || '');
+  const [errors, setErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Function to validate fields
+  const validateFields = () => {
+    const newErrors = {};
+    if (!name) newErrors.name = "Department name is required.";
+    if (!description) newErrors.description = "Description is required.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validateFields()) return;
+    setIsSaving(true);
+
+    const updatedDepartmentData = {
+      name,
+      location,
+      description
+    };
+
+    try {
+      await axios.patch(`http://localhost:5000/department/${department.DepartmentID}`, updatedDepartmentData);
+      onRefresh();
+      onClose();
+    } catch (error) {
+      console.error("Error updating department:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+      <div className={styles.modal}>
+        <div className={styles.modal_content}>
+          <h2>Edit Department</h2>
+          <label>Department Name *
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
+          </label>
+          <label>Location
+            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+            {errors.location && <p style={{ color: 'red' }}>{errors.location}</p>}
+          </label>
+          <label>Description *
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+            {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
+          </label>
+          <button onClick={onClose}>Cancel</button>
+          <button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</button>
+        </div>
+      </div>
+  );
+};
+
+const ConfirmDeleteDepartmentModal = ({ onConfirm, onCancel }) => {
+  return (
+      <div className={styles.modal}>
+        <div className={styles.modal_content}>
+          <h2>Are you sure you want to delete this department? This will also delete the artwork associated with this department</h2>
+          <p>This action can be undone. Go to 'View Deleted' to restore.</p>
+          <div className={styles.buttonContainer}>
+            <button onClick={onCancel}>Cancel</button>
+            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          </div>
+>>>>>>> Stashed changes
         </div>
       </div>
     </div>

@@ -49,7 +49,11 @@ const MFAShopCard = ({ item, onCardClick }) => {
     const { addToCart } = useContext(CartContext);
 
     const getImageUrl = (itemId) => {
+<<<<<<< Updated upstream
         return `${config.backendUrl}/giftshopitems/${itemId}/image`;
+=======
+        return `http://localhost:5000/giftshopitems/${itemId}/image`;
+>>>>>>> Stashed changes
     };
 
     const isOutOfStock = item.quantity === 0;

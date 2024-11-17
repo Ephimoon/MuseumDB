@@ -29,16 +29,27 @@ import MFAShopStaff from './pages/Dashboards/MFAShopStaff';
 import ShopReport from './pages/Dashboards/ShopReport';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import TicketCart from './pages/TicketCart';
+import TicketCheckout from './pages/TicketCheckout';
 import MemberDashboard from './pages/Dashboards/MemberDashboard/MemberDashboard';
 import Settings from './pages/Dashboards/MemberDashboard/Settings';
 import Report from './pages/Report';
+<<<<<<< Updated upstream
 
+=======
+import { TicketCartProvider } from './components/TicketCartContext';
+import AdminDashboard from "./pages/Dashboards/AdminDashboard";
+import MyTicket from "./components/MyTickets"
+// Manage Users
+import ManageUsers from '../src/components/ManageUsers';
+>>>>>>> Stashed changes
 const App = () => {
     const username = localStorage.getItem('username'); // Check if a user is logged in
     const role = localStorage.getItem('role'); // Get user role
 
     return (
         <BrowserRouter>
+<<<<<<< Updated upstream
             <ToastContainer />
             <Routes>
                 {/* Public Routes - Accessible to all users */}
@@ -52,6 +63,33 @@ const App = () => {
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/BecomeAMember" element={<BecomeAMember />} />
                 <Route path="/BuyTickets" element={<BuyTickets />} />
+=======
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored"
+            />
+            <TicketCartProvider>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/Visit" element={<Visit />} />
+                    <Route path="/ExhibitionsAndEvents" element={<ExhibitionsAndEvents />} />
+                    <Route path="/Art" element={<Art />} />
+                    <Route path="/MFAShop" element={<MFAShop />} />
+                    <Route path="/shop" element={<MFAShop />} />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/BecomeAMember" element={<BecomeAMember />} />
+                    <Route path="/BuyTickets" element={<BuyTickets />} />
+                    <Route path="/ticket-checkout" element={<TicketCheckout />} />
+>>>>>>> Stashed changes
 
                 {/* Authentication Routes */}
                 <Route path="/login" element={<LoginPage />} />
@@ -89,9 +127,21 @@ const App = () => {
                     <Route path="/profile" element={<ProfilePage />} />
                 </Route>
 
+<<<<<<< Updated upstream
                 {/* Redirect unknown routes to home */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+=======
+                    {/* Profile Page */}
+                    <Route element={<PrivateRoute roles={['admin', 'staff', 'customer', 'member']} />}>
+                        <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/ticket-cart" element={<TicketCart />} />
+                        <Route path="/ticket-checkout" element={<TicketCheckout />} />
+                        <Route path="/mytickets" element={<MyTicket />} />
+                    </Route>
+                </Routes>
+            </TicketCartProvider>
+>>>>>>> Stashed changes
         </BrowserRouter>
     );
 };

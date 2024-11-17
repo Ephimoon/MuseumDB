@@ -44,6 +44,7 @@ const Report = () => {
 
     // Fetch available options for the filters when reportType is 'revenue' or 'transaction_details'
     useEffect(() => {
+<<<<<<< Updated upstream
         if (reportType === 'revenue') {
             // Fetch available items
             axios
@@ -56,6 +57,21 @@ const Report = () => {
                 // Fetch available categories
                 axios
                     .get(`${config.backendUrl}/giftshopcategories`, {
+=======
+        if (reportType === 'revenue' || reportType === 'transaction_details') {
+            if (reportCategory === 'GiftShopReport') {
+                // Fetch available items
+                axios
+                    .get(`http://localhost:5000/giftshopitemsreport`, {
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+                    .then((response) => setAvailableItems(response.data))
+                    .catch((error) => console.error('Error fetching items:', error));
+
+                // Fetch available categories
+                axios
+                    .get(`http://localhost:5000/giftshopcategories`, {
+>>>>>>> Stashed changes
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailableCategories(response.data))
@@ -63,7 +79,35 @@ const Report = () => {
 
                 // Fetch available payment methods
                 axios
+<<<<<<< Updated upstream
                     .get(`${config.backendUrl}/paymentmethods`, {
+=======
+                    .get(`http://localhost:5000/paymentmethods`, {
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+                    .then((response) => setAvailablePaymentMethods(response.data))
+                    .catch((error) => console.error('Error fetching payment methods:', error));
+            } else if (reportCategory === 'TicketsReport') {
+                // Fetch available price categories
+                axios
+                    .get(`http://localhost:5000/ticket`, {
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+                    .then((response) => setAvailablePriceCategories(response.data))
+                    .catch((error) => console.error('Error fetching price categories:', error));
+
+                // Fetch available user types
+                axios
+                    .get(`http://localhost:5000/user-type`, {
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+                    .then((response) => setAvailableUserTypes(response.data))
+                    .catch((error) => console.error('Error fetching user types:', error));
+
+                // Fetch available payment methods
+                axios
+                    .get(`http://localhost:5000/paymentmethods`, {
+>>>>>>> Stashed changes
                         headers: { 'Content-Type': 'application/json' },
                     })
                     .then((response) => setAvailablePaymentMethods(response.data))
@@ -156,7 +200,11 @@ const Report = () => {
         const userId = localStorage.getItem('userId');
 
         axios
+<<<<<<< Updated upstream
             .post(`${config.backendUrl}/reports`, reportRequest, {
+=======
+            .post(`http://localhost:5000/reports`, reportRequest, {
+>>>>>>> Stashed changes
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,

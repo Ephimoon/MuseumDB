@@ -35,8 +35,12 @@ const Login = () => {
         }
 
         try {
+<<<<<<< Updated upstream
             const loginUrl = `${config.backendUrl}/login`;
             console.log("Login Endpoint URL:", loginUrl);
+=======
+            const loginUrl = `http://localhost:5000/login`;
+>>>>>>> Stashed changes
             const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -18,7 +18,11 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     useEffect(() => {
         const fetchNationalities = async () => {
             try {
+<<<<<<< Updated upstream
                 const response = await axios.get(`${config.backendUrl}/nationalities`);
+=======
+                const response = await axios.get(`http://localhost:5000/nationalities`);
+>>>>>>> Stashed changes
                 setNationalities(response.data);
             } catch (error) {
                 console.error('Error fetching nationalities:', error);
@@ -101,8 +105,15 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
+<<<<<<< Updated upstream
                 const response = await axios.get(`${config.backendUrl}/department`);
                 setDepartments(response.data);
+=======
+                const response = await axios.get(`http://localhost:5000/department`);
+                console.log("Fetch Departments Response:", response); // Log the response to check its structure
+                const validDepartments = response.data.flat().filter(department => department.DepartmentID);
+                setDepartments(validDepartments);
+>>>>>>> Stashed changes
             } catch (error) {
                 console.error('Error fetching departments:', error);
             }
@@ -110,7 +121,11 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchMediums = async () => {
             try {
+<<<<<<< Updated upstream
                 const response = await axios.get(`${config.backendUrl}/mediums`);
+=======
+                const response = await axios.get(`http://localhost:5000/mediums`);
+>>>>>>> Stashed changes
                 setMediums(response.data);
             } catch (error) {
                 console.error('Error fetching mediums:', error);
@@ -119,7 +134,11 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchConditions = async () => {
             try {
+<<<<<<< Updated upstream
                 const response = await axios.get(`${config.backendUrl}/artworkconditions`);
+=======
+                const response = await axios.get(`http://localhost:5000/artworkconditions`);
+>>>>>>> Stashed changes
                 setConditions(response.data);
             } catch (error) {
                 console.error('Error fetching artworkconditions:', error);
@@ -315,8 +334,16 @@ const CurateArt = () => {
     }, [refreshArtists]);
 
     const fetchArtists = () => {
+<<<<<<< Updated upstream
         axios.get(`${config.backendUrl}/artist`)
             .then(response => setArtists(response.data))
+=======
+        axios.get(`http://localhost:5000/artist?isDeleted=${isDeletedOpen}`)
+            .then(response => {
+                const validArtists = response.data.flat().filter(artist => artist.ArtistID);
+                setArtists(validArtists);
+            })
+>>>>>>> Stashed changes
             .catch(error => console.error('Error fetching artists:', error));
     };
 
@@ -325,7 +352,11 @@ const CurateArt = () => {
     }, [refreshArtworks]);
 
     const fetchArtworks = () => {
+<<<<<<< Updated upstream
         axios.get(`${config.backendUrl}/artwork`)
+=======
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedOpen}`)
+>>>>>>> Stashed changes
             .then(response => setArtworks(response.data))
             .catch(error => console.error('Error fetching artworks:', error));
     };
@@ -340,7 +371,13 @@ const CurateArt = () => {
 
     // refresh both artist lists after saving new artwork
     const saveInsertArtwork = (artworkData) => {
+<<<<<<< Updated upstream
         axios.post(`${config.backendUrl}/artwork`, artworkData, { headers: { 'Content-Type': 'multipart/form-data' } })
+=======
+        axios.post(`http://localhost:5000/artwork`, artworkData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+>>>>>>> Stashed changes
             .then(() => {
                 // Refresh both artist and artwork lists
                 triggerArtistRefresh();
@@ -351,11 +388,33 @@ const CurateArt = () => {
     };
 
     const saveInsertArtist = (artistData) => {
+<<<<<<< Updated upstream
         axios.post(`${config.backendUrl}/artist`, artistData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => { triggerArtistRefresh(); closeInsertArtistModal(); })
             .catch(error => console.error('Error adding artist:', error));
     };
 
+=======
+        axios.post(`http://localhost:5000/artist`, artistData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+            .then(() => {
+                triggerArtistRefresh();
+                closeInsertArtistModal();
+            })
+            .catch(error => console.error('Error adding artist:', error));
+    };
+
+    const saveInsertDepartment = (departmentData) => {
+        axios.post(`http://localhost:5000/department`, departmentData)
+            .then(() => {
+                triggerDepartmentRefresh(); // Trigger department refresh
+                closeInsertDepartmentModal();
+            })
+            .catch(error => console.error('Error adding department:', error));
+    };
+
+>>>>>>> Stashed changes
     return (
         <div className={styles.ArtContainer}>
             <HomeNavBar />

@@ -23,7 +23,11 @@ export default function Verify() {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
+<<<<<<< Updated upstream
             const response = await fetch(`${config.backendUrl}/verify`, {
+=======
+            const response = await fetch(`http://localhost:5000/verify`, {
+>>>>>>> Stashed changes
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),

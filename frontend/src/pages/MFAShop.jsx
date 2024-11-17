@@ -33,7 +33,11 @@ const MFAShop = () => {
 
     useEffect(() => {
         setLoading(true);
+<<<<<<< Updated upstream
         fetch(`${config.backendUrl}/giftshopitems`)
+=======
+        fetch(`http://localhost:5000/giftshopitems`)
+>>>>>>> Stashed changes
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch shop items');
