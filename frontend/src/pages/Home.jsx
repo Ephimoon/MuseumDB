@@ -45,15 +45,6 @@ const Home = () => {
                 <button onClick={() => navigate('/Visit')} className="btn">Plan your visit</button>
             </div>
 
-            {/* after the image */}
-            <div className='bottom-background'>
-                {/* exhibition card */}
-                <HomeCard/>
-
-                {/* event card */}
-                <HomeCard/>
-            </div>
-
             {/* Membership Warning Snackbar */}
             <Snackbar
     open={warningOpen}

@@ -1,73 +1,130 @@
-// src/components/UserFormModal.jsx
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from '../css/UserFormModal.module.css';
 import ChangePasswordModal from './ChangePasswordModal';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UserFormModal = ({ user, onClose }) => {
+    // Initialize form data with camelCase field names
     const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
-        date_of_birth: '',
+        firstName: '',
+        lastName: '',
+        dateOfBirth: '',
         username: '',
         email: '',
-        role_id: 3, // Default to 'customer'
+        roleId: 3, // Default to 'Customer'
+        password: '',
+        confirmPassword: '',
     });
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [error, setError] = useState('');
+
+    // Retrieve role and userId from localStorage
     const role = localStorage.getItem('role');
     const userId = localStorage.getItem('userId');
 
     useEffect(() => {
         if (user) {
             setFormData({
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                date_of_birth: user.date_of_birth || '',
+                firstName: user.first_name || '',
+                lastName: user.last_name || '',
+                dateOfBirth: user.date_of_birth || '',
                 username: user.username || '',
                 email: user.email || '',
-                role_id: user.role_id || 3,
+                roleId: user.role_id || 3,
+                password: '', // Reset password fields when editing
+                confirmPassword: '',
             });
         }
     }, [user]);
 
+    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
 
         setFormData((prevFormData) => ({
             ...prevFormData,
-            [name]: name === 'role_id' ? parseInt(value, 10) : value,
+            [name]: name === 'roleId' ? parseInt(value, 10) : value,
         }));
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(''); // Reset error state
+
+        // Password validation when creating a new user
+        if (!user || !user.user_id) {
+            if (!formData.password || !formData.confirmPassword) {
+                const errorMessage = 'Please enter and confirm the password.';
+                setError(errorMessage);
+                toast.error(errorMessage);
+                return;
+            }
+            if (formData.password !== formData.confirmPassword) {
+                const errorMessage = 'Passwords do not match.';
+                setError(errorMessage);
+                toast.error(errorMessage);
+                return;
+            }
+            if (formData.password.length < 6) {
+                const errorMessage = 'Password must be at least 6 characters long.';
+                setError(errorMessage);
+                toast.error(errorMessage);
+                return;
+            }
+        }
+
+        // Prepare payload with camelCase field names
+        const payload = {
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            dateOfBirth: formData.dateOfBirth,
+            username: formData.username,
+            email: formData.email,
+            roleId: formData.roleId,
+            password: formData.password, // Include password in payload when creating new user
+        };
 
         try {
             if (user && user.user_id) {
                 // Update existing user
-                await axios.put(`http://localhost:5000//users/${user.user_id}`, formData, {
+                await axios.put(`${process.env.REACT_APP_API_URL}/users/${user.user_id}`, payload, {
                     headers: {
                         role: role,
                         'user-id': userId,
                     },
                 });
+                toast.success('User updated successfully');
             } else {
-                // Create new user
-                await axios.post(`http://localhost:5000/register`, formData);
+                // Create new user via admin endpoint
+                await axios.post(`${process.env.REACT_APP_API_URL}/users`, payload, {
+                    headers: {
+                        role: role,
+                        'user-id': userId,
+                    },
+                });
+                toast.success('User created successfully');
             }
-            onClose();
+            onClose(); // Close the modal upon successful submission
         } catch (error) {
             console.error('Error submitting form:', error);
-            // Handle error appropriately
+            // Display error message from server or a generic message
+            const errorMessage =
+                error.response?.data?.message || 'An error occurred while submitting the form.';
+            setError(errorMessage);
+            toast.error(errorMessage);
         }
     };
 
+    // Open the Change Password Modal
     const openPasswordModal = () => {
         setIsPasswordModalOpen(true);
     };
 
+    // Close the Change Password Modal
     const closePasswordModal = () => {
         setIsPasswordModalOpen(false);
     };
@@ -80,12 +137,13 @@ const UserFormModal = ({ user, onClose }) => {
                 </span>
                 <form onSubmit={handleSubmit} className={styles.formContainer}>
                     <h2>{user && user.user_id ? 'Edit User' : 'Add New User'}</h2>
+                    {error && <div className={styles.error}>{error}</div>}
                     <label>
                         First Name:
                         <input
                             type="text"
-                            name="first_name"
-                            value={formData.first_name}
+                            name="firstName"
+                            value={formData.firstName}
                             onChange={handleChange}
                             required
                         />
@@ -94,8 +152,8 @@ const UserFormModal = ({ user, onClose }) => {
                         Last Name:
                         <input
                             type="text"
-                            name="last_name"
-                            value={formData.last_name}
+                            name="lastName"
+                            value={formData.lastName}
                             onChange={handleChange}
                             required
                         />
@@ -104,8 +162,8 @@ const UserFormModal = ({ user, onClose }) => {
                         Date of Birth:
                         <input
                             type="date"
-                            name="date_of_birth"
-                            value={formData.date_of_birth}
+                            name="dateOfBirth"
+                            value={formData.dateOfBirth}
                             onChange={handleChange}
                             required
                         />
@@ -131,28 +189,47 @@ const UserFormModal = ({ user, onClose }) => {
                             required
                         />
                     </label>
-                    <label>
-                        Role:
-                        <select
-                            name="role_id"
-                            value={formData.role_id}
-                            onChange={handleChange}
-                        >
-                            <option value={1}>Admin</option>
-                            <option value={2}>Staff</option>
-                            <option value={3}>Customer</option>
-                            <option value={4}>Member</option>
-                        </select>
-                    </label>
+                    {role === 'admin' && (
+                        <label>
+                            Role:
+                            <select name="roleId" value={formData.roleId} onChange={handleChange}>
+                                <option value={1}>Admin</option>
+                                <option value={2}>Staff</option>
+                                <option value={3}>Customer</option>
+                                <option value={4}>Member</option>
+                            </select>
+                        </label>
+                    )}
+                    {/* Only show password fields when creating a new user */}
+                    {(!user || !user.user_id) && (
+                        <>
+                            <label>
+                                Password:
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                            <label>
+                                Confirm Password:
+                                <input
+                                    type="password"
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </label>
+                        </>
+                    )}
                     <div className={styles.buttonGroup}>
                         <button type="submit" className={styles.formButton}>
                             {user && user.user_id ? 'Update' : 'Create'}
                         </button>
-                        <button
-                            type="button"
-                            className={styles.formButton}
-                            onClick={onClose}
-                        >
+                        <button type="button" className={styles.formButton} onClick={onClose}>
                             Cancel
                         </button>
                         {user && user.user_id && (
@@ -167,7 +244,9 @@ const UserFormModal = ({ user, onClose }) => {
                     </div>
                 </form>
             </div>
-
+            {/* Add ToastContainer */}
+            <ToastContainer />
+            {/* Change Password Modal */}
             {isPasswordModalOpen && (
                 <ChangePasswordModal
                     open={isPasswordModalOpen}

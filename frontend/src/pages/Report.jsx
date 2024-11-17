@@ -11,9 +11,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
 
 const Report = () => {
-    const [reportCategory, setReportCategory] = useState('GiftShopReport');
+    //const [reportCategory, setReportCategory] = useState('GiftShopReport');
     const [reportType, setReportType] = useState('revenue');
-    const [reportOptionTickets, setReportOptionTickets] = useState('totalTickets'); // Added for TicketsReport
     const [reportPeriodType, setReportPeriodType] = useState('date_range'); // 'date_range', 'month', 'year', or 'single_day'
     const [startDate, setStartDate] = useState(null); // Date object
     const [endDate, setEndDate] = useState(null); // Date object
@@ -21,14 +20,10 @@ const Report = () => {
     const [selectedYear, setSelectedYear] = useState(null); // Date object
     const [selectedDate, setSelectedDate] = useState(null); // Date object
     const [itemCategory, setItemCategory] = useState('');
-    const [priceCategory, setPriceCategory] = useState([]);
     const [paymentMethod, setPaymentMethod] = useState('');
     const [itemId, setItemId] = useState('');
-    const [userTypeId, setUserTypeId] = useState('');
     const [availableItems, setAvailableItems] = useState([]);
-    const [availableUserTypes, setAvailableUserTypes] = useState([]);
     const [availableCategories, setAvailableCategories] = useState([]);
-    const [availablePriceCategories, setAvailablePriceCategories] = useState([]);
     const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
     const [reportData, setReportData] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
@@ -48,57 +43,31 @@ const Report = () => {
     // Fetch available options for the filters when reportType or reportCategory changes
     useEffect(() => {
         if (reportType === 'revenue' || reportType === 'transaction_details') {
-            if (reportCategory === 'GiftShopReport') {
-                // Fetch available items
-                axios
-                    .get(`http://localhost:5000/giftshopitemsreport`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailableItems(response.data))
-                    .catch((error) => console.error('Error fetching items:', error));
+            // Fetch available items
+            axios
+                .get(`${process.env.REACT_APP_API_URL}/giftshopitemsreport`, {
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then((response) => setAvailableItems(response.data))
+                .catch((error) => console.error('Error fetching items:', error));
 
-                // Fetch available categories
-                axios
-                    .get(`http://localhost:5000/giftshopcategories`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailableCategories(response.data))
-                    .catch((error) => console.error('Error fetching categories:', error));
+            // Fetch available categories
+            axios
+                .get(`${process.env.REACT_APP_API_URL}/giftshopcategories`, {
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then((response) => setAvailableCategories(response.data))
+                .catch((error) => console.error('Error fetching categories:', error));
 
-                // Fetch available payment methods
-                axios
-                    .get(`http://localhost:5000/paymentmethods`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailablePaymentMethods(response.data))
-                    .catch((error) => console.error('Error fetching payment methods:', error));
-            } else if (reportCategory === 'TicketsReport') {
-                // Fetch available price categories
-                axios
-                    .get(`http://localhost:5000/ticket`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailablePriceCategories(response.data))
-                    .catch((error) => console.error('Error fetching price categories:', error));
-
-                // Fetch available user types
-                axios
-                    .get(`http://localhost:5000/user-type`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailableUserTypes(response.data))
-                    .catch((error) => console.error('Error fetching user types:', error));
-
-                // Fetch available payment methods
-                axios
-                    .get(`http://localhost:5000/paymentmethods`, {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-                    .then((response) => setAvailablePaymentMethods(response.data))
-                    .catch((error) => console.error('Error fetching payment methods:', error));
-            }
+            // Fetch available payment methods
+            axios
+                .get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then((response) => setAvailablePaymentMethods(response.data))
+                .catch((error) => console.error('Error fetching payment methods:', error));
         }
-    }, [reportType, reportCategory]);
+    }, [reportType]);
 
     // Clear report data when report period type changes
     useEffect(() => {
@@ -109,10 +78,6 @@ const Report = () => {
     // Fetch report data when the "Generate Report" button is clicked
     const fetchReportData = () => {
         // Input validation
-        if (!reportCategory) {
-            setErrorMessage('Please select a report category.');
-            return;
-        }
         if (!reportType) {
             setErrorMessage('Please select a report type.');
             return;
@@ -148,9 +113,7 @@ const Report = () => {
 
         // Prepare data for backend
         const reportRequest = {
-            report_category: reportCategory,
             report_type: reportType,
-            report_option_tickets: reportOptionTickets,
             report_period_type: reportPeriodType,
             start_date: startDate ? startDate.toISOString().split('T')[0] : '',
             end_date: endDate ? endDate.toISOString().split('T')[0] : '',
@@ -160,8 +123,6 @@ const Report = () => {
             item_category: itemCategory,
             payment_method: paymentMethod,
             item_id: itemId,
-            price_category: priceCategory,
-            user_type_id: userTypeId === "Both" ? availableUserTypes.map((user) => user.role_name) : userTypeId,
         };
 
         // Retrieve user credentials from localStorage
@@ -169,7 +130,7 @@ const Report = () => {
         const userId = localStorage.getItem('userId');
 
         axios
-            .post(`http://localhost:5000/reports`, reportRequest, {
+            .post(`${process.env.REACT_APP_API_URL}/reports`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,
@@ -187,56 +148,6 @@ const Report = () => {
                 );
                 setLoading(false);
             });
-    };
-
-    const handlePriceCategoryChange = (e) => {
-        const selectedValue = e.target.value;
-
-        if (selectedValue === "All Price Categories") {
-            // If "All Price Categories" is selected, add or clear All Price Categories
-            setPriceCategory((prevCategories) => {
-                if (prevCategories.includes("All Price Categories")) {
-                    // If already selected, deselect all
-                    return [];
-                } else {
-                    // Select All Price Categories
-                    return ["All Price Categories", ...availablePriceCategories.map((pcategory) => pcategory.price_category)];
-                }
-            });
-        } else {
-            // Handle individual category selection
-            setPriceCategory((prevCategories) => {
-                // Remove "All Price Categories" if any other category is selected individually
-                const updatedCategories = prevCategories.includes("All Price Categories")
-                    ? availablePriceCategories.map((pcategory) => pcategory.price_category)
-                    : prevCategories;
-
-                if (!updatedCategories.includes(selectedValue)) {
-                    return [...updatedCategories, selectedValue];
-                } else {
-                    return updatedCategories.filter((category) => category !== selectedValue);
-                }
-            });
-        }
-    };
-
-    const removeCategory = (category) => {
-        setPriceCategory((prevCategories) => {
-            // If "All Price Categories" is being removed, deselect everything
-            if (category === "All Price Categories") {
-                return [];
-            }
-
-            // Otherwise, remove the selected category
-            const updatedCategories = prevCategories.filter((cat) => cat !== category);
-
-            // If All Price Categories are deselected, also remove "All Price Categories"
-            if (updatedCategories.length === availablePriceCategories.length) {
-                return updatedCategories.filter((cat) => cat !== "All Price Categories");
-            }
-
-            return updatedCategories;
-        });
     };
 
     const handleGenerateReport = () => {
@@ -262,10 +173,6 @@ const Report = () => {
             return renderSingleDayRevenueReport();
         }
 
-        if (reportCategory === 'TicketsReport') {
-            return renderTicketsReport();
-        }
-
         switch (reportType) {
             case 'revenue':
                 return renderRevenueReport();
@@ -274,86 +181,6 @@ const Report = () => {
             default:
                 return null;
         }
-    };
-
-    const renderTicketsReport = () => {
-        // Implement rendering logic based on reportOptionTickets
-        switch (reportOptionTickets) {
-            case 'totalTickets':
-                return renderTotalTicketsReport();
-            case 'totalRevenue':
-                return renderTotalRevenueReport();
-            case 'peakDateSold':
-                return renderPeakDateSoldReport();
-            default:
-                return null;
-        }
-    };
-
-    const renderTotalTicketsReport = () => {
-        // Implement the rendering logic for total tickets sold
-        return (
-            <table className={styles.reportTable}>
-                <thead>
-                <tr>
-                    <th>{getDateLabel()}</th>
-                    <th>Total Tickets Sold</th>
-                </tr>
-                </thead>
-                <tbody>
-                {reportData.map((item, index) => (
-                    <tr key={index}>
-                        <td>{formatDateLabel(item.date)}</td>
-                        <td>{item.total_tickets_sold}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        );
-    };
-
-    const renderTotalRevenueReport = () => {
-        // Implement the rendering logic for total revenue from tickets
-        return (
-            <table className={styles.reportTable}>
-                <thead>
-                <tr>
-                    <th>{getDateLabel()}</th>
-                    <th>Total Revenue</th>
-                </tr>
-                </thead>
-                <tbody>
-                {reportData.map((item, index) => (
-                    <tr key={index}>
-                        <td>{formatDateLabel(item.date)}</td>
-                        <td>${parseFloat(item.total_revenue).toFixed(2)}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        );
-    };
-
-    const renderPeakDateSoldReport = () => {
-        // Implement the rendering logic for peak date sold
-        return (
-            <table className={styles.reportTable}>
-                <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Total Tickets Sold</th>
-                </tr>
-                </thead>
-                <tbody>
-                {reportData.map((item, index) => (
-                    <tr key={index}>
-                        <td>{formatDateLabel(item.date)}</td>
-                        <td>{item.total_tickets_sold}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        );
     };
 
     const renderRevenueReport = () => {
@@ -544,15 +371,78 @@ const Report = () => {
     const generatePDF = () => {
         const doc = new jsPDF();
 
-        if (reportCategory === 'TicketsReport') {
-            doc.text('Tickets Report', 14, 20);
-            // Implement PDF generation based on reportOptionTickets
-            // Similar to the render functions
-            // ...
-        } else if (reportType === 'revenue' && reportPeriodType === 'single_day') {
+        if (reportType === 'revenue' && reportPeriodType === 'single_day') {
             doc.text('Revenue Report - Single Day', 14, 20);
-            // Generate PDF for single day revenue report
-            // ...
+            
+            // Group transactions by transaction ID
+            const transactions = {};
+            reportData.forEach((item) => {
+                if (!transactions[item.transaction_id]) {
+                    transactions[item.transaction_id] = {
+                        transaction_id: item.transaction_id,
+                        transaction_date: new Date(item.transaction_date).toLocaleString(),
+                        username: item.username,
+                        transaction_type: item.transaction_type,
+                        payment_status: item.payment_status,
+                        items: [],
+                        total_amount: 0,
+                    };
+                }
+                
+                // Add item and update total
+                if (item.quantity) {
+                    transactions[item.transaction_id].items.push({
+                        item_name: item.item_name || 'Item',
+                        item_id: item.item_id,
+                        quantity: item.quantity,
+                        price_at_purchase: item.price_at_purchase || 0,
+                        item_total: parseFloat(item.item_total || 0)
+                    });
+                    transactions[item.transaction_id].total_amount += parseFloat(item.item_total || 0);
+                }
+            });
+    
+            // Create table body
+            const body = Object.values(transactions).map(trans => [
+                trans.transaction_id,
+                trans.transaction_date,
+                trans.username,
+                trans.transaction_type,
+                trans.payment_status,
+                // Format items details
+                trans.items.map(item => 
+                    `${item.item_name}\nID: ${item.item_id}\nQty: ${item.quantity}\nPrice: $${parseFloat(item.price_at_purchase).toFixed(2)}\nTotal: $${item.item_total.toFixed(2)}`
+                ).join('\n\n'),
+                // Format total amount
+                `$${trans.total_amount.toFixed(2)}`,
+            ]);
+    
+            // Calculate grand total
+            const grandTotal = Object.values(transactions).reduce(
+                (sum, trans) => sum + trans.total_amount,
+                0
+            );
+    
+            // Add footer row with total
+            body.push(['', '', '', '', '', 'Total:', `$${grandTotal.toFixed(2)}`]);
+    
+            doc.autoTable({
+                head: [['Trans ID', 'Date', 'User', 'Payment', 'Status', 'Items', 'Total']],
+                body: body,
+                startY: 30,
+                styles: { fontSize: 8 },
+                columnStyles: {
+                    0: { cellWidth: 15 }, // Trans ID
+                    1: { cellWidth: 35 }, // Date
+                    2: { cellWidth: 15 }, // User
+                    3: { cellWidth: 17 }, // Payment
+                    4: { cellWidth: 20 }, // Status
+                    5: { cellWidth: 60 }, // Items
+                    6: { cellWidth: 25 }, // Total
+                },
+                headStyles: { fillColor: [66, 139, 202] },
+                alternateRowStyles: { fillColor: [245, 245, 245] }
+            });
         } else if (reportType === 'revenue') {
             doc.text('Revenue Report', 14, 20);
             let body = reportData.map((item) => {
@@ -619,20 +509,8 @@ const Report = () => {
     return (
         <div className={styles.reportContainer}>
             <HomeNavBar />
-            <h1 className={styles.title}>Reports</h1>
+            <h1 className={styles.title}>Gift Shop Report</h1>
             <div className={styles.filterContainer}>
-                <div className={styles.formGroup}>
-                    <label htmlFor="reportCategory">Report Category:</label>
-                    <select
-                        id="reportCategory"
-                        value={reportCategory}
-                        onChange={(e) => setReportCategory(e.target.value)}
-                    >
-                        <option value="GiftShopReport">Gift Shop Report</option>
-                        <option value="TicketsReport">Tickets Report</option>
-                        {/* Add more report categories if needed */}
-                    </select>
-                </div>
                 <div className={styles.formGroup}>
                     <label htmlFor="reportType">Report Type:</label>
                     <select
@@ -643,29 +521,14 @@ const Report = () => {
                             setItemCategory('');
                             setPaymentMethod('');
                             setItemId('');
+                            setReportData([]);
+                            setErrorMessage('');
                         }}
                     >
                         <option value="revenue">Revenue Report</option>
                         <option value="transaction_details">Transaction Details Report</option>
-                        {/* Add more report types if needed */}
                     </select>
                 </div>
-                {reportCategory === 'TicketsReport' && (
-                    <div className={styles.formGroup}>
-                        <label htmlFor="reportOption">Report Options:</label>
-                        <select
-                            id="reportOption"
-                            value={reportOptionTickets}
-                            onChange={(e) => {
-                                setReportOptionTickets(e.target.value);
-                            }}
-                        >
-                            <option value="totalTickets">Total Tickets</option>
-                            <option value="totalRevenue">Total Revenue</option>
-                            <option value="peakDateSold">Peak Date Sold</option>
-                        </select>
-                    </div>
-                )}
                 {/* Report Period Type Selection using Buttons */}
                 <div className={styles.formGroup}>
                     <label>Report Period:</label>
@@ -723,99 +586,58 @@ const Report = () => {
 
                 {reportType === 'revenue' && (
                     <>
-                        {reportCategory === 'GiftShopReport' && (
-                            <>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="itemCategory">Category:</label>
-                                    <select
-                                        id="itemCategory"
-                                        value={itemCategory}
-                                        onChange={(e) => setItemCategory(e.target.value)}
-                                    >
-                                        <option value="">All Categories</option>
-                                        {availableCategories.map((category, index) => (
-                                            <option key={index} value={category.category}>
-                                                {category.category}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                        <>
+                            <div className={styles.formGroup}>
+                                <label htmlFor="itemCategory">Category:</label>
+                                <select
+                                    id="itemCategory"
+                                    value={itemCategory}
+                                    onChange={(e) => {
+                                        setItemCategory(e.target.value);
+                                        setReportData([]);
+                                        setErrorMessage('');
+                                    }}
+                                >
+                                    <option value="">All Categories</option>
+                                    {availableCategories.map((category, index) => (
+                                        <option key={index} value={category.category}>
+                                            {category.category}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="itemId">Item:</label>
-                                    <select
-                                        id="itemId"
-                                        value={itemId}
-                                        onChange={(e) => setItemId(e.target.value)}
-                                    >
-                                        <option value="">All Items</option>
-                                        {availableItems.map((item) => (
-                                            <option key={item.item_id} value={item.item_id}>
-                                                {item.name_}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </>
-                        )}
-
-                        {reportCategory === 'TicketsReport' && (
-                            <>
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="priceCategory">Price Category:</label>
-                                    <select
-                                        id="priceCategory"
-                                        onChange={handlePriceCategoryChange}
-                                        value="" // Set to empty string to reset after each selection
-                                    >
-                                        <option value="">Select Price Categories</option>
-                                        <option value="All Price Categories">All Price Categories</option>
-                                        {availablePriceCategories.map((pcategory, index) => (
-                                            <option key={index} value={pcategory.price_category}>
-                                                {pcategory.price_category}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    {/* Display the selected categories as buttons */}
-                                    <div className={styles.selectedCategoriesContainer}>
-                                        {priceCategory.map((category, index) => (
-                                            <button
-                                                key={index}
-                                                className={styles.categoryButton}
-                                                onClick={() => removeCategory(category)}
-                                            >
-                                                {category} <span className={styles.closeButton}>×</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className={styles.formGroup}>
-                                    <label htmlFor="userTypeId">User Type:</label>
-                                    <select
-                                        id="userTypeId"
-                                        value={userTypeId}
-                                        onChange={(e) => setUserTypeId(e.target.value)}
-                                    >
-                                        <option value="">All User Types</option>
-                                        <option value="Both">Both</option> {/* Add "Both" option */}
-                                        {availableUserTypes.map((usertype) => (
-                                            <option key={usertype.role_name} value={usertype.role_name}>
-                                                {usertype.role_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </>
-                        )}
+                            <div className={styles.formGroup}>
+                                <label htmlFor="itemId">Item:</label>
+                                <select
+                                    id="itemId"
+                                    value={itemId}
+                                    onChange={(e) => {
+                                        setItemId(e.target.value);
+                                        setReportData([]);
+                                        setErrorMessage('');
+                                    }}
+                                >
+                                    <option value="">All Items</option>
+                                    {availableItems.map((item) => (
+                                        <option key={item.item_id} value={item.item_id}>
+                                            {item.name_}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </>
 
                         <div className={styles.formGroup}>
                             <label htmlFor="paymentMethod">Payment Method:</label>
                             <select
                                 id="paymentMethod"
                                 value={paymentMethod}
-                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                onChange={(e) => {
+                                    setPaymentMethod(e.target.value);
+                                    setReportData([]);
+                                    setErrorMessage('');
+                                }}
                             >
                                 <option value="">All Payment Methods</option>
                                 {availablePaymentMethods.map((method, index) => (

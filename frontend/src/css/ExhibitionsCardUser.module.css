@@ -1,5 +1,5 @@
 /* Container for the exhibition cards */
-.exhibitions-container {
+.exhibitions_container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 50px;
@@ -9,7 +9,7 @@
 }
 
 /* Exhibition Card */
-.exhibition-user-card {
+.exhibition_user_card {
     background: linear-gradient(125deg, #AEACAF 0%, #5D595E 100%);
     border-radius: 18px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -18,31 +18,31 @@
     cursor: pointer;
 }
 
-.exhibition-user-card:hover {
+.exhibition_user_card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.exhibition-image {
+.exhibition_image {
     width: 100%;
     height: auto;
     object-fit: cover;
 }
 
-.exhibition-text {
+.exhibition_text {
     padding: 15px;
     color: #FCFCFC;
     text-align: center;
 }
 
-.exhibition-title {
+.exhibition_title {
     font-family: Rosarivo;
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 10px;
 }
 
-.exhibition-date {
+.exhibition_date {
     font-family: Rosarivo;
     font-size: 1rem;
     color: #D7D5D7;
@@ -67,6 +67,13 @@
     background-color: #5D595E;
 } */
 
+
+.image {
+    width: 100%;
+    height: auto;
+}
+
+
 /* Modal */
 .modal {
     display: flex;
@@ -77,22 +84,25 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.7);
     z-index: 1000;
+    cursor: pointer;
 }
 
-.modal-content {
+.modal_content {
     background-color: #FCFCFC;
     padding: 30px;
     border-radius: 8px;
-    width: 500px;
+    width: 600px;
     max-width: 90%;
     max-height: 90%;
     overflow-y: auto;
     position: relative;
+    cursor: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.close-button {
+.close_button {
     position: absolute;
     top: 10px;
     right: 15px;
@@ -101,15 +111,15 @@
 }
 
 /* Scrollbar styling within the modal */
-.modal-content::-webkit-scrollbar {
+.modal_content::-webkit-scrollbar {
     width: 8px;
 }
 
-.modal-content::-webkit-scrollbar-thumb {
+.modal_content::-webkit-scrollbar-thumb {
     background-color: #888;
     border-radius: 4px;
 }
 
-.modal-content::-webkit-scrollbar-thumb:hover {
+.modal_content::-webkit-scrollbar-thumb:hover {
     background-color: #555;
 }

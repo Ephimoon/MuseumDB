@@ -1,14 +1,43 @@
 .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 50px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Flexible column layout */
+    gap: 30px; /* Reduced gap for better compactness */
     padding: 40px;
     max-width: 1200px;
     margin: 0 auto;
+    justify-items: center; /* Center align cards horizontally */
 }
 
 .card {
     cursor: pointer;
+    transition: transform 0.3s ease; /* Smooth hover effect */
+    width: 250px;
+}
+
+.outside_card {
+    width: 230px;
+    border: #352f36 1px solid;
+    border-radius: 12px;
+    padding: 10px 20px 20px 20px;
+    background-color: #f4f4f4;
+    transition: transform 0.3s ease;
+}
+
+.ex_card {
+    transition: transform 0.3s ease; /* Smooth hover effect */
+    width: 250px;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Lift card on hover */
+}
+
+.outside_card:hover {
+    transform: translateY(-10px); /* Lift card on hover */
+}
+
+.ex_card:hover {
+    transform: translateY(-10px); /* Lift card on hover */
 }
 
 .image {
@@ -16,6 +45,85 @@
     height: auto;
 }
 
+.card h1 {
+    font-family: 'Rosarivo', serif;
+    font-style: italic;
+    font-weight: 800;
+    text-align: left;
+    font-size: 1.5rem;
+    color: #352f36;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+}
+
+.outside_card h1 {
+    font-family: 'Rosarivo', serif;
+    font-weight: bolder;
+    text-align: left;
+    font-size: 1.5rem;
+    color: #352f36;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+}
+
+.ex_card h1 {
+    font-family: 'Rosarivo', serif;
+    font-weight: bolder;
+    text-align: left;
+    font-size: 1.5rem;
+    color: #352f36;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+}
+
+.card p {
+    font-family: 'Rosarivo', serif;
+    font-weight: 200;
+    text-align: left;
+    font-size: 1rem;
+    color: #5D595E;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+}
+
+.outside_card p {
+    font-family: 'Rosarivo', serif;
+    font-weight: 200;
+    text-align: left;
+    font-size: 1rem;
+    color: #5D595E;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+}
+
+.ex_card p {
+    font-family: 'Rosarivo', serif;
+    font-weight: 200;
+    text-align: left;
+    font-size: 1rem;
+    color: #5D595E;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+    padding-bottom: 10px;
+}
 /* -------------------------- */
 
 
@@ -66,4 +174,181 @@
 
 .modal_content::-webkit-scrollbar-thumb:hover {
     background-color: #555;
+}
+
+/* ----------------------------------  EDITTT  ------------------------------------------- */
+/* Modal Container */
+.edit_modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.7); /* Dark overlay */
+}
+
+/* Modal Content */
+.edit_modal_content {
+    background-color: #FCFCFC;
+    padding: 30px;
+    border-radius: 8px;
+    width: 600px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+    cursor: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Header */
+.edit_modal_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Close Button */
+.edit_modal_close_button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #352F36;
+}
+
+/* Labels and Inputs */
+.edit_modal label {
+    display: block;
+    /* font-family: 'Rosarivo', serif; */
+    font-size: 1rem;
+    margin-top: 15px;
+    color: #352F36;
+}
+
+.edit_modal input,
+.edit_modal select,
+.edit_modal textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #D7D5D7;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    /* font-family: 'Rosarivo', serif; */
+    color: #352F36;
+    box-sizing: border-box;
+}
+
+.edit_modal textarea {
+    height: 100px;
+    resize: none;
+}
+
+/* Error Messages */
+.error_message {
+    color: red!important;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Action Buttons */
+.edit_modal_actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.edit_modal button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fcfcfc;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.edit_modal button:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+.edit_modal button:disabled {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%);
+    cursor: not-allowed;
+}
+
+.edit_modal button:disabled:hover {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%);
+    cursor: not-allowed;
+}
+
+.edit_modal .save {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%);
+}
+.edit_modal .save:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+
+.outside button {
+    padding: 10px 20px;
+    margin-right: 20px;
+    font-size: 1 rem;
+    color: #fcfcfc;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.outside .edit {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%);
+}
+.outside .edit:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+.outside .delete {
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+}
+.outside .delete:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+.outside .cancel {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%);
+}
+.outside .cancel:hover {
+    background: linear-gradient(90deg, #5a6268 0%, #6c757d 100%);
+}
+
+.outside2 button {
+    padding: 8px 16px;
+    margin-right: 8px;
+    font-size: 1 rem;
+    color: #fcfcfc;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.outside2 .edit {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%);
+}
+.outside2 .edit:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+.outside2 .delete {
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+}
+.outside2 .delete:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
 }

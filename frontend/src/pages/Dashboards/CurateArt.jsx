@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HomeNavBar from '../../components/HomeNavBar';
 import {ArtLookUp, DepartmentLookUp} from '../../components/ArtLookUp';
 import styles from '../../css/Art.module.css';
+import styles2 from '../../css/ArtworkCard.module.css';
 import axios from 'axios';
 
 const InsertArtistModal = ({ onClose, onSave }) => {
@@ -13,13 +14,13 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     const [deathYear, setDeathYear] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
-    // Error tracking for multiple fields
+    const [isSaving, setIsSaving] = useState(false); // Loading state
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
         const fetchNationalities = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/nationalities`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
                 setNationalities(response.data);
             } catch (error) {
                 console.error('Error fetching nationalities:', error);
@@ -30,11 +31,11 @@ const InsertArtistModal = ({ onClose, onSave }) => {
 
     const handleImageChange = (e) => setImage(e.target.files[0]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let newErrors = {};
         if (!name) newErrors.name = "Name is required";
         if (!gender) newErrors.gender = "Gender is required";
-        if (!nationality) newErrors.nationality = "Nationallity is required";
+        if (!nationality) newErrors.nationality = "Nationality is required";
         if (!birthYear) newErrors.birthYear = "Birth year is required";
         if (!description) newErrors.description = "Description is required";
 
@@ -45,6 +46,8 @@ const InsertArtistModal = ({ onClose, onSave }) => {
             return;
         }
 
+        setIsSaving(true); // Start loading state
+
         const formData = new FormData();
         formData.append('name', name);
         formData.append('gender', gender);
@@ -54,33 +57,64 @@ const InsertArtistModal = ({ onClose, onSave }) => {
         formData.append('description', description);
         if (image) formData.append('image', image);
 
-        onSave(formData);
-        onClose();
+        try {
+            await onSave(formData); // Call the onSave function passed as a prop
+            onClose(); // Close the modal on success
+        } catch (error) {
+            console.error('Error saving artist:', error);
+        } finally {
+            setIsSaving(false); // End loading state
+        }
     };
 
+    // Disable the "Save" button if required fields are not filled
+    const isSaveDisabled =
+        !name || !gender || !nationality || !birthYear || !description || isSaving;
+
     return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
+        <div className={styles2.edit_modal}>
+            <div className={styles2.edit_modal_content}>
                 <h2>Insert New Artist</h2>
                 {/* Form fields */}
-                <label>Name *<input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></label>
-                <label>Gender*<select value={gender} onChange={(e) => setGender(e.target.value)} required>
+                <label>Name *</label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                {errors.name && <p className={styles2.error_message}>{errors.name}</p>}
+
+                <label>Gender*</label>
+                <select value={gender} onChange={(e) => setGender(e.target.value)} required>
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
-                </select></label>
-                <label>Nationality *<select value={nationality} onChange={(e) => setNationality(e.target.value)} required>
+                </select>
+                {errors.gender && <p className={styles2.error_message}>{errors.gender}</p>}
+
+                <label>Nationality *</label>
+                <select value={nationality} onChange={(e) => setNationality(e.target.value)} required>
                     <option value="">Select Nationality</option>
                     {nationalities.map((nat) => <option key={nat} value={nat}>{nat}</option>)}
-                </select></label>
-                <label>Birth Year *<input type="number" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} /></label>
-                <label>Death Year<input type="number" value={deathYear} onChange={(e) => setDeathYear(e.target.value)} /></label>
-                <label>Description *<textarea value={description} onChange={(e) => setDescription(e.target.value)} /></label>
-                <label>Image<input type="file" accept="image/*" onChange={handleImageChange} /></label>
-                <div className={styles.buttonContainer}>
+                </select>
+                {errors.nationality && <p className={styles2.error_message}>{errors.nationality}</p>}
+
+                <label>Birth Year *</label>
+                <input type="number" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} />
+                {errors.birthYear && <p className={styles2.error_message}>{errors.birthYear}</p>}
+                
+                <label>Death Year</label>
+                <input type="number" value={deathYear} onChange={(e) => setDeathYear(e.target.value)} />
+                
+                <label>Description *</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                {errors.description && <p className={styles2.error_message}>{errors.description}</p>}
+                
+                <label>Image</label>
+                <input type="file" accept="image/*" onChange={handleImageChange} />
+                
+                <div className={styles2.edit_modal_actions}>
                     <button onClick={onClose}>Cancel</button>
-                    <button onClick={handleSave}>Save</button>
+                    <button onClick={handleSave} className={styles2.save}>
+                        {isSaving ? 'Saving...' : 'Save'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -104,6 +138,10 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     const [price, setPrice] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
+    const [isSaving, setIsSaving] = useState(false); // Loading state
+
+    const isSaveDisabled =
+    !Title || !artistId || !departmentId || !CreationYear || !medium || !height || !width || !acquisitionDate || !condition || !description || isSaving;
 
     // Options
     const [departments, setDepartments] = useState([]);
@@ -116,7 +154,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/department`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
                 console.log("Fetch Departments Response:", response); // Log the response to check its structure
                 const validDepartments = response.data.flat().filter(department => department.DepartmentID);
                 setDepartments(validDepartments);
@@ -127,7 +165,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchMediums = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/mediums`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
                 setMediums(response.data);
             } catch (error) {
                 console.error('Error fetching mediums:', error);
@@ -136,7 +174,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchConditions = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/artworkconditions`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
                 setConditions(response.data);
             } catch (error) {
                 console.error('Error fetching artworkconditions:', error);
@@ -150,9 +188,9 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
     const handleImageChange = (e) => setImage(e.target.files[0]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let newErrors = {};
-
+    
         // Basic field validations
         if (!Title) newErrors.Title = "Title is required.";
         if (!artistId) newErrors.artistId = "Please select an artist.";
@@ -164,33 +202,27 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
         if (!acquisitionDate) newErrors.acquisitionDate = "Acquisition date is required.";
         if (!condition) newErrors.condition = "Please select a condition.";
         if (!description) newErrors.description = "Description is required.";
-
-        // If "Other" is selected for medium, check if custom medium is provided and if it already exists
-        if (medium === "Other") {
-            if (!customMedium) {
-                newErrors.customMedium = "Please specify the medium.";
-            } else if (mediums.includes(customMedium)) {
-                newErrors.customMedium = "This medium already exists in the list. Please select it from the dropdown.";
-            }
+    
+        if (medium === "Other" && (!customMedium || mediums.includes(customMedium))) {
+            newErrors.customMedium = customMedium
+                ? "This medium already exists in the list. Please select it from the dropdown."
+                : "Please specify the medium.";
         }
-
-        // If "Other" is selected for condition, check if custom condition is provided and if it already exists
-        if (condition === "Other") {
-            if (!customCondition) {
-                newErrors.customCondition = "Please specify the artwork condition.";
-            } else if (conditions.includes(customCondition)) {
-                newErrors.customCondition = "This condition already exists in the list. Please select it from the dropdown.";
-            }
+    
+        if (condition === "Other" && (!customCondition || conditions.includes(customCondition))) {
+            newErrors.customCondition = customCondition
+                ? "This condition already exists in the list. Please select it from the dropdown."
+                : "Please specify the artwork condition.";
         }
-
+    
         setErrors(newErrors);
-
-        // Stop if there are any validation errors
+    
         if (Object.keys(newErrors).length > 0) {
             return;
         }
-
-        // Proceed with form submission if no errors
+    
+        setIsSaving(true); // Start loading state
+    
         const formData = new FormData();
         formData.append('Title', Title);
         formData.append('artist_id', artistId);
@@ -207,112 +239,107 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
         formData.append('Description', description);
         if (image) formData.append('image', image);
     
-        onSave(formData);
-        onClose();
-    };
+        try {
+            await onSave(formData);
+            onClose();
+        } catch (error) {
+            console.error('Error saving artwork:', error);
+        } finally {
+            setIsSaving(false); // End loading state
+        }
+    };    
 
     return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
+        <div className={styles2.edit_modal}>
+            <div className={styles2.edit_modal_content}>
                 <h2>Insert New Artwork</h2>
-                <label>Title *
-                    <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
-                    {errors.Title && <p style={{ color: 'red' }}>{errors.Title}</p>}
-                </label>
+
+                <label>Title *</label>
+                <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
+                {errors.Title && <p className={styles2.error_message}>{errors.Title}</p>}
 
                 {/* Artist Dropdown */}
-                <label>Artist *
-                    <select value={artistId} onChange={(e) => setArtistId(e.target.value)}>
-                        <option value="">Select Artist</option>
-                        {artists.map((artist) => <option key={artist.ArtistID} value={artist.ArtistID}>{artist.name_}</option>)}
-                    </select>
-                    {errors.artistId && <p style={{ color: 'red' }}>{errors.artistId}</p>}
-                </label>
+                <label>Artist *</label>
+                <select value={artistId} onChange={(e) => setArtistId(e.target.value)}>
+                    <option value="">Select Artist</option>
+                    {artists.map((artist) => <option key={artist.ArtistID} value={artist.ArtistID}>{artist.name_}</option>)}
+                </select>
+                {errors.artistId && <p className={styles2.error_message}>{errors.artistId}</p>}
 
                 {/* Department Dropdown */}
-                <label>Department *
-                    <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
-                        <option value="">Select Department</option>
-                        {departments.map((department) => <option key={department.DepartmentID} value={department.DepartmentID}>{department.Name}</option>)}
-                    </select>
-                    {errors.departmentId && <p style={{ color: 'red' }}>{errors.departmentId}</p>}
-                </label>
+                <label>Department *</label>
+                <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
+                    <option value="">Select Department</option>
+                    {departments.map((department) => <option key={department.DepartmentID} value={department.DepartmentID}>{department.Name}</option>)}
+                </select>
+                {errors.departmentId && <p className={styles2.error_message}>{errors.departmentId}</p>}                
 
                 {/* Creation Year */}
-                <label>Creation Year *
-                    <input type="number" value={CreationYear} onChange={(e) => setCreationYear(e.target.value)} />
-                    {errors.CreationYear && <p style={{ color: 'red' }}>{errors.CreationYear}</p>}
-                </label>
+                <label>Creation Year *</label>
+                <input type="number" value={CreationYear} onChange={(e) => setCreationYear(e.target.value)} />
+                {errors.CreationYear && <p className={styles2.error_message}>{errors.CreationYear}</p>}                
 
                 {/* Medium Dropdown with Other Option */}
-                <label>Medium *
-                    <select value={medium} onChange={(e) => setMedium(e.target.value)}>
-                        <option value="">Select Medium</option>
-                        {mediums.map((med) => <option key={med} value={med}>{med}</option>)}
-                        <option value="Other">Other</option>
-                    </select>
-                    {medium === 'Other' && (
-                        <input type="text" placeholder="Specify medium" value={customMedium} onChange={(e) => setCustomMedium(e.target.value)} />
-                    )}
-                    {errors.medium && <p style={{ color: 'red' }}>{errors.medium}</p>}
-                    {errors.customMedium && <p style={{ color: 'red' }}>{errors.customMedium}</p>}
-                </label>
+                <label>Medium *</label>
+                <select value={medium} onChange={(e) => setMedium(e.target.value)}>
+                    <option value="">Select Medium</option>
+                    {mediums.map((med) => <option key={med} value={med}>{med}</option>)}
+                    <option value="Other">Other</option>
+                </select>
+                {medium === 'Other' && (
+                    <input type="text" placeholder="Specify medium" value={customMedium} onChange={(e) => setCustomMedium(e.target.value)} />
+                )}
+                {errors.medium && <p className={styles2.error_message}>{errors.medium}</p>}
+                {errors.customMedium && <p className={styles2.error_message}>{errors.customMedium}</p>}                
 
                 {/* Dimensions */}
-                <label>Height (inches) *
-                    <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
-                    {errors.height && <p style={{ color: 'red' }}>{errors.height}</p>}
-                </label>
+                <label>Height (inches) *</label>
+                <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+                {errors.height && <p className={styles2.error_message}>{errors.height}</p>}                
 
-                <label>Width (inches) *
-                    <input type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
-                    {errors.width && <p style={{ color: 'red' }}>{errors.width}</p>}
-                </label>
+                <label>Width (inches) *</label>
+                <input type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
+                {errors.width && <p className={styles2.error_message}>{errors.width}</p>}                
 
-                <label>Depth (inches)
-                    <input type="number" value={depth} onChange={(e) => setDepth(e.target.value)} />
-                </label>
+                <label>Depth (inches)</label>
+                <input type="number" value={depth} onChange={(e) => setDepth(e.target.value)} />                
 
                 {/* Acquisition Date, Condition, Location */}
-                <label>Acquisition Date *
-                    <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)} />
-                    {errors.acquisitionDate && <p style={{ color: 'red' }}>{errors.acquisitionDate}</p>}
-                </label>
+                <label>Acquisition Date *</label>
+                <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)} />
+                {errors.acquisitionDate && <p className={styles2.error_message}>{errors.acquisitionDate}</p>}               
 
-                <label>Condition *
-                    <select value={condition} onChange={(e) => setCondition(e.target.value)}>
-                        <option value="">Select Condition</option>
-                        {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
-                        <option value="Other">Other</option>
-                    </select>
-                    {condition === 'Other' && (
-                        <input type="text" placeholder="Specify condition" value={customCondition} onChange={(e) => setCustomCondition(e.target.value)} />
-                    )}
-                    {errors.condition && <p style={{ color: 'red' }}>{errors.condition}</p>}
-                    {errors.customCondition && <p style={{ color: 'red' }}>{errors.customCondition}</p>}
-                </label>
+                <label>Condition *</label>
+                <select value={condition} onChange={(e) => setCondition(e.target.value)}>
+                    <option value="">Select Condition</option>
+                    {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
+                    <option value="Other">Other</option>
+                </select>
+                {condition === 'Other' && (
+                    <input type="text" placeholder="Specify condition" value={customCondition} onChange={(e) => setCustomCondition(e.target.value)} />
+                )}
+                {errors.condition && <p className={styles2.error_message}>{errors.condition}</p>}
+                {errors.customCondition && <p className={styles2.error_message}>{errors.customCondition}</p>}
 
                 {/* Location, Price, Description, Image */}
-                <label>Location
-                    <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
-                </label>
+                <label>Location</label>
+                <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />                
 
-                <label>Price
-                    <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
-                </label>
+                <label>Price</label>
+                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />               
 
-                <label>Description *
-                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-                    {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-                </label>
+                <label>Description *</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                {errors.description && <p className={styles2.error_message}>{errors.description}</p>}
 
-                <label>Image
-                    <input type="file" accept="image/*" onChange={handleImageChange} />
-                </label>
+                <label>Image</label>
+                <input type="file" accept="image/*" onChange={handleImageChange} />               
 
-                <div className={styles.buttonContainer}>
+                <div className={styles2.edit_modal_actions}>
                     <button onClick={onClose}>Cancel</button>
-                    <button onClick={handleSave}>Save</button>
+                    <button onClick={handleSave} className={styles2.save}>
+                        {isSaving ? 'Saving...' : 'Save'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -324,8 +351,13 @@ const InsertDepartmentModal = ({ onClose, onSave }) => {
     const [departmentLocation, setDepartmentLocation] = useState('');
     const [departmentDescription, setDepartmentDescription] = useState('');
     const [errors, setErrors] = useState({});
+    const [isSaving, setIsSaving] = useState(false); // Loading state
 
-    const handleSave = () => {
+    // Disable Save Button Logic
+    const isSaveDisabled =
+    !departmentName || !departmentDescription || isSaving;
+
+    const handleSave = async () => {
         const newErrors = {};
         if (!departmentName) newErrors.departmentName = 'Department name is required.';
         if (!departmentDescription) newErrors.departmentDescription = 'Description is required.';
@@ -334,45 +366,55 @@ const InsertDepartmentModal = ({ onClose, onSave }) => {
 
         if (Object.keys(newErrors).length > 0) return;
 
-        const departmentData = { 
-            name: departmentName, 
-            location: departmentLocation, 
-            description: departmentDescription 
+        setIsSaving(true); // Start loading state
+
+        const departmentData = {
+            name: departmentName,
+            location: departmentLocation,
+            description: departmentDescription,
         };
 
-        onSave(departmentData);
-        onClose();
+        try {
+            await onSave(departmentData); // Call the onSave function
+            onClose(); // Close the modal on success
+        } catch (error) {
+            console.error('Error saving department:', error);
+        } finally {
+            setIsSaving(false); // End loading state
+        }
     };
 
     return (
-        <div className={styles.modalOverlay}>
-            <div className={styles.modalContent}>
+        <div className={styles2.edit_modal}>
+            <div className={styles2.edit_modal_content}>
                 <h2>Insert New Department</h2>
-                <label>Department Name *
-                    <input 
-                        type="text" 
-                        value={departmentName} 
-                        onChange={(e) => setDepartmentName(e.target.value)} 
-                    />
-                    {errors.departmentName && <p style={{ color: 'red' }}>{errors.departmentName}</p>}
-                </label>
-                <label>Location
-                    <input 
-                        type="text" 
-                        value={departmentLocation} 
-                        onChange={(e) => setDepartmentLocation(e.target.value)} 
-                    />
-                </label>
-                <label>Description *
-                    <textarea 
-                        value={departmentDescription} 
-                        onChange={(e) => setDepartmentDescription(e.target.value)} 
-                    />
-                    {errors.departmentDescription && <p style={{ color: 'red' }}>{errors.departmentDescription}</p>}
-                </label>
-                <div className={styles.buttonContainer}>
+                <label>Department Name *</label>
+                <input
+                    type="text"
+                    value={departmentName}
+                    onChange={(e) => setDepartmentName(e.target.value)}
+                />
+                {errors.departmentName && <p className={styles2.error_message}>{errors.departmentName}</p>}
+                
+                <label>Location</label>
+                <input
+                    type="text"
+                    value={departmentLocation}
+                    onChange={(e) => setDepartmentLocation(e.target.value)}
+                />
+                
+                <label>Description *</label>
+                <textarea
+                    value={departmentDescription}
+                    onChange={(e) => setDepartmentDescription(e.target.value)}
+                />
+                {errors.departmentDescription && <p className={styles2.error_message}>{errors.departmentDescription}</p>}
+                
+                <div className={styles2.edit_modal_actions}>
                     <button onClick={onClose}>Cancel</button>
-                    <button onClick={handleSave}>Save</button>
+                    <button onClick={handleSave} className={styles2.save}>
+                        {isSaving ? 'Saving...' : 'Save'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -397,7 +439,7 @@ const CurateArt = () => {
     }, [refreshArtists, isDeletedOpen]);
 
     const fetchArtists = () => {
-        axios.get(`http://localhost:5000/artist?isDeleted=${isDeletedOpen}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/artist?isDeleted=${isDeletedOpen}`)
             .then(response => {
                 const validArtists = response.data.flat().filter(artist => artist.ArtistID);
                 setArtists(validArtists);
@@ -410,7 +452,7 @@ const CurateArt = () => {
     }, [refreshArtworks, isDeletedOpen]);
 
     const fetchArtworks = () => {
-        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedOpen}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/artwork?isDeleted=${isDeletedOpen}`)
             .then(response => setArtworks(response.data))
             .catch(error => console.error('Error fetching artworks:', error));
     };
@@ -427,68 +469,72 @@ const CurateArt = () => {
     const triggerDepartmentRefresh = () => setRefreshDepartments(!refreshDepartments); // Refresh function for departments
 
     const saveInsertArtwork = (artworkData) => {
-        axios.post(`http://localhost:5000/artwork`, artworkData, {
+        axios.post(`${process.env.REACT_APP_API_URL}/artwork`, artworkData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
-        .then(() => {
-            triggerArtworkRefresh();
-            closeInsertArtworkModal();
-        })
-        .catch(error => console.error('Error adding artwork:', error));
+            .then(() => {
+                triggerArtworkRefresh();
+                closeInsertArtworkModal();
+            })
+            .catch(error => console.error('Error adding artwork:', error));
     };
 
     const saveInsertArtist = (artistData) => {
-        axios.post(`http://localhost:5000/artist`, artistData, { 
-            headers: { 'Content-Type': 'multipart/form-data' } 
+        axios.post(`${process.env.REACT_APP_API_URL}/artist`, artistData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         })
-        .then(() => { 
-            triggerArtistRefresh();
-            closeInsertArtistModal(); 
-        })
-        .catch(error => console.error('Error adding artist:', error));
+            .then(() => {
+                triggerArtistRefresh();
+                closeInsertArtistModal();
+            })
+            .catch(error => console.error('Error adding artist:', error));
     };
 
     const saveInsertDepartment = (departmentData) => {
-        axios.post(`http://localhost:5000/department`, departmentData)
-        .then(() => {
-            triggerDepartmentRefresh(); // Trigger department refresh
-            closeInsertDepartmentModal();
-        })
-        .catch(error => console.error('Error adding department:', error));
+        axios.post(`${process.env.REACT_APP_API_URL}/department`, departmentData)
+            .then(() => {
+                triggerDepartmentRefresh(); // Trigger department refresh
+                closeInsertDepartmentModal();
+            })
+            .catch(error => console.error('Error adding department:', error));
     };
 
     return (
         <div className={styles.ArtContainer}>
             <HomeNavBar />
-            <h1>Curate Art</h1>
-            {!isDeletedOpen && (
-                <>
-                    {isDepartmentOpen ? (
-                        <>
-                            {!isDepartmentDeletedOpen && (
-                                <button onClick={openInsertDepartmentModal}>Insert Department</button>
-                            )}
-                            <button onClick={() => setIsDepartmentDeletedOpen(!isDepartmentDeletedOpen)}>
-                                {isDepartmentDeletedOpen ? 'View Active' : 'View Deleted'}
-                            </button>       
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={openInsertArtworkModal}>Insert Artwork</button>
-                            <button onClick={openInsertArtistModal}>Insert Artist</button>
-                        </>
-                    )}
-                    <button onClick={() => setIsDepartmentOpen(!isDepartmentOpen)}>
-                        {isDepartmentOpen ? 'View and Edit Artwork and Artists' : 'View and Edit Departments'}
+            <h1 className={styles.searchTitle}>Curate Art</h1>
+            <div className={styles.buttonContainer}>
+                {!isDeletedOpen && (
+                    <>
+                        {isDepartmentOpen ? (
+                            <>
+                                {!isDepartmentDeletedOpen && (
+                                    <button onClick={openInsertDepartmentModal} className={styles.addButton}>Insert Department</button>
+                                )}
+                                <button onClick={() => setIsDepartmentDeletedOpen(!isDepartmentDeletedOpen)}>
+                                    {isDepartmentDeletedOpen ? 'View Active Departments' : 'View Deleted Departments'}
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button onClick={openInsertArtworkModal} className={styles.addButton}>Insert Artwork</button>
+                                <button onClick={openInsertArtistModal} className={styles.addButton}>Insert Artist</button>
+                            </>
+                        )}
+                    </>
+                )}
+                {!isDepartmentOpen && (
+                    <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
+                        {isDeletedOpen ? 'View Active' : 'View Deleted'}
                     </button>
-                </>
-            )}
-            {!isDepartmentOpen && (
-                <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
-                    {isDeletedOpen ? 'View Active' : 'View Deleted'}
-                </button>
-            )}
-
+                )}
+                {!isDeletedOpen && !isDepartmentDeletedOpen && (
+                    <button onClick={() => setIsDepartmentOpen(!isDepartmentOpen)} className={styles.depButton}>
+                        {isDepartmentOpen ? 'View Artwork and Artists' : 'View Departments'}
+                    </button>
+                )}
+            </div>
+    
             {!isDepartmentOpen ? (
                 <ArtLookUp
                     refreshArtists={refreshArtists}
@@ -500,10 +546,10 @@ const CurateArt = () => {
             ) : (
                 <DepartmentLookUp
                     isDepartmentDeletedOpen={isDepartmentDeletedOpen}
-                    refreshDepartments={refreshDepartments} // Pass refresh state for departments
+                    refreshDepartments={refreshDepartments}
                 />
             )}
-
+    
             {isInsertArtworkOpen && (
                 <InsertArtworkModal onClose={closeInsertArtworkModal} onSave={saveInsertArtwork} artists={artists} />
             )}
@@ -513,7 +559,7 @@ const CurateArt = () => {
             {isInsertDepartmentOpen && (
                 <InsertDepartmentModal onClose={closeInsertDepartmentModal} onSave={saveInsertDepartment} />
             )}
-        </div>
+        </div>        
     );
 };
 

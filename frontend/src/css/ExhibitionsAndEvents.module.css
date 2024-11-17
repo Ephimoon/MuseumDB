@@ -1,0 +1,84 @@
+.container {
+    width: 100%;
+    position: relative;
+}
+
+.HalfBackgroundImage {
+    width: 90%;
+    height: auto;
+    display: block;
+    margin: 0 auto; /* Centers the image horizontally */
+    position: relative;
+}
+
+
+.overlay {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.title {
+    font-family: 'Rosarivo', serif;
+    font-size: 80px;
+    font-style: italic;
+    font-weight: 400;
+    color: #FCFCFC;
+    text-align: center;
+}
+
+.exhibitions_container {
+    display: flex;
+    width: 75%;
+    max-width: 1200px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 50px auto; /* Centers the image horizontally */
+    position: relative;
+    gap: 50px; /* Add space between rows */
+}
+
+.exhibitions_container > div {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Ensure 4 cards per row */
+    gap: 50px; /* Space between cards */
+}
+
+.exhibitions_container h1 {
+    font-family: 'Rosarivo', serif;
+    font-style: italic;
+    font-weight: 200;
+    text-align: center;
+    font-size: 4rem;
+    color: #FCFCFC;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    text-overflow: ellipsis; /* Handle long titles */
+    overflow: hidden;
+    white-space: wrap;
+}
+
+/* Responsive Grid for Cards */
+@media (max-width: 1200px) {
+    .exhibitions_container > div {
+        grid-template-columns: repeat(3, 1fr); /* 3 cards per row */
+    }
+}
+
+@media (max-width: 900px) {
+    .exhibitions_container > div {
+        grid-template-columns: repeat(2, 1fr); /* 2 cards per row */
+    }
+}
+
+@media (max-width: 600px) {
+    .exhibitions_container > div {
+        grid-template-columns: repeat(1, 1fr); /* 1 card per row */
+    }
+}

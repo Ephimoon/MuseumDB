@@ -27,7 +27,7 @@ const ProfilePage = () => {
 
     useEffect(() => {
         axios
-            .get(`http://localhost:5000/users/${userId}`, {
+            .get(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
                 headers: { 'user-id': userId, role },
             })
             .then((response) => {
@@ -66,7 +66,7 @@ const ProfilePage = () => {
         }
 
         axios
-            .put(`http://localhost:5000/users/${userId}`, userData, {
+            .put(`${process.env.REACT_APP_API_URL}/users/${userId}`, userData, {
                 headers: { 'user-id': userId, role },
             })
             .then(() => {

@@ -18,7 +18,7 @@ const EventDirectorDashboard = () => {
         // Fetch event data
         const fetchEventData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/events`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events`);
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,
@@ -57,8 +57,8 @@ const EventDirectorDashboard = () => {
         try {
             if (selectedEvent.id) {
                 // Update existing event
-                //const response = await axios.put(`http://http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
-                const response = await axios.put(`http://localhost:5000/api/events/${selectedEvent.id}`, selectedEvent);
+                //const response = await axios.put(`http://${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
+                const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/events/${selectedEvent.id}`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards(eventCards.map(event => event.id === selectedEvent.id ? selectedEvent : event));
                 } else {
@@ -66,8 +66,8 @@ const EventDirectorDashboard = () => {
                 }
             } else {
                 // Add new event
-                //const response = await axios.post('http://http://localhost:5000/api/events', selectedEvent);
-                const response = await axios.post(`http://localhost:5000/api/events`, selectedEvent);
+                //const response = await axios.post('http://${process.env.REACT_APP_API_URL}/api/events', selectedEvent);
+                const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/events`, selectedEvent);
                 if (response.status === 200) {
                     setEventCards([...eventCards, { ...selectedEvent, id: response.data.id }]);
                 } else {
@@ -83,7 +83,7 @@ const EventDirectorDashboard = () => {
 
     const removeEventCard = async (id) => {
         try {
-            const response = await axios.delete(`http://localhost:5000/api/events/${id}`); // replace with http://http://localhost:5000/api/events/${id}
+            const response = await axios.delete(`${process.env.REACT_APP_API_URL}/api/events/${id}`); // replace with http://${process.env.REACT_APP_API_URL}/api/events/${id}
             if (response.status === 200) {
                 setEventCards(eventCards.filter(event => event.id !== id));
             }
@@ -102,8 +102,8 @@ const EventDirectorDashboard = () => {
 
     const viewMembers = async (eventId) => {
         try {
-            //const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
-            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/members`);
+            //const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/members`);
             if (response.status === 200) {
                 console.log('Members: ', response.data);
                 setMembersList(response.data);
@@ -139,7 +139,7 @@ const EventDirectorDashboard = () => {
         setReportData(null);
 
         try {
-            const response = await axios.get(`http://localhost:5000/api/events/${eventId}/report`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events/${eventId}/report`);
             if (response.status === 200) {
                 setReportData(response.data);
             } else {
@@ -318,8 +318,22 @@ const EventDirectorDashboard = () => {
                         {reportData && (
                             <div className="report">
                                 <h4>Report for Event:</h4>
-                                <p><strong>Total Members Signed Up:</strong> {reportData.totalMembersSignedUp}</p>
-                                <p><strong>Total Revenue Generated:</strong> ${reportData.totalRevenue}</p>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Event Name</th>
+                                            <th>Total Members Signed Up</th>
+                                            <th>Total Revenue Generated</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{reportData.eventName || 'N/A'}</td>
+                                            <td>{reportData.totalMembersSignedUp}</td>
+                                            <td>${reportData.totalRevenue}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </div>

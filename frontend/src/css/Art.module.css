@@ -40,74 +40,175 @@
 
 /* --------------------------- SEARCH ITEMS --------------------------- */
 
+.searchTitle {
+    font-family: 'Rosarivo', serif;
+    font-size: 48px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+}
+
+/* Artwork/Artist */
 .FilterContainer {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    padding: 20px;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    background-color: #fcfcfc;
+    width: 75%;
+    max-width: 1300px;
+    margin: auto;
     align-items: center;
-    max-width: 1200px;
-    margin: 20px auto;
-    gap: 20px;
+    gap: 20px; /* Add space between rows */
 }
 
-/* Flex container for the tabs */
+.FilterContainer h1 {
+    font-family: 'Rosarivo', serif;
+    font-size: 30px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin: 0;
+}
+
+.FilterContainer h2 {
+    font-family: 'Rosarivo', serif;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin: 0;
+}
+
 .tabs {
     display: flex;
-    /* justify-content: center; */
-    gap: 15px;
+    justify-content: center;
+    gap: 10px;
 }
 
 .tabs button {
-    padding: 10px 20px;
-    font-size: 1.2rem;
+    padding: 8px 18px;
+    font-size: 1rem;
     border: none;
     background-color: #fcfcfc;
     cursor: pointer;
     color: #352F36;
     border: solid 1px #D7D5D7;
     border-radius: 12px;
+    flex: 1; /* Make buttons equal in size */
+    text-align: center;
 }
 
 .tabs .activeTab {
-    background-color: #D7D5D7; /* Your pinkish tone */
+    background-color: #D7D5D7;
 }
 
-/* Search Section */
 .search {
     display: flex;
-    justify-content: center;
+    align-items: center;
     width: 100%;
+    max-width: 800px;
+    gap: 20px;
 }
 
 .search input {
-    width: 50%; /* Make the search input take 50% of the parent container */
-    padding: 10px 15px;
+    flex: 1; /* Allow the search input to grow */
+    padding: 10px;
     border: 1px solid #D7D5D7;
-    color: #352F36;
-    border-radius: 6px;
-    font-size: 1.2rem;
-    max-width: 600px; /* Optional: Set a max-width if you don't want it to exceed a certain size */
+    border-radius: 8px;
+    font-size: 1.5rem;
 }
 
-
-/* Filter Section */
 .filterSection {
     display: flex;
-    /* justify-content: center; */
-    gap: 15px;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 10px;
+    width: 100%;
+    max-width: 800px;
 }
 
 .filterSection select {
-    padding: 10px;
-    font-size: 1rem;
+    flex: 1; /* Ensure consistent width */
+    min-width: 140px; /* Prevent select elements from being too small */
+    padding: 10px; /* Add padding for a better look */
     border: 1px solid #D7D5D7;
-    border-radius: 5px;
-    color: #352F36;
-    background-color: #fcfcfc;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    color: #352F36; /* Match text color */
 }
 
-/* Tag Section */
+.sortHeader {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    gap: 20px; /* Add space between sort and search */
+}
+
+
+.sortByContainer {
+    display: flex;
+    /* justify-content: space-between; */
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    gap: 20px; /* Add space between sort and search */
+}
+
+.sortByContainerExhibition {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    text-wrap: nowrap;
+    gap: 20px; /* Add space between sort and search */
+}
+
+.sortByContainerExhibition label {
+    font-family: 'Rosarivo', serif;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin: 0;
+}
+
+.sortByContainer select {
+    min-width: 140px; /* Prevent select elements from being too small */
+    padding: 10px; /* Add padding for a better look */
+    border: 1px solid #D7D5D7;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    color: #352F36; /* Match text color */
+}
+
+.sortByContainerExhibition select {
+    min-width: 140px; /* Prevent select elements from being too small */
+    padding: 10px; /* Add padding for a better look */
+    border: 1px solid #D7D5D7;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    color: #352F36; /* Match text color */
+}
+
+.sortByContainer input {
+    flex: 1; /* Allow the search input to take up remaining space */
+    padding: 10px;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.sortByContainerExhibition input {
+    flex: 1; /* Allow the search input to take up remaining space */
+    padding: 10px;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
 .tagContainer {
     display: flex;
     gap: 10px;
@@ -132,20 +233,71 @@
     margin-left: 5px;
 }
 
-/* Sort By Section */
-.sortSection {
+/* Department */
+
+.FilterContainerDepartment {
     display: flex;
-    /* justify-content: center; */
+    flex-direction: column;
+    padding: 20px;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    background-color: #fcfcfc;
+    width: 40%;
+    max-width: 800px;
+    margin: auto;
+    align-items: center;
+    gap: 20px; /* Add space between rows */
 }
 
-.sortSection select {
-    padding: 10px;
-    font-size: 1rem;
+.FilterContainerDepartment h1 {
+    font-family: 'Rosarivo', serif;
+    font-size: 30px;
+    font-style: italic;
+    font-weight: 400;
     color: #352F36;
-    border: 1px solid #D7D5D7;
-    border-radius: 5px;
-    background-color: #fcfcfc;
+    margin: 0;
 }
+
+.FilterContainerDepartment div {
+    display: flex;
+    /* justify-content: space-between; */
+    /* align-items: center; */
+    width: 100%;
+    max-width: 600px;
+    margin: 0;
+    gap: 20px;
+}
+
+.FilterContainerDepartment h2 {
+    font-family: 'Rosarivo', serif;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 400;
+    color: #352F36;
+    margin: 0;
+}
+
+.FilterContainerDepartment {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 10px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.FilterContainerDepartment select {
+    flex: 1; /* Ensure consistent width */
+    min-width: 140px; /* Prevent select elements from being too small */
+    padding: 10px; /* Add padding for a better look */
+    border: 1px solid #D7D5D7;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    color: #352F36; /* Match text color */
+}
+
+
+
 
 /* INSERT */
 
@@ -163,7 +315,7 @@
 }
 
 .modalContent {
-    background-color: #FCFCFC;
+    background-color: #fcfcfc;
     padding: 30px;
     border-radius: 8px;
     width: 500px;
@@ -172,4 +324,73 @@
     overflow-y: auto;
     position: relative;
     z-index: 1001; /* Ensure modal content is above overlay */
+}
+
+/* buttons */
+
+/* Centering Container */
+.buttonContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin: 20px auto;
+    flex-wrap: wrap; /* Allows wrapping on smaller screens */
+}
+
+/* Button Styling */
+.buttonContainer button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fcfcfc;
+    background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.buttonContainer button:hover {
+    background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+.buttonContainer button:active {
+    transform: scale(0.98); /* Slightly shrink on click */
+}
+
+.buttonContainer .addButton {
+    background: linear-gradient(90deg, #007BFF 0%, #0056b3 100%);
+}
+
+.buttonContainer .addButton:hover {
+    background: linear-gradient(90deg, #0056b3 0%, #007BFF 100%);
+}
+
+.buttonContainer .depButton {
+    background: linear-gradient(90deg, #6c757d 0%, #5a6268 100%); /* Grey Gradient */
+}
+
+.buttonContainer .depButton:hover {
+    background: linear-gradient(90deg, #5a6268 0%, #6c757d 100%);
+}
+
+/* --------------------------- CARDS SEARCH --------------------------- */
+
+.artisttitle {
+    font-family: 'Arial', sans-serif;
+    font-size: 24px;
+    font-style: italic;
+    font-weight: 800;
+    color: #352F36;
+    margin: 40px 40px 0 40px;
+}
+
+.no h3 {
+    text-align: center; /* Center the text horizontally */
+    padding: 20px; /* Add padding around the text */
+    font-family: 'Arial', sans-serif; /* Adjust the font family if needed */
+    font-size: 1.2rem; /* Adjust the font size if necessary */
+    font-weight: bold; /* Make the text bold */
+    color: #D22D36; /* Adjust the text color */
+    margin: 20px 0; /* Add margin for spacing */
 }

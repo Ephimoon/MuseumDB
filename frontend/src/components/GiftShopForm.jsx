@@ -40,7 +40,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             // Set the image file using the URL
             setImageFile([
                 {
-                    source: `http://localhost:5000/giftshopitems/${item.item_id}/image`,
+                    source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
                     options: {
                         type: 'remote', // Indicate that the source is a remote URL
                     },
@@ -79,22 +79,29 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         const role = localStorage.getItem('role');
         const config = {
             headers: {
-                'Content-Type': 'multipart/form-data', // or 'application/json' as appropriate
+                'Content-Type': 'multipart/form-data',
                 'user-id': localStorage.getItem('userId'),
-                'role': localStorage.getItem('role'),
+                'role': role,
             },
         };
 
-
         if (item && item.item_id) {
+            // Update existing item
             axios
-                .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
-                .then(() => onClose())
+                .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
+                .then(() => {
+                    onClose(); // Close the modal
+                    window.location.reload(); // Refresh the page
+                })
                 .catch((error) => console.error('Error updating item:', error));
         } else {
+            // Create new item
             axios
-                .post(`http://localhost:5000/giftshopitems`, data, config)
-                .then(() => onClose())
+                .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
+                .then(() => {
+                    onClose(); // Close the modal
+                    window.location.reload(); // Refresh the page
+                })
                 .catch((error) => console.error('Error creating item:', error));
         }
     };
