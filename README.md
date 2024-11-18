@@ -89,6 +89,7 @@ MuseumDB/
 
 ## Additional Notes
 - The application uses React for the frontend
-- Node.js for the backend
+- Node.js and Express for the backend
 - MySQL for the database
+- Azure and Vercel for hosting
 - Make sure MySQL server is running before starting the application
