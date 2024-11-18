@@ -94,7 +94,7 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
         try {
             if (user && user.user_id) {
                 // Update existing user
-                await axios.put(`${process.env.REACT_APP_API_URL}/users/${user.user_id}`, payload, {
+                await axios.put(`http://localhost:5000/users/${user.user_id}`, payload, {
                     headers: {
                         role: role,
                         'user-id': userId,
@@ -103,7 +103,7 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
                 toast.success('User updated successfully');
             } else {
                 // Create new user via admin endpoint
-                await axios.post(`${process.env.REACT_APP_API_URL}/users`, payload, {
+                await axios.post(`http://localhost:5000/users`, payload, {
                     headers: {
                         role: role,
                         'user-id': userId,
