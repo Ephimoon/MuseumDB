@@ -49,13 +49,11 @@ const Navbar = () => {
     const handleBuyTicketsClick = () => {
         if (!role) {
             // If not logged in, redirect to login page with a redirect state
-            navigate('/login', { state: { redirectTo: '/BuyTickets' } });
-            toast.error('You need to login to buy tickets.');
-        } else if (role === 'customer' || role === 'member') {
-            // If logged in and user is customer or member, go to buy tickets page
-            navigate('/BuyTickets');
+            navigate('/login', { state: { redirectTo: '/buytickets' } }); // Redirect to BuyTickets after login
+            alert('You need to login to buy tickets.');
         } else {
-            toast.error('Only members and customers can purchase tickets.');
+            // If logged in, navigate to the BuyTickets page
+            navigate('/buytickets');
         }
     };
 
