@@ -6,8 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/css/event_director.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/event_director.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/TicketsReport.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TicketsReport.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

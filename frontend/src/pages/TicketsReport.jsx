@@ -128,7 +128,7 @@ const TicketsReport = () => {
         // Prepare data for backend
         const reportRequest = {
             report_type: reportType,
-            reportPeriodType: reportPeriodType, // Fix here (from report_period_type to reportPeriodType)
+            reportPeriodType: reportPeriodType,
             start_date: startDate ? startDate.toISOString().split('T')[0] : '',
             end_date: endDate ? endDate.toISOString().split('T')[0] : '',
             selected_month: selectedMonth ? selectedMonth.toISOString().split('T')[0].slice(0, 7) : '',
@@ -140,7 +140,6 @@ const TicketsReport = () => {
             user_type_id: userTypeId === 'customer' ? 3 : userTypeId === 'member' ? 4 : null,
             payment_method: paymentMethod,
         };
-
 
         // Retrieve user credentials from localStorage
         const role = localStorage.getItem('role');
@@ -220,7 +219,6 @@ const TicketsReport = () => {
 
     // monitor dropdown changes
     useEffect(() => {
-        console.log("Modal Closed");
         closeModal(); // Close the modal whenever a dropdown changes
     }, [reportType, reportPeriodType, priceCategory, userTypeId, paymentMethod]);
 
@@ -229,7 +227,6 @@ const TicketsReport = () => {
         setIsModalOpen(true);
     };
     const closeModal = () => {
-        console.log("Modal Closed for sure");
         setIsModalOpen(false);
     };
 
@@ -309,12 +306,11 @@ const TicketsReport = () => {
     };
 
     const renderTicketsReport = () => {
-
         if (!reportData || reportData.length === 0) {
             return <p>No data available for the selected filters.</p>;
         }
 
-        // Calculate total revenue
+        // Calculate total tickets
         const totalTickets = reportData.reduce(
             (acc, curr) => acc + parseFloat(curr.total_tickets || 0),
             0
@@ -331,10 +327,10 @@ const TicketsReport = () => {
                     </thead>
                     <tbody>
                     {reportData.map((item, index) => {
-                        // Convert total_revenue to a number
+                        // Convert total_tickets to a number
                         const tickets = Number(item.total_tickets || item.total_tickets_sold);
 
-                        // Handle cases where revenue is not a valid number
+                        // Handle cases where tickets is not a valid number
                         const formattedTickets = isNaN(tickets) ? 'N/A' : tickets.toFixed(0);
 
                         return (
@@ -344,7 +340,7 @@ const TicketsReport = () => {
                             </tr>
                         );
                     })}
-                    {/* Total Revenue Row */}
+                    {/* Total Tickets Row */}
                     <tr>
                         <td>
                             <strong>Total Tickets</strong>
@@ -377,13 +373,14 @@ const TicketsReport = () => {
                 };
             }
             if (item.quantity) {
+                const itemTotal = parseFloat(item.quantity) * parseFloat(item.price_at_purchase || 0);
                 transactions[item.transaction_id].items.push({
                     item_name: item.price_category || 'Ticket', // Use price_category as item name if available
                     quantity: item.quantity,
-                    price_at_purchase: item.price_at_purchase || 0,
-                    item_total: (item.quantity * (item.price_at_purchase || 0)),
+                    price_at_purchase: parseFloat(item.price_at_purchase || 0),
+                    item_total: itemTotal,
                 });
-                transactions[item.transaction_id].total_amount += (item.quantity * (item.price_at_purchase || 0));
+                transactions[item.transaction_id].total_amount += itemTotal;
             }
         });
 
@@ -444,7 +441,6 @@ const TicketsReport = () => {
         );
     };
 
-
     const renderSingleDayTicketsReport = () => {
         // Group transactions by transaction ID to group items within the same transaction
         const transactions = {};
@@ -463,7 +459,7 @@ const TicketsReport = () => {
             }
             transactions[item.transaction_id].items.push({
                 item_name: item.price_category || 'Ticket',
-                quantity: item.quantity, // Quantity of tickets
+                quantity: parseInt(item.quantity, 10), // Quantity of tickets
             });
             transactions[item.transaction_id].total_tickets += parseInt(item.quantity, 10); // Accumulate ticket quantity
         });
@@ -523,8 +519,6 @@ const TicketsReport = () => {
         );
     };
 
-
-
     const renderTransactionDetailsReport = () => {
         return (
             <table className={styles.reportTable}>
@@ -552,7 +546,7 @@ const TicketsReport = () => {
                         <td>{item.price_category}</td>
                         <td>{item.quantity}</td>
                         <td>${parseFloat(item.price_at_purchase).toFixed(2)}</td>
-                        <td>${parseFloat(item.item_total).toFixed(2)}</td>
+                        <td>${(parseFloat(item.quantity) * parseFloat(item.price_at_purchase)).toFixed(2)}</td>
                     </tr>
                 ))}
                 </tbody>
@@ -624,7 +618,7 @@ const TicketsReport = () => {
                     price_category: item.price_category,
                     quantity: item.quantity
                 });
-                acc[item.transaction_id].total_tickets += item.quantity;
+                acc[item.transaction_id].total_tickets += parseInt(item.quantity, 10);
                 return acc;
             }, {});
 
@@ -708,11 +702,14 @@ const TicketsReport = () => {
                 }
 
                 if (item.quantity) {
-                    const itemTotal = item.quantity * (item.price_at_purchase || 0);
+                    const priceAtPurchase = parseFloat(item.price_at_purchase) || 0;
+                    const quantity = parseInt(item.quantity, 10) || 0;
+                    const itemTotal = quantity * priceAtPurchase;
+
                     transactions[item.transaction_id].items.push({
                         item_name: item.price_category || 'Ticket',
-                        quantity: item.quantity,
-                        price_at_purchase: item.price_at_purchase || 0,
+                        quantity: quantity,
+                        price_at_purchase: priceAtPurchase,
                         total: itemTotal,
                     });
                     transactions[item.transaction_id].total_amount += itemTotal;
@@ -741,6 +738,33 @@ const TicketsReport = () => {
                 },
                 headStyles: { fillColor: [66, 139, 202] }
             });
+        } else if (reportType === 'revenue') {
+            doc.text('Revenue Report', 14, 20);
+
+            let body = reportData.map((item) => {
+                const revenue = Number(item.total_revenue || 0);
+                const formattedDate = formatDateLabel(item.date);
+                return [
+                    formattedDate,
+                    isNaN(revenue) ? '0.00' : revenue.toFixed(2)
+                ];
+            });
+
+            // Calculate and add total
+            const totalRevenue = reportData.reduce(
+                (acc, curr) => acc + (Number(curr.total_revenue) || 0),
+                0
+            );
+            body.push(['Total Revenue', totalRevenue.toFixed(2)]);
+
+            doc.autoTable({
+                head: [['Date', 'Total Revenue']],
+                body: body,
+                startY: 30,
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [66, 139, 202] },
+                footStyles: { fillColor: [240, 240, 240] },
+            });
         } else if (reportType === 'transaction_details') {
             doc.text('Transaction Details Report', 14, 20);
 
@@ -751,11 +775,10 @@ const TicketsReport = () => {
                 item.username,
                 item.transaction_type,
                 item.payment_status,
-
                 item.price_category,
                 item.quantity,
                 `$${parseFloat(item.price_at_purchase || 0).toFixed(2)}`,
-                `$${parseFloat((item.quantity * (item.price_at_purchase || 0))).toFixed(2)}`
+                `$${(parseFloat(item.quantity || 0) * parseFloat(item.price_at_purchase || 0)).toFixed(2)}`
             ]);
 
             doc.autoTable({
@@ -803,9 +826,6 @@ const TicketsReport = () => {
         doc.save(`tickets_${reportType}_${reportPeriodType}_${timestamp}.pdf`);
     };
 
-    console.log('reportData:', reportData);
-    console.log('priceCategory:', priceCategory);
-    console.log('availablePriceCategories:', availablePriceCategories);
     return (
         <div className={styles.reportContainer}>
             <HomeNavBar />
@@ -828,7 +848,6 @@ const TicketsReport = () => {
                         <option value="revenue">Revenue Report</option>
                         <option value="tickets">Tickets Report</option>
                         <option value="transaction_details">Transaction Details Report</option>
-                        {/* Add more report types if needed */}
                     </select>
                 </div>
 
@@ -922,7 +941,6 @@ const TicketsReport = () => {
                                     ))}
                                 </div>
                             </div>
-
 
                             <div className={styles.formGroup}>
                                 <label htmlFor="userTypeId">User Type:</label>
