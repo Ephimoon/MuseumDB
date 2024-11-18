@@ -47,7 +47,7 @@ const TicketCheckout = () => {
             return;
         }
 
-        fetch(`http://localhost:5000/ticket-purchase`, {
+        fetch(`${process.env.REACT_APP_API_URL}/ticket-purchase`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

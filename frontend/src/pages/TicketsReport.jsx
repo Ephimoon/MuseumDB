@@ -48,15 +48,15 @@ const TicketsReport = () => {
     useEffect(() => {
         Promise.all([
             // Fetch available price categories
-            axios.get(`http://localhost:5000/ticket`, {
+            axios.get(`${process.env.REACT_APP_API_URL}/ticket`, {
                 headers: { 'Content-Type': 'application/json' },
             }),
             // Fetch available user types
-            axios.get(`http://localhost:5000/user-type`, {
+            axios.get(`${process.env.REACT_APP_API_URL}/user-type`, {
                 headers: { 'Content-Type': 'application/json' },
             }),
             // Fetch available payment methods
-            axios.get(`http://localhost:5000/paymentmethods`, {
+            axios.get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
                 headers: { 'Content-Type': 'application/json' },
             }),
         ])
@@ -138,7 +138,7 @@ const TicketsReport = () => {
         };
 
         axios
-            .post(`http://localhost:5000/reports-tickets`, reportRequest, {
+            .post(`${process.env.REACT_APP_API_URL}/reports-tickets`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,

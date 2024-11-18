@@ -27,7 +27,7 @@ const AnnouncementDisplay = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`http://localhost:5000/announcements/user`, {
+        fetch(`${process.env.REACT_APP_API_URL}/announcements/user`, {
             headers: { 'user-id': userId, role },
         })
             .then((response) => {

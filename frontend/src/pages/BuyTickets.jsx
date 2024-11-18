@@ -19,7 +19,7 @@ const BuyTickets = () => {
     useEffect(() => {
         const fetchTicketTypes = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/ticket-types');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/ticket-types`);
                 setTicketTypes(response.data);
 
                 // Initialize ticketCounts with fetched ticket types

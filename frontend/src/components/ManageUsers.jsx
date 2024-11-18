@@ -51,7 +51,7 @@ const ManageUsers = () => {
     ]);
 
     const fetchUsers = () => {
-        axios.get(`http://localhost:5000/users`, {
+        axios.get(`${process.env.REACT_APP_API_URL}/users`, {
             headers: { role, 'user-id': userId },
         })
             .then(response => {
@@ -87,8 +87,8 @@ const ManageUsers = () => {
 
     const handleDelete = (user, isHardDelete) => {
         const endpoint = isHardDelete
-            ? `http://localhost:5000/users/${user.user_id}`
-            : `http://localhost:5000/users/${user.user_id}/soft-delete`;
+            ? `${process.env.REACT_APP_API_URL}/users/${user.user_id}`
+            : `${process.env.REACT_APP_API_URL}/users/${user.user_id}/soft-delete`;
 
         const method = isHardDelete ? 'delete' : 'put';
 
@@ -109,7 +109,7 @@ const ManageUsers = () => {
     };
 
     const handleRestore = (user) => {
-        const endpoint = `http://localhost:5000/users/${user.user_id}/restore`;
+        const endpoint = `${process.env.REACT_APP_API_URL}/users/${user.user_id}/restore`;
 
         axios.put(endpoint, {}, {
             headers: { role, 'user-id': userId },

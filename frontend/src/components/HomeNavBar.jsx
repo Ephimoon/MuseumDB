@@ -10,6 +10,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { toast } from 'react-toastify'; // Import toast from React Toastify
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -38,6 +39,7 @@ const Navbar = () => {
     const handleLogout = () => {
         localStorage.clear();
         navigate('/login');
+        toast.success('Logged out successfully.');
     };
 
     const toggleEmployeeMenu = () => {
@@ -48,12 +50,12 @@ const Navbar = () => {
         if (!role) {
             // If not logged in, redirect to login page with a redirect state
             navigate('/login', { state: { redirectTo: '/BuyTickets' } });
-            alert('You need to login to buy tickets.');
+            toast.error('You need to login to buy tickets.');
         } else if (role === 'customer' || role === 'member') {
             // If logged in and user is customer or member, go to buy tickets page
             navigate('/BuyTickets');
         } else {
-            alert('Only members and customers can purchase tickets.');
+            toast.error('Only members and customers can purchase tickets.');
         }
     };
 
@@ -99,14 +101,14 @@ const Navbar = () => {
                         </li>
                         {(['admin', 'staff'].includes(role)) && (
                             <li className="employee-menu">
-                                <span onClick={toggleEmployeeMenu} className="employee-menu-title">
-                                    For Employee
-                                    {employeeMenuOpen ? (
-                                        <ExpandLessIcon className="dropdown-icon" />
-                                    ) : (
-                                        <ExpandMoreIcon className="dropdown-icon" />
-                                    )}
-                                </span>
+                <span onClick={toggleEmployeeMenu} className="employee-menu-title">
+                  For Employee
+                    {employeeMenuOpen ? (
+                        <ExpandLessIcon className="dropdown-icon" />
+                    ) : (
+                        <ExpandMoreIcon className="dropdown-icon" />
+                    )}
+                </span>
                                 {employeeMenuOpen && (
                                     <ul className="dropdown-menu">
                                         {/* Common menu items for both admin and staff */}

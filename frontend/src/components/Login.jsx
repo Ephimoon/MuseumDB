@@ -56,7 +56,7 @@ const Login = () => {
         if (Object.keys(newErrors).length > 0) return;
 
         try {
-            const loginUrl = `http://localhost:5000/login`;
+            const loginUrl = `${process.env.REACT_APP_API_URL}/login`;
             const response = await fetch(loginUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

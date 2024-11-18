@@ -15,7 +15,7 @@ const EmailLogs = () => {
     // Fetch email logs from the backend
     const fetchEmailLogs = () => {
         axios
-            .get('http://localhost:5000/email-logs')
+            .get(`${process.env.REACT_APP_API_URL}/email-logs`)
             .then((response) => {
                 setEmailLogs(response.data);
                 toast.success('Email logs fetched successfully!');
