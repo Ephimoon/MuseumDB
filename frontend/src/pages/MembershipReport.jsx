@@ -41,7 +41,7 @@ const MembershipReport = () => {
     useEffect(() => {
         // Fetch available membership types
         axios
-            .get(`http://localhost:5000/membership-types`, {
+            .get(`${process.env.REACT_APP_API_URL}/membership-types`, {
                 headers: { 'Content-Type': 'application/json' },
             })
             .then((response) => setAvailableMembershipTypes(response.data))
@@ -52,7 +52,7 @@ const MembershipReport = () => {
 
         // Fetch available payment methods
         axios
-            .get(`http://localhost:5000/paymentmethods`, {
+            .get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
                 headers: { 'Content-Type': 'application/json' },
             })
             .then((response) => setAvailablePaymentMethods(response.data))
@@ -66,6 +66,12 @@ const MembershipReport = () => {
     useEffect(() => {
         setReportData([]);
     }, [reportPeriodType]);
+
+    // Helper function to safely format currency values
+    const formatCurrency = (value) => {
+        const num = parseFloat(value);
+        return isNaN(num) ? 'N/A' : `$${num.toFixed(2)}`;
+    };
 
     // Fetch report data when the "Generate Report" button is clicked
     const fetchReportData = () => {
@@ -116,7 +122,7 @@ const MembershipReport = () => {
         };
 
         axios
-            .post(`http://localhost:5000/membership-reports`, reportRequest, {
+            .post(`${process.env.REACT_APP_API_URL}/membership-reports`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,
@@ -186,7 +192,7 @@ const MembershipReport = () => {
                     <tbody>
                     {reportData.map((item, index) => {
                         // Convert total_revenue to a number
-                        const revenue = Number(item.total_revenue);
+                        const revenue = parseFloat(item.total_revenue || 0);
 
                         // Handle cases where revenue is not a valid number
                         const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
@@ -194,7 +200,7 @@ const MembershipReport = () => {
                         return (
                             <tr key={index}>
                                 <td>{formatDateLabel(item.date)}</td>
-                                <td>${formattedRevenue}</td>
+                                <td>{formatCurrency(revenue)}</td>
                             </tr>
                         );
                     })}
@@ -204,7 +210,7 @@ const MembershipReport = () => {
                             <strong>Total Revenue</strong>
                         </td>
                         <td>
-                            <strong>${totalRevenue.toFixed(2)}</strong>
+                            <strong>{formatCurrency(totalRevenue)}</strong>
                         </td>
                     </tr>
                     </tbody>
@@ -226,16 +232,26 @@ const MembershipReport = () => {
                     transaction_type: item.transaction_type,
                     payment_status: item.payment_status,
                     username: item.username,
-                    subtotal: parseFloat(item.subtotal || 0),
-                    tax: parseFloat(item.tax || 0),
-                    total_amount: parseFloat(item.total_amount || 0),
                     items: [],
+                    subtotal: 0,
+                    tax: 0,
+                    total_amount: 0,
                 };
             }
+            const membershipPrice = parseFloat(item.membership_price || 0);
             transactions[item.transaction_id].items.push({
                 type_of_membership: item.type_of_membership,
-                membership_price: item.membership_price,
+                membership_price: membershipPrice,
             });
+            transactions[item.transaction_id].subtotal += membershipPrice;
+        });
+
+        // Calculate tax and total_amount for each transaction
+        Object.values(transactions).forEach((transaction) => {
+            // Assuming tax rate is 10%
+            const taxRate = 0.10;
+            transaction.tax = transaction.subtotal * taxRate;
+            transaction.total_amount = transaction.subtotal + transaction.tax;
         });
 
         // Convert transactions object to array
@@ -270,14 +286,14 @@ const MembershipReport = () => {
                                     <div key={idx}>
                                         <strong>{capitalizeFirstLetter(item.type_of_membership)}</strong>
                                         <br />
-                                        Price: ${parseFloat(item.membership_price).toFixed(2)}
+                                        Price: {formatCurrency(item.membership_price)}
                                         <br />
                                     </div>
                                 ))}
                             </td>
-                            <td>${transaction.subtotal.toFixed(2)}</td>
-                            <td>${transaction.tax.toFixed(2)}</td>
-                            <td>${transaction.total_amount.toFixed(2)}</td>
+                            <td>{formatCurrency(transaction.subtotal)}</td>
+                            <td>{formatCurrency(transaction.tax)}</td>
+                            <td>{formatCurrency(transaction.total_amount)}</td>
                         </tr>
                     ))}
                     </tbody>
@@ -309,7 +325,7 @@ const MembershipReport = () => {
                         <td>{item.transaction_type}</td>
                         <td>{item.payment_status}</td>
                         <td>{capitalizeFirstLetter(item.type_of_membership)}</td>
-                        <td>${parseFloat(item.membership_price).toFixed(2)}</td>
+                        <td>{formatCurrency(item.membership_price)}</td>
                     </tr>
                 ))}
                 </tbody>
@@ -417,18 +433,27 @@ const MembershipReport = () => {
                             transaction_type: item.transaction_type,
                             payment_status: item.payment_status,
                             items: [],
+                            subtotal: 0,
+                            tax: 0,
                             total_amount: 0,
                         };
                     }
 
-                    // Add item and update total
-                    if (item.type_of_membership) {
-                        transactions[item.transaction_id].items.push({
-                            type_of_membership: item.type_of_membership,
-                            membership_price: item.membership_price || 0,
-                        });
-                        transactions[item.transaction_id].total_amount += parseFloat(item.membership_price || 0);
-                    }
+                    // Add item and update totals
+                    const membershipPrice = parseFloat(item.membership_price || 0);
+                    transactions[item.transaction_id].items.push({
+                        type_of_membership: item.type_of_membership,
+                        membership_price: membershipPrice,
+                    });
+                    transactions[item.transaction_id].subtotal += membershipPrice;
+                });
+
+                // Calculate tax and total_amount for each transaction
+                Object.values(transactions).forEach((transaction) => {
+                    // Assuming tax rate is 10%
+                    const taxRate = 0.10;
+                    transaction.tax = transaction.subtotal * taxRate;
+                    transaction.total_amount = transaction.subtotal + transaction.tax;
                 });
 
                 // Create table body
@@ -442,24 +467,24 @@ const MembershipReport = () => {
                     trans.items
                         .map(
                             (item) =>
-                                `${capitalizeFirstLetter(item.type_of_membership)}\nPrice: $${parseFloat(
+                                `${capitalizeFirstLetter(item.type_of_membership)}\nPrice: ${formatCurrency(
                                     item.membership_price
-                                ).toFixed(2)}`
+                                )}`
                         )
                         .join('\n\n'),
-                    `$${trans.subtotal.toFixed(2)}`,
-                    `$${trans.tax.toFixed(2)}`,
-                    `$${trans.total_amount.toFixed(2)}`,
+                    formatCurrency(trans.subtotal),
+                    formatCurrency(trans.tax),
+                    formatCurrency(trans.total_amount),
                 ]);
 
                 // Calculate grand total
                 const grandTotal = Object.values(transactions).reduce(
-                    (sum, trans) => sum + trans.total_amount,
+                    (sum, trans) => sum + (parseFloat(trans.total_amount) || 0),
                     0
                 );
 
                 // Add footer row with total
-                body.push(['', '', '', '', '', 'Total:', `$${grandTotal.toFixed(2)}`]);
+                body.push(['', '', '', '', '', 'Total:', '', '', formatCurrency(grandTotal)]);
 
                 doc.autoTable({
                     head: [
@@ -495,10 +520,10 @@ const MembershipReport = () => {
             } else if (reportType === 'revenue') {
                 doc.text('Membership Revenue Report', 14, 20);
                 let body = reportData.map((item) => {
-                    const revenue = Number(item.total_revenue);
+                    const revenue = parseFloat(item.total_revenue || 0);
                     const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
                     const dateLabel = formatDateLabel(item.date);
-                    return [dateLabel, formattedRevenue];
+                    return [dateLabel, formatCurrency(revenue)];
                 });
 
                 // Add total revenue row
@@ -506,7 +531,7 @@ const MembershipReport = () => {
                     (acc, curr) => acc + parseFloat(curr.total_revenue || 0),
                     0
                 );
-                body.push(['Total Revenue', totalRevenue.toFixed(2)]);
+                body.push(['Total Revenue', formatCurrency(totalRevenue)]);
 
                 doc.autoTable({
                     head: [[getDateLabel(), 'Total Revenue']],
@@ -524,7 +549,7 @@ const MembershipReport = () => {
                         item.transaction_type,
                         item.payment_status,
                         capitalizeFirstLetter(item.type_of_membership),
-                        parseFloat(item.membership_price).toFixed(2),
+                        formatCurrency(item.membership_price),
                     ];
                 });
 
@@ -559,7 +584,9 @@ const MembershipReport = () => {
                 });
             }
 
-            doc.save(`${reportType}_report.pdf`);
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            doc.save(`membership_${reportType}_${reportPeriodType}_${timestamp}.pdf`);
         } catch (error) {
             console.error('Error generating PDF:', error);
             toast.error('Error generating PDF.');

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from '../css/UserFormModal.module.css';
-import ChangePasswordModal from './ChangePasswordModal';
 import { toast } from 'react-toastify';
 
 const UserFormModal = ({ user, onClose, onSuccess }) => {
@@ -19,7 +18,6 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
         confirmPassword: '',
     });
 
-    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
     const [error, setError] = useState('');
 
     // Retrieve role and userId from localStorage
@@ -80,12 +78,12 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
 
         // Prepare payload with camelCase field names
         const payload = {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            date_of_birth: formData.dateOfBirth,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            dateOfBirth: formData.dateOfBirth,
             username: formData.username,
             email: formData.email,
-            role_id: formData.roleId,
+            roleId: formData.roleId,
         };
 
         // Include password in payload when creating a new user
@@ -123,16 +121,6 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
             setError(errorMessage);
             toast.error(errorMessage);
         }
-    };
-
-    // Open the Change Password Modal
-    const openPasswordModal = () => {
-        setIsPasswordModalOpen(true);
-    };
-
-    // Close the Change Password Modal
-    const closePasswordModal = () => {
-        setIsPasswordModalOpen(false);
     };
 
     return (
@@ -238,31 +226,11 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
                         <button type="button" className={styles.formButton} onClick={onClose}>
                             Cancel
                         </button>
-                        {user && user.user_id && (
-                            <button
-                                type="button"
-                                className={styles.formButton}
-                                onClick={openPasswordModal}
-                            >
-                                Change Password
-                            </button>
-                        )}
                     </div>
                 </form>
             </div>
-            {/* Change Password Modal */}
-            {isPasswordModalOpen && (
-                <ChangePasswordModal
-                    open={isPasswordModalOpen}
-                    onClose={closePasswordModal}
-                    userId={user.user_id}
-                    role={role}
-                    isAdmin={true}
-                />
-            )}
         </div>
     );
-
 };
 
 export default UserFormModal;

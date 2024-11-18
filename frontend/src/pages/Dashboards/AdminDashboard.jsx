@@ -44,7 +44,7 @@ const AdminDashboard = () => {
     }, []);
 
     const fetchAnnouncements = () => {
-        axios.get(`http://localhost:5000/announcements/all`, {
+        axios.get(`${process.env.REACT_APP_API_URL}/announcements/all`, {
             headers: { 'user-id': userId, role },
         })
             .then(response => setAnnouncements(response.data))
@@ -63,7 +63,7 @@ const AdminDashboard = () => {
             // Include other filters if needed
         };
 
-        axios.post(`http://localhost:5000/reports`, reportRequest, {
+        axios.post(`${process.env.REACT_APP_API_URL}/reports`, reportRequest, {
             headers: {
                 'Content-Type': 'application/json',
                 'user-id': userId,
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
             // Include other filters if needed
         };
 
-        axios.post(`http://localhost:5000/reports`, reportRequest, {
+        axios.post(`${process.env.REACT_APP_API_URL}/reports`, reportRequest, {
             headers: {
                 'Content-Type': 'application/json',
                 'user-id': userId,
@@ -129,7 +129,7 @@ const AdminDashboard = () => {
     };
 
     const handleDelete = () => {
-        axios.delete(`http://localhost:5000/announcements/${announcementToDelete}`, {
+        axios.delete(`${process.env.REACT_APP_API_URL}/announcements/${announcementToDelete}`, {
             headers: { 'user-id': userId, role },
         })
             .then(() => {
@@ -151,7 +151,7 @@ const AdminDashboard = () => {
     };
 
     const handleRestore = () => {
-        axios.put(`http://localhost:5000/announcements/${announcementToRestore}/restore`, {}, {
+        axios.put(`${process.env.REACT_APP_API_URL}/announcements/${announcementToRestore}/restore`, {}, {
             headers: { 'user-id': userId, role },
         })
             .then(() => {

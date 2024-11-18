@@ -1,5 +1,3 @@
-// src/components/TicketCard.jsx
-
 import React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import { styled } from '@mui/system';
@@ -14,6 +12,17 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const TicketCard = ({ ticket }) => {
+    // Ensure price_at_purchase is a number
+    let priceAtPurchase = parseFloat(ticket.price_at_purchase);
+
+    // Handle cases where priceAtPurchase is NaN
+    if (isNaN(priceAtPurchase)) {
+        priceAtPurchase = 0;
+    }
+
+    // Alternatively, using nullish coalescing operator
+    // const priceAtPurchase = parseFloat(ticket.price_at_purchase ?? 0);
+
     return (
         <StyledCard>
             <CardContent
@@ -32,7 +41,7 @@ const TicketCard = ({ ticket }) => {
                         {ticket.admission_type} - {ticket.price_category}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                        Price at Purchase: ${ticket.price_at_purchase.toFixed(2)}
+                        Price at Purchase: ${priceAtPurchase.toFixed(2)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                         Purchase Date: {new Date(ticket.transaction_date).toLocaleDateString()}
@@ -40,7 +49,6 @@ const TicketCard = ({ ticket }) => {
                     <Typography variant="body2" color="text.secondary">
                         Visit Date: {new Date(ticket.visit_date).toLocaleDateString()}
                     </Typography>
-                    {/* Remove Order # from TicketCard if it's displayed elsewhere */}
                 </Box>
             </CardContent>
         </StyledCard>

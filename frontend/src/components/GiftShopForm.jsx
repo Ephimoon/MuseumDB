@@ -42,7 +42,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             // Set the image file using the URL
             setImageFile([
                 {
-                    source: `http://localhost:5000/giftshopitems/${item.item_id}/image`,
+                    source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
                     options: {
                         type: 'remote', // Indicate that the source is a remote URL
                     },
@@ -90,7 +90,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         if (item && item.item_id) {
             // Update existing item
             axios
-                .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
+                .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
                 .then(() => {
                     toast.success('Item updated successfully!');
                     onClose(); // Close the modal and refresh items
@@ -102,7 +102,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         } else {
             // Create new item
             axios
-                .post(`http://localhost:5000/giftshopitems`, data, config)
+                .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
                 .then(() => {
                     toast.success('Item created successfully!');
                     onClose(); // Close the modal and refresh items

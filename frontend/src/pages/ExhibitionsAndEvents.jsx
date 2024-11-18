@@ -19,7 +19,7 @@ const ExhibitionsAndEvents = () => {
         await Promise.all(
             exhibitions.map(async (exhibition) => {
                 try {
-                    const response = await axios.get(`http://localhost:5000/exhibition/${exhibition.exhibition_id}/image`, {
+                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/exhibition/${exhibition.exhibition_id}/image`, {
                         responseType: 'blob',
                     });
                     const imageUrl = URL.createObjectURL(response.data);
@@ -35,7 +35,7 @@ const ExhibitionsAndEvents = () => {
     useEffect(() => {
         const fetchExhibitions = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/exhibition?isDeleted=false`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/exhibition?isDeleted=false`);
                 console.log("Fetched Exhibitions Data (Raw):", response.data);
 
                 // Flatten the nested arrays in response.data
@@ -55,7 +55,7 @@ const ExhibitionsAndEvents = () => {
 
         const fetchEventData = async () => {
             try {
-                const response = await axios.get(`http://localhost:5000/api/events`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/events`);
                 if (response.status === 200) {
                     const formattedEvents = response.data.map(event => ({
                         id: event.event_id,

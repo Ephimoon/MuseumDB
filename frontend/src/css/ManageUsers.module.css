@@ -1,19 +1,28 @@
 /* src/css/ManageUsers.module.css */
+
 /* Container styling */
 .adminContainer {
-    padding: 100px;
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: #FFFFFF; /* Set background to white */
+    padding-top: 100px;
+    min-height: 100vh;
+    background-color: #fcfcfc; /* Light background */
+    text-align: center;
 }
 
+/* Title styling */
 .title {
     font-family: 'Rosarivo', serif;
     font-size: 48px;
     font-style: italic;
     font-weight: 400;
     color: #352F36;
-    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Action Buttons Container */
+.actionButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
     margin-bottom: 20px;
 }
 
@@ -29,64 +38,148 @@
     cursor: pointer;
     transition: background 0.3s ease;
     margin-bottom: 20px;
-    display: block;
-    margin-left: auto;
 }
 
 .addButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
 }
 
+/* Filter Section */
+.filterSection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    width: 90%;
+    margin: 0 auto 20px;
+}
+
+.filterGroup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.filterGroup label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #352F36;
+}
+
+.filterGroup input,
+.filterGroup select {
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid #D7D5D7;
+    border-radius: 5px;
+    width: 200px;
+    background-color: #fcfcfc;
+    color: #352F36;
+}
+
+.filterGroup input:focus,
+.filterGroup select:focus {
+    border-color: #BD2859;
+    outline: none;
+}
+
+.clearButton {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #FFFFFF;
+    background: #5D595E;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    height: fit-content;
+    margin-top: 22px;
+    margin-left: 50px;
+}
+
+.clearButton:hover {
+    background: #352F36;
+}
+
 /* User Table */
 .userTable {
-    width: 100%;
+    width: 90%;
+    margin: 0 auto 40px;
     border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: #FFFFFF; /* Ensure table has white background */
-    border: 1px solid #000000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
 }
 
 .userTable th,
 .userTable td {
-    border: 1px solid #D7D5D7;
-    padding: 12px 15px;
+    padding: 12px;
     text-align: left;
-    
+    border-bottom: 1px solid #ddd;
 }
 
 .userTable th {
-    background-color: #F1F1F1;
+    background-color: #BD2859;
+    color: #fcfcfc;
     font-weight: bold;
+    cursor: pointer;
+    user-select: none;
 }
 
-.userTable tr {
-    background-color: #FFFFFF; /* Set all rows to white background */
+.userTable th:hover {
+    background-color: #C63A4D;
 }
 
+/* Table row hover effect */
 .userTable tr:hover {
-    background-color: #F9F9F9; /* Optional: Add hover effect */
+    background-color: #f1f1f1;
 }
 
-/* Remove any alternating row colors */
-.userTable tr:nth-child(even) {
-    background-color: #FFFFFF;
-}
 /* Action Buttons */
 .actionButton {
-    padding: 5px 10px;
-    font-size: 0.9rem;
-    font-weight: bold;
+    padding: 8px 12px;
+    margin-right: 5px;
+    font-size: 14px;
     color: #FFFFFF;
     background: linear-gradient(90deg, #BD2859 0%, #D22D36 100%);
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    margin-right: 5px;
     transition: background 0.3s ease;
 }
 
 .actionButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pageButton {
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 4px;
+    background-color: #D7D5D7;
+    color: #FFFFFF;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.pageButton:hover {
+    background-color: #BD2859;
+}
+
+.activePage {
+    background-color: #BD2859;
 }
 
 /* Modal styling */
@@ -106,7 +199,7 @@
 .modalContent {
     background: #FFFFFF;
     padding: 20px;
-    width: 500px;
+    width: 400px;
     max-width: 90%;
     border-radius: 10px;
     text-align: center;
@@ -145,4 +238,24 @@
 
 .formButton:hover {
     background: linear-gradient(90deg, #D22D36 0%, #BD2859 100%);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .adminContainer {
+        padding-top: 80px;
+    }
+
+    .userTable {
+        width: 100%;
+    }
+
+    .modalContent {
+        width: 90%;
+    }
+
+    .filterGroup input,
+    .filterGroup select {
+        width: 100%;
+    }
 }

@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { TicketCartContext } from '../components/TicketCartContext';
 import { useNavigate } from 'react-router-dom';
 import styles from '../css/Checkout.module.css';
+import HomeNavBar from "../components/HomeNavBar";
 
 const TicketCheckout = () => {
     const { ticketCartItems, clearTicketCart } = useContext(TicketCartContext);
@@ -47,7 +48,7 @@ const TicketCheckout = () => {
             return;
         }
 
-        fetch(`http://localhost:5000/ticket-purchase`, {
+        fetch(`${process.env.REACT_APP_API_URL}/ticket-purchase`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -79,94 +80,98 @@ const TicketCheckout = () => {
     };
 
     return (
-        <div className={styles.checkoutContainer}>
-            <h1>Ticket Checkout</h1>
-            {transactionStatus === 'success' ? (
-                <div className={styles.successMessage}>
-                    <p>Your ticket purchase was successful!</p>
-                    <button
-                        className={styles.goBackButton}
-                        onClick={() => navigate('/')}
-                    >
-                        Return to Home
-                    </button>
-                </div>
-            ) : transactionStatus === 'error' ? (
-                <div className={styles.errorMessage}>
-                    <p>There was an error processing your transaction: {errorMessage}</p>
-                    <button className={styles.goBackButton} onClick={handleGoBack}>
-                        Go Back to Cart
-                    </button>
-                </div>
-            ) : (
-                <>
-                    <div className={styles.orderSummary}>
-                        <h2>Order Summary</h2>
-                        <table className={styles.orderTable}>
-                            <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Ticket</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Visit Date</th>
-                                <th>Subtotal</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {ticketCartItems.map((item, index) => (
-                                <tr key={`${item.ticket_type_id}-${item.visitDate}`}>
-                                    <td>{index + 1}</td>
-                                    <td>{item.name_}</td>
-                                    <td>${parseFloat(item.price).toFixed(2)}</td>
-                                    <td>{item.quantity}</td>
-                                    <td>{item.visitDate}</td>
-                                    <td>${(item.price * item.quantity).toFixed(2)}</td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                        <div className={styles.financials}>
-                            <div className={styles.financialRow}>
-                                <span>Subtotal:</span>
-                                <span>${subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className={styles.financialRow}>
-                                <span>Tax (8.25%):</span>
-                                <span>${tax.toFixed(2)}</span>
-                            </div>
-                            <div className={styles.financialRow}>
-                                <span>Total:</span>
-                                <span>${totalAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Payment Method Selection */}
-                    <div className={styles.paymentMethod}>
-                        <label htmlFor="paymentMethod">Payment Method:</label>
-                        <select
-                            id="paymentMethod"
-                            value={paymentMethod}
-                            onChange={(e) => setPaymentMethod(e.target.value)}
-                        >
-                            <option value="credit">Credit</option>
-                            <option value="debit">Debit</option>
-                            <option value="cash">Cash</option>
-                        </select>
-                    </div>
-                    <div className={styles.buttonGroup}>
+        <div>
+            <HomeNavBar />
+            <div className={styles.checkoutContainer}>
+                <h1>Ticket Checkout</h1>
+                {transactionStatus === 'success' ? (
+                    <div className={styles.successMessage}>
+                        <p>Your ticket purchase was successful!</p>
                         <button
-                            className={styles.clearCartButton}
-                            onClick={handleCheckout}
+                            className={styles.goBackButton}
+                            onClick={() => navigate('/')}
                         >
-                            Confirm Purchase
+                            Return to Home
                         </button>
+                    </div>
+                ) : transactionStatus === 'error' ? (
+                    <div className={styles.errorMessage}>
+                        <p>There was an error processing your transaction: {errorMessage}</p>
                         <button className={styles.goBackButton} onClick={handleGoBack}>
                             Go Back to Cart
                         </button>
                     </div>
-                </>
-            )}
+                ) : (
+                    <>
+                        <div className={styles.orderSummary}>
+                            <h2>Order Summary</h2>
+                            <table className={styles.orderTable}>
+                                <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Ticket</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Visit Date</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {ticketCartItems.map((item, index) => (
+                                    <tr key={`${item.ticket_type_id}-${item.visitDate}`}>
+                                        <td>{index + 1}</td>
+                                        <td>{item.name_}</td>
+                                        <td>${parseFloat(item.price).toFixed(2)}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>{item.visitDate}</td>
+                                        <td>${(item.price * item.quantity).toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                            <div className={styles.financials}>
+                                <div className={styles.financialRow}>
+                                    <span>Subtotal:</span>
+                                    <span>${subtotal.toFixed(2)}</span>
+                                </div>
+                                <div className={styles.financialRow}>
+                                    <span>Tax (8.25%):</span>
+                                    <span>${tax.toFixed(2)}</span>
+                                </div>
+                                <div className={styles.financialRow}>
+                                    <span>Total:</span>
+                                    <span>${totalAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Payment Method Selection */}
+                        <div className={styles.paymentMethod}>
+                            <label htmlFor="paymentMethod">Payment Method:</label>
+                            <select
+                                id="paymentMethod"
+                                value={paymentMethod}
+                                onChange={(e) => setPaymentMethod(e.target.value)}
+                                className={styles.paymentSelect}
+                            >
+                                <option value="credit">Credit</option>
+                                <option value="debit">Debit</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+                        <div className={styles.buttonGroup}>
+                            <button
+                                className={styles.clearCartButton}
+                                onClick={handleCheckout}
+                            >
+                                Confirm Purchase
+                            </button>
+                            <button className={styles.goBackButton} onClick={handleGoBack}>
+                                Go Back to Cart
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };
