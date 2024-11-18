@@ -16,11 +16,11 @@ The application is currently deployed and can be accessed at:
 - [Project Structure](#project-structure)
 
 ## Features
-- Curator management
-- Event Scheduling
-- Ticket sales system
-- Gift shop commerce 
-- Membership management
+- Artwork, Artist, and Exhibition system (data management for admin and staff, user-facing page for customers and members)
+- Event scheduling (only for staff and admin)
+- Ticket sales system (data management for admin and staff, user-facing page for customers and members)
+- Gift shop commerce (data management for admin and staff, user-facing page for customers and members)
+- Membership registration system
 - Reports generation
 
 
