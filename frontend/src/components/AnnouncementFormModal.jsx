@@ -48,12 +48,12 @@ const AnnouncementFormModal = ({ announcement = {}, onClose }) => {
 
         if (announcement && announcement.id) {
             axios
-                .put(`${process.env.REACT_APP_API_URL}/announcements/${announcement.id}`, formData, config)
+                .put(`http://localhost:5000/announcements/${announcement.id}`, formData, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error updating announcement:', error));
         } else {
             axios
-                .post(`${process.env.REACT_APP_API_URL}/announcements`, formData, config)
+                .post(`http://localhost:5000/announcements`, formData, config)
                 .then(() => onClose())
                 .catch((error) => console.error('Error creating announcement:', error));
         }

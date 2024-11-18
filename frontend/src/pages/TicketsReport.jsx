@@ -52,15 +52,15 @@ const TicketsReport = () => {
         setOptionsLoading(true);
         Promise.all([
             // Fetch available price categories
-            axios.get(`${process.env.REACT_APP_API_URL}/ticket`, {
+            axios.get(`http://localhost:5000/ticket`, {
                 headers: { 'Content-Type': 'application/json' },
             }),
             // Fetch available user types
-            axios.get(`${process.env.REACT_APP_API_URL}/user-type`, {
+            axios.get(`http://localhost:5000/user-type`, {
                 headers: { 'Content-Type': 'application/json' },
             }),
             // Fetch available payment methods
-            axios.get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
+            axios.get(`http://localhost:5000/paymentmethods`, {
                 headers: { 'Content-Type': 'application/json' },
             })
         ])
@@ -146,7 +146,7 @@ const TicketsReport = () => {
         const userId = localStorage.getItem('userId');
 
         axios
-            .post(`${process.env.REACT_APP_API_URL}/reports-tickets`, reportRequest, {
+            .post(`http://localhost:5000/reports-tickets`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,

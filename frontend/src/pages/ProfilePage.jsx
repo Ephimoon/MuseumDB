@@ -43,7 +43,7 @@ const ProfilePage = () => {
     useEffect(() => {
         // Fetch user data
         axios
-            .get(`${process.env.REACT_APP_API_URL}/users/${userId}`, {
+            .get(`http://localhost:5000/users/${userId}`, {
                 headers: { 'user-id': userId, role },
             })
             .then((response) => {
@@ -61,7 +61,7 @@ const ProfilePage = () => {
         // Fetch membership info if user is a member
         if (role === 'member') {
             axios
-                .get(`${process.env.REACT_APP_API_URL}/get-membership-info`, {
+                .get(`http://localhost:5000/get-membership-info`, {
                     headers: { 'user-id': userId, role },
                 })
                 .then((response) => {
@@ -98,7 +98,7 @@ const ProfilePage = () => {
         }
 
         axios
-            .put(`${process.env.REACT_APP_API_URL}/users/${userId}`, userData, {
+            .put(`http://localhost:5000/users/${userId}`, userData, {
                 headers: { 'user-id': userId, role },
             })
             .then(() => {
@@ -122,7 +122,7 @@ const ProfilePage = () => {
         setCanceling(true);
         axios
             .post(
-                `${process.env.REACT_APP_API_URL}/cancel-membership`,
+                `http://localhost:5000/cancel-membership`,
                 {},
                 {
                     headers: { 'user-id': userId, role },

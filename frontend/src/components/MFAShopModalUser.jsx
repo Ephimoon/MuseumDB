@@ -31,7 +31,7 @@ const MFAShopModalUser = ({ item, onClose, isEditing }) => {
     const [imageFile, setImageFile] = useState(null);
 
     const getImageUrl = (itemId) => {
-        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
+        return `http://localhost:5000/giftshopitems/${itemId}/image`;
     };
 
     const handleInputChange = (e) => {
@@ -58,14 +58,14 @@ const MFAShopModalUser = ({ item, onClose, isEditing }) => {
         try {
             if (item && isEditing) {
                 // Update existing item
-                await axios.put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, formData, {
+                await axios.put(`http://localhost:5000/giftshopitems/${item.item_id}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
             } else {
                 // Create new item
-                await axios.post(`${process.env.REACT_APP_API_URL}/giftshopitems`, formData, {
+                await axios.post(`http://localhost:5000/giftshopitems`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },

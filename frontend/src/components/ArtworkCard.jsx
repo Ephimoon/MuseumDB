@@ -39,7 +39,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
 
   const fetchArtworkImage = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}/image`, {responseType: 'blob', });
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}/image`, {responseType: 'blob', });
       setImageUrl(URL.createObjectURL(response.data));
     } catch (error) {
       console.error('Error fetching artwork image:', error);
@@ -52,7 +52,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`);
+      await axios.delete(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
       console.log("Artwork deleted successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -63,7 +63,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`);
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
       setArtwork(response.data);
       fetchArtworkImage();
     } catch (error) {
@@ -81,8 +81,8 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
     try {
       // Fetch both the artist and department information in parallel
       const [artistResponse, departmentResponse] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_API_URL}/artist/${artistId}`),
-        axios.get(`${process.env.REACT_APP_API_URL}/department/${departmentId}`)
+        axios.get(`http://localhost:5000/artist/${artistId}`),
+        axios.get(`http://localhost:5000/department/${departmentId}`)
       ]);
 
       const artistData = artistResponse.data;
@@ -110,7 +110,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
       }
 
       // Proceed with restoring the artwork if the artist and department are active
-      await axios.patch(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}/restore`);
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}/restore`);
       console.log("Artwork restored successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -217,10 +217,10 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
     const fetchData = async () => {
       try {
         const [artistRes, departmentsRes, mediumsRes, conditionsRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL}/artist`),
-          axios.get(`${process.env.REACT_APP_API_URL}/department`),
-          axios.get(`${process.env.REACT_APP_API_URL}/mediums`),
-          axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`)
+          axios.get(`http://localhost:5000/artist`),
+          axios.get(`http://localhost:5000/department`),
+          axios.get(`http://localhost:5000/mediums`),
+          axios.get(`http://localhost:5000/artworkconditions`)
         ]);
         const validArtists = Array.isArray(artistRes.data)
             ? artistRes.data.flat().filter(artist => artist.ArtistID)
@@ -331,7 +331,7 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
     if (image) formData.append('image', image);
 
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`, formData, {
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onRefresh();
@@ -496,7 +496,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const fetchArtistImage = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}/image`, { responseType: 'blob' });
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}/image`, { responseType: 'blob' });
       setImageUrl(URL.createObjectURL(response.data));
     } catch (error) {
       console.error('Error fetching artist image:', error);
@@ -509,7 +509,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`);
+      await axios.delete(`http://localhost:5000/artist/${artist.ArtistID}`);
       console.log("Artist deleted successfully");
       onClose(); // Close the modal first to prevent further rendering issues
       onRefresh(); // Then refresh the artist list after closing the modal
@@ -520,7 +520,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`);
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}`);
       setArtist(response.data);
       fetchArtistImage();
     } catch (error) {
@@ -536,7 +536,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const handleRestoreArtist = async (artistId) => {
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/artist/${artistId}/restore`);
+      await axios.patch(`http://localhost:5000/artist/${artistId}/restore`);
 
       onRefresh();
       onClose();
@@ -615,7 +615,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh, setModalA
   useEffect(() => {
     const fetchNationalities = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
+        const response = await axios.get(`http://localhost:5000/nationalities`);
         setNationalities(response.data);
       } catch (error) {
         console.error('Error fetching nationalities:', error);
@@ -686,7 +686,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh, setModalA
     }
 
     try {
-      const response = await axios.patch(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`, formData, {
+      const response = await axios.patch(`http://localhost:5000/artist/${artist.ArtistID}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       console.log("Response from backend:", response.data);
@@ -773,7 +773,7 @@ const DepartmentCard = ({ department_, onRefresh, onEditClick, onDeleteClick, is
 
   const handleRestoreClick = async (departmentId) => {
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/department/${departmentId}/restore`);
+      await axios.patch(`http://localhost:5000/department/${departmentId}/restore`);
       onRefresh();
     } catch (error) {
       console.error('Error restoring department:', error);
@@ -841,7 +841,7 @@ const EditDepartmentModal = ({ department, onClose, onRefresh }) => {
     };
 
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/department/${department.DepartmentID}`, updatedDepartmentData);
+      await axios.patch(`http://localhost:5000/department/${department.DepartmentID}`, updatedDepartmentData);
       onRefresh();
       onClose();
     } catch (error) {

@@ -58,7 +58,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchArtwork = () => {
         console.log("isDeletedView:", isDeletedView);
-        axios.get(`${process.env.REACT_APP_API_URL}/artwork?isDeleted=${isDeletedView}`)
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedView}`)
             .then(response => {
                 console.log("Artwork data:", response.data); // Log the data to see if it's fetched
                 setArtworks(response.data[0]);
@@ -75,7 +75,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         await Promise.all(
             artworks.map(async (art_image) => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${art_image.ArtworkID}/image`, {
+                    const response = await axios.get(`http://localhost:5000/artwork/${art_image.ArtworkID}/image`, {
                         responseType: 'blob',
                     });
                     const imageUrl = URL.createObjectURL(response.data);
@@ -98,8 +98,8 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchArtists = async () => {
         try {
-            const responseWithArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-with-artwork?isDeleted=${isDeletedView}`);
-            const responseWithoutArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-null-artwork?isDeleted=${isDeletedView}`);
+            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork?isDeleted=${isDeletedView}`);
+            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork?isDeleted=${isDeletedView}`);
 
             // Combine and filter out entries without ArtistID
             const artistsWithArtwork = responseWithArtwork.data.flat().filter(artist => artist.ArtistID);
@@ -125,7 +125,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         await Promise.all(
             artists.filter(artist_image => artist_image.ArtistID).map(async (artist_image) => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist_image.ArtistID}/image`, {
+                    const response = await axios.get(`http://localhost:5000/artist/${artist_image.ArtistID}/image`, {
                         responseType: 'blob',
                     });
                     const imageUrl = URL.createObjectURL(response.data);
@@ -152,11 +152,11 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchFilterOptions = async () => {
         try {
-            const departmentRes = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
-            const mediumsRes = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
-            const yearsRes = await axios.get(`${process.env.REACT_APP_API_URL}/creation-years`);
-            //const conditionsRes = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
-            const nationalitiesRes = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
+            const departmentRes = await axios.get(`http://localhost:5000/department`);
+            const mediumsRes = await axios.get(`http://localhost:5000/mediums`);
+            const yearsRes = await axios.get(`http://localhost:5000/creation-years`);
+            //const conditionsRes = await axios.get(`http://localhost:5000/artworkconditions`);
+            const nationalitiesRes = await axios.get(`http://localhost:5000/nationalities`);
 
             const validDepartments = departmentRes.data.flat().filter(department => department.DepartmentID);
             setDepartments(validDepartments);
@@ -547,11 +547,11 @@ const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
     }, [isDepartmentDeletedOpen, filterType, refreshDepartments]);
 
     const fetchDepartments = async () => {
-        let endpoint = `${process.env.REACT_APP_API_URL}/department`;
+        let endpoint = `http://localhost:5000/department`;
         if (filterType === 'withArtwork') {
-            endpoint = `${process.env.REACT_APP_API_URL}/department-with-artwork`;
+            endpoint = `http://localhost:5000/department-with-artwork`;
         } else if (filterType === 'withoutArtwork') {
-            endpoint = `${process.env.REACT_APP_API_URL}/department-null-artwork`;
+            endpoint = `http://localhost:5000/department-null-artwork`;
         }
 
         try {
@@ -579,7 +579,7 @@ const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
 
     const handleDeleteConfirm = async () => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/department/${selectedDepartment}`);
+            await axios.delete(`http://localhost:5000/department/${selectedDepartment}`);
             fetchDepartments(); // Refresh the department list after deletion
             setIsDeleteModalOpen(false);
         } catch (error) {

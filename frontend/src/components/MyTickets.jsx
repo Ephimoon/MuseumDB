@@ -30,7 +30,7 @@ const MyTickets = () => {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/users/${userId}/tickets`, {
+                const response = await axios.get(`http://localhost:5000/users/${userId}/tickets`, {
                     headers: { 'user-id': userId, role },
                 });
                 console.log('Fetched tickets:', response.data);

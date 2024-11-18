@@ -74,7 +74,7 @@ const GiftShopAdmin = () => {
     // Fetch gift shop items (including deleted for admin view)
     const fetchItems = () => {
         axios
-            .get(`${process.env.REACT_APP_API_URL}/giftshopitemsall`)
+            .get(`http://localhost:5000/giftshopitemsall`)
             .then((response) => {
                 setItems(response.data);
                 toast.success('Items fetched successfully!');
@@ -88,7 +88,7 @@ const GiftShopAdmin = () => {
     // Fetch logs
     const fetchLogs = () => {
         axios
-            .get(`${process.env.REACT_APP_API_URL}/giftshopitems/logs`, {
+            .get(`http://localhost:5000/giftshopitems/logs`, {
                 headers: {
                     'user-id': localStorage.getItem('userId'),
                     role: localStorage.getItem('role'),
@@ -105,7 +105,7 @@ const GiftShopAdmin = () => {
     };
 
     const getImageUrl = (itemId) => {
-        return `${process.env.REACT_APP_API_URL}/giftshopitems/${itemId}/image`;
+        return `http://localhost:5000/giftshopitems/${itemId}/image`;
     };
 
     // Confirm Soft or Hard Delete
@@ -130,7 +130,7 @@ const GiftShopAdmin = () => {
         const role = localStorage.getItem('role');
         axios
             .put(
-                `${process.env.REACT_APP_API_URL}/giftshopitems/${id}/soft-delete`,
+                `http://localhost:5000/giftshopitems/${id}/soft-delete`,
                 {},
                 {
                     headers: { role: role, 'user-id': localStorage.getItem('userId') },
@@ -149,7 +149,7 @@ const GiftShopAdmin = () => {
     const handleHardDelete = (id) => {
         const role = localStorage.getItem('role');
         axios
-            .delete(`${process.env.REACT_APP_API_URL}/giftshopitems/${id}/hard-delete`, {
+            .delete(`http://localhost:5000/giftshopitems/${id}/hard-delete`, {
                 headers: { role: role, 'user-id': localStorage.getItem('userId') },
             })
             .then(() => {
@@ -177,7 +177,7 @@ const GiftShopAdmin = () => {
         const role = localStorage.getItem('role');
         axios
             .put(
-                `${process.env.REACT_APP_API_URL}/giftshopitems/${id}/restore`,
+                `http://localhost:5000/giftshopitems/${id}/restore`,
                 {},
                 {
                     headers: { role: role, 'user-id': localStorage.getItem('userId') },

@@ -7,7 +7,7 @@ import axios from 'axios';
 const ExhibitionCard = ({ exhibition_, onRefresh, onEditClick, onDeleteClick, isExhibitionDeletedOpen, exhibitionImages }) => {
     const handleRestoreClick = async (exId) => {
         try {
-            await axios.patch(`${process.env.REACT_APP_API_URL}/exhibition/${exId}/restore`);
+            await axios.patch(`http://localhost:5000/exhibition/${exId}/restore`);
             onRefresh();
         } catch (error) {
             console.error('Error restoring exhibition:', error);
@@ -92,7 +92,7 @@ const EditExhibitionModal = ({ exhibition, onClose, onRefresh }) => {
         }
 
         try {
-            await axios.patch(`${process.env.REACT_APP_API_URL}/exhibition/${exhibition.exhibition_id}`, formData, {
+            await axios.patch(`http://localhost:5000/exhibition/${exhibition.exhibition_id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             onRefresh();
@@ -206,7 +206,7 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
         await Promise.all(
             exhibitions.map(async (exhibition) => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/exhibition/${exhibition.exhibition_id}/image`, {
+                    const response = await axios.get(`http://localhost:5000/exhibition/${exhibition.exhibition_id}/image`, {
                         responseType: 'blob',
                     });
                     const imageUrl = URL.createObjectURL(response.data);
@@ -253,7 +253,7 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
 
     const handleConfirmDelete = async () => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/exhibition/${exhibitionToDelete}`);
+            await axios.delete(`http://localhost:5000/exhibition/${exhibitionToDelete}`);
             triggerExhibitionRefresh();
             setIsDeleteModalOpen(false);
         } catch (error) {
@@ -464,7 +464,7 @@ const CurateExhibitions = () => {
 
     const fetchExhibitions = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/exhibition?isDeleted=${isDeletedOpen}`);
+            const response = await axios.get(`http://localhost:5000/exhibition?isDeleted=${isDeletedOpen}`);
             console.log("Fetched Exhibitions Data (Raw):", response.data);
 
             // Flatten the nested arrays in response.data
@@ -488,7 +488,7 @@ const CurateExhibitions = () => {
     const triggerExhibitionRefresh = () => setRefreshExhibitions(!refreshExhibitions);
 
     const saveInsertExhibition = (exData) => {
-        axios.post(`${process.env.REACT_APP_API_URL}/exhibition`, exData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        axios.post(`http://localhost:5000/exhibition`, exData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => {
                 triggerExhibitionRefresh();
                 closeInsertExhibitionModal();

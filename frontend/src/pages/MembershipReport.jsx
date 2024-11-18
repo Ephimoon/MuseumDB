@@ -41,7 +41,7 @@ const MembershipReport = () => {
     useEffect(() => {
         // Fetch available membership types
         axios
-            .get(`${process.env.REACT_APP_API_URL}/membership-types`, {
+            .get(`http://localhost:5000/membership-types`, {
                 headers: { 'Content-Type': 'application/json' },
             })
             .then((response) => setAvailableMembershipTypes(response.data))
@@ -52,7 +52,7 @@ const MembershipReport = () => {
 
         // Fetch available payment methods
         axios
-            .get(`${process.env.REACT_APP_API_URL}/paymentmethods`, {
+            .get(`http://localhost:5000/paymentmethods`, {
                 headers: { 'Content-Type': 'application/json' },
             })
             .then((response) => setAvailablePaymentMethods(response.data))
@@ -122,7 +122,7 @@ const MembershipReport = () => {
         };
 
         axios
-            .post(`${process.env.REACT_APP_API_URL}/membership-reports`, reportRequest, {
+            .post(`http://localhost:5000/membership-reports`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,

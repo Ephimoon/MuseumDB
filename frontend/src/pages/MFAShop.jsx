@@ -33,7 +33,7 @@ const MFAShop = () => {
     // Fetch shop items function
     const fetchItems = useCallback(() => {
         setLoading(true);
-        fetch(`${process.env.REACT_APP_API_URL}/giftshopitems`)
+        fetch(`http://localhost:5000/giftshopitems`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch shop items');

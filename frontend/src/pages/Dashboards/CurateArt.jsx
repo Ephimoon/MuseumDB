@@ -20,7 +20,7 @@ const InsertArtistModal = ({ onClose, onSave }) => {
     useEffect(() => {
         const fetchNationalities = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
+                const response = await axios.get(`http://localhost:5000/nationalities`);
                 setNationalities(response.data);
             } catch (error) {
                 console.error('Error fetching nationalities:', error);
@@ -154,7 +154,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
+                const response = await axios.get(`http://localhost:5000/department`);
                 console.log("Fetch Departments Response:", response); // Log the response to check its structure
                 const validDepartments = response.data.flat().filter(department => department.DepartmentID);
                 setDepartments(validDepartments);
@@ -165,7 +165,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchMediums = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
+                const response = await axios.get(`http://localhost:5000/mediums`);
                 setMediums(response.data);
             } catch (error) {
                 console.error('Error fetching mediums:', error);
@@ -174,7 +174,7 @@ const InsertArtworkModal = ({ onClose, onSave, artists }) => {
 
         const fetchConditions = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
+                const response = await axios.get(`http://localhost:5000/artworkconditions`);
                 setConditions(response.data);
             } catch (error) {
                 console.error('Error fetching artworkconditions:', error);
@@ -439,7 +439,7 @@ const CurateArt = () => {
     }, [refreshArtists, isDeletedOpen]);
 
     const fetchArtists = () => {
-        axios.get(`${process.env.REACT_APP_API_URL}/artist?isDeleted=${isDeletedOpen}`)
+        axios.get(`http://localhost:5000/artist?isDeleted=${isDeletedOpen}`)
             .then(response => {
                 const validArtists = response.data.flat().filter(artist => artist.ArtistID);
                 setArtists(validArtists);
@@ -452,7 +452,7 @@ const CurateArt = () => {
     }, [refreshArtworks, isDeletedOpen]);
 
     const fetchArtworks = () => {
-        axios.get(`${process.env.REACT_APP_API_URL}/artwork?isDeleted=${isDeletedOpen}`)
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedOpen}`)
             .then(response => setArtworks(response.data))
             .catch(error => console.error('Error fetching artworks:', error));
     };
@@ -469,7 +469,7 @@ const CurateArt = () => {
     const triggerDepartmentRefresh = () => setRefreshDepartments(!refreshDepartments); // Refresh function for departments
 
     const saveInsertArtwork = (artworkData) => {
-        axios.post(`${process.env.REACT_APP_API_URL}/artwork`, artworkData, {
+        axios.post(`http://localhost:5000/artwork`, artworkData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
             .then(() => {
@@ -480,7 +480,7 @@ const CurateArt = () => {
     };
 
     const saveInsertArtist = (artistData) => {
-        axios.post(`${process.env.REACT_APP_API_URL}/artist`, artistData, {
+        axios.post(`http://localhost:5000/artist`, artistData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         })
             .then(() => {
@@ -491,7 +491,7 @@ const CurateArt = () => {
     };
 
     const saveInsertDepartment = (departmentData) => {
-        axios.post(`${process.env.REACT_APP_API_URL}/department`, departmentData)
+        axios.post(`http://localhost:5000/department`, departmentData)
             .then(() => {
                 triggerDepartmentRefresh(); // Trigger department refresh
                 closeInsertDepartmentModal();
