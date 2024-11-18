@@ -3,8 +3,8 @@
 /* Main Container for Checkout Page */
 .checkoutContainer {
     padding: 20px;
-    width: 100%; /* Ensure full width */
-    max-width: 2000px; /* Adjust as needed */
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
     background-color: #fcfcfc;
@@ -89,6 +89,43 @@
     padding-top: 15px;
 }
 
+/* Payment Method Selection */
+.paymentMethod {
+    width: 100%;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.paymentMethod label {
+    font-size: 1.2rem;
+    color: #352F36;
+    margin-bottom: 10px;
+}
+
+.paymentSelect {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px;
+    font-size: 1rem;
+    color: #352F36;
+    background-color: #FFFFFF;
+    border: 1px solid #D7D5D7;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.paymentSelect:focus {
+    border-color: #1E90FF;
+}
+
+.paymentSelect option {
+    padding: 10px;
+    font-size: 1rem;
+}
+
 /* Button Group */
 .buttonGroup {
     width: 100%;
@@ -98,14 +135,14 @@
     gap: 10px; /* Space between buttons */
 }
 
-/* Confirm Purchase Button (Using clearCartButton styles) */
+/* Confirm Purchase Button */
 .clearCartButton {
-    flex: 1 1 48%; /* Adjust width as needed */
+    flex: 1 1 48%;
     padding: 15px;
     font-size: 1.2rem;
     font-weight: bold;
     color: #FFFFFF;
-    background: linear-gradient(90deg, #FF8C00 0%, #FF5722 100%); /* Vibrant orange to deep amber */
+    background: linear-gradient(90deg, #FF8C00 0%, #FF5722 100%);
     border: none;
     border-radius: 7px;
     cursor: pointer;
@@ -119,12 +156,12 @@
 
 /* Go Back Button */
 .goBackButton {
-    flex: 1 1 48%; /* Adjust width as needed */
+    flex: 1 1 48%;
     padding: 15px;
     font-size: 1.2rem;
     font-weight: bold;
     color: #FFFFFF;
-    background: linear-gradient(90deg, #1E90FF 0%, #00688B 100%); /* Teal to navy blue */
+    background: linear-gradient(90deg, #1E90FF 0%, #00688B 100%);
     border: none;
     border-radius: 7px;
     cursor: pointer;
@@ -169,7 +206,7 @@
     }
 
     .clearCartButton, .goBackButton {
-        flex: 1 1 100%; /* Stack buttons vertically on small screens */
+        flex: 1 1 100%;
         margin-bottom: 10px;
     }
 }

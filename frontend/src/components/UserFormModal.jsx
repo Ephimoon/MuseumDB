@@ -80,12 +80,12 @@ const UserFormModal = ({ user, onClose, onSuccess }) => {
 
         // Prepare payload with camelCase field names
         const payload = {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            date_of_birth: formData.dateOfBirth,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            dateOfBirth: formData.dateOfBirth,
             username: formData.username,
             email: formData.email,
-            role_id: formData.roleId,
+            roleId: formData.roleId,
         };
 
         // Include password in payload when creating a new user

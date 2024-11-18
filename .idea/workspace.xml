@@ -6,8 +6,39 @@
   <component name="ChangeListManager">
     <list default="true" id="3f424dd9-3ec0-47f1-b65a-6f298c371623" name="Changes" comment="Update api url">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/HomeNavBar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/HomeNavBar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AdminResetPasswordModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AdminResetPasswordModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AnnouncementDisplay.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementDisplay.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AnnouncementFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AnnouncementFormModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ArtLookUp.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ArtLookUp.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ArtworkCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ArtworkCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ChangePasswordModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ChangePasswordModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/EmailLogs.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/EmailLogs.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopAdmin.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/GiftShopForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/GiftShopForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Login.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MFAShopCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MFAShopCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MFAShopModalUser.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/ManageUsers.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/ManageUsers.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/MyTickets.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/MyTickets.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Register.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Register.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/UserFormModal.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Verify.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Verify.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/css/Checkout.module.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/Checkout.module.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BecomeAMember.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BecomeAMember.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/BuyTickets.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/BuyTickets.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Checkout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Checkout.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/AdminDashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateArt.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateArt.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateExhibitions.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/CurateExhibitions.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboards/EventDashboard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ExhibitionsAndEvents.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ExhibitionsAndEvents.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MFAShop.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MFAShop.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/MembershipReport.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/MembershipReport.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/ProfilePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Report.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TicketCheckout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TicketCheckout.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/TicketsReport.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/TicketsReport.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/server.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

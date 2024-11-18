@@ -56,7 +56,6 @@ const ManageUsers = () => {
         })
             .then(response => {
                 setUsers(response.data);
-                toast.success('Users fetched successfully!');
             })
             .catch(error => {
                 console.error('Error fetching users:', error);
