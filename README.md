@@ -16,12 +16,12 @@ The application is currently deployed and can be accessed at:
 - [Project Structure](#project-structure)
 
 ## Features
-- Artwork management
-- Event tracking
+- Curator management
+- Event Scheduling
 - Ticket sales system
-- Gift shop inventory 
+- Gift shop commerce 
 - Membership management
-- Revenue reports
+- Reports generation
 
 
 ## Installation
@@ -53,17 +53,15 @@ The application is currently deployed and can be accessed at:
         npm start
 2. For production build
 
-    The application will be running locally at http://localhost:3000
+    The application will be running locally at: http://localhost:3000 or http://localhost:3002
    
-    Or visit our deployed version at: https://black-desert-0587dbd10.5.azurestaticapps.net/
+    You can also visit our deployed version at: https://black-desert-0587dbd10.5.azurestaticapps.net/
 
 ## Database Setup
 1. Create your database in MySQL
-2. Run the SQL scripts located in the database folder to setup your schema
+2. Download the .SQL (dump file)
+3. Restore the database schema using the .SQL (dump file)
 
-```
-mysql -u wtv username -p db name < schema.sql
-```
 
 ## Project Structure
 ```
