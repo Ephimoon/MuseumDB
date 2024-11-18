@@ -14,6 +14,9 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 // Import the Image Preview plugin
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 
+// Import toast from React Toastify
+import { toast } from 'react-toastify';
+
 // Register the plugin
 registerPlugin(FilePondPluginImagePreview);
 
@@ -25,7 +28,6 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         quantity: '',
     });
     const [imageFile, setImageFile] = useState([]);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         if (item && item.item_id) {
@@ -40,7 +42,7 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
             // Set the image file using the URL
             setImageFile([
                 {
-                    source: `${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}/image`,
+                    source: `http://localhost:5000/giftshopitems/${item.item_id}/image`,
                     options: {
                         type: 'remote', // Indicate that the source is a remote URL
                     },
@@ -88,21 +90,27 @@ const GiftShopFormModal = ({ item = {}, onClose }) => {
         if (item && item.item_id) {
             // Update existing item
             axios
-                .put(`${process.env.REACT_APP_API_URL}/giftshopitems/${item.item_id}`, data, config)
+                .put(`http://localhost:5000/giftshopitems/${item.item_id}`, data, config)
                 .then(() => {
-                    onClose(); // Close the modal
-                    window.location.reload(); // Refresh the page
+                    toast.success('Item updated successfully!');
+                    onClose(); // Close the modal and refresh items
                 })
-                .catch((error) => console.error('Error updating item:', error));
+                .catch((error) => {
+                    console.error('Error updating item:', error);
+                    toast.error('Failed to update the item.');
+                });
         } else {
             // Create new item
             axios
-                .post(`${process.env.REACT_APP_API_URL}/giftshopitems`, data, config)
+                .post(`http://localhost:5000/giftshopitems`, data, config)
                 .then(() => {
-                    onClose(); // Close the modal
-                    window.location.reload(); // Refresh the page
+                    toast.success('Item created successfully!');
+                    onClose(); // Close the modal and refresh items
                 })
-                .catch((error) => console.error('Error creating item:', error));
+                .catch((error) => {
+                    console.error('Error creating item:', error);
+                    toast.error('Failed to create the item.');
+                });
         }
     };
 

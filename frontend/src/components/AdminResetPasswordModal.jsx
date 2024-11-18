@@ -74,7 +74,7 @@ const AdminResetPasswordModal = ({ open, onClose, userId, role }) => {
         if (!validatePasswords()) return;
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/users/${userId}/reset-password`, {
+            const response = await fetch(`http://localhost:5000/users/${userId}/reset-password`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,11 +1,12 @@
+// src/components/UserFormModal.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styles from '../css/UserFormModal.module.css';
 import ChangePasswordModal from './ChangePasswordModal';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
-const UserFormModal = ({ user, onClose }) => {
+const UserFormModal = ({ user, onClose, onSuccess }) => {
     // Initialize form data with camelCase field names
     const [formData, setFormData] = useState({
         firstName: '',
@@ -79,19 +80,23 @@ const UserFormModal = ({ user, onClose }) => {
 
         // Prepare payload with camelCase field names
         const payload = {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            dateOfBirth: formData.dateOfBirth,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            date_of_birth: formData.dateOfBirth,
             username: formData.username,
             email: formData.email,
-            roleId: formData.roleId,
-            password: formData.password, // Include password in payload when creating new user
+            role_id: formData.roleId,
         };
+
+        // Include password in payload when creating a new user
+        if (!user || !user.user_id) {
+            payload.password = formData.password;
+        }
 
         try {
             if (user && user.user_id) {
                 // Update existing user
-                await axios.put(`${process.env.REACT_APP_API_URL}/users/${user.user_id}`, payload, {
+                await axios.put(`http://localhost:5000/users/${user.user_id}`, payload, {
                     headers: {
                         role: role,
                         'user-id': userId,
@@ -100,7 +105,7 @@ const UserFormModal = ({ user, onClose }) => {
                 toast.success('User updated successfully');
             } else {
                 // Create new user via admin endpoint
-                await axios.post(`${process.env.REACT_APP_API_URL}/users`, payload, {
+                await axios.post(`http://localhost:5000/users`, payload, {
                     headers: {
                         role: role,
                         'user-id': userId,
@@ -109,6 +114,7 @@ const UserFormModal = ({ user, onClose }) => {
                 toast.success('User created successfully');
             }
             onClose(); // Close the modal upon successful submission
+            if (onSuccess) onSuccess(); // Trigger parent refresh
         } catch (error) {
             console.error('Error submitting form:', error);
             // Display error message from server or a generic message
@@ -244,8 +250,6 @@ const UserFormModal = ({ user, onClose }) => {
                     </div>
                 </form>
             </div>
-            {/* Add ToastContainer */}
-            <ToastContainer />
             {/* Change Password Modal */}
             {isPasswordModalOpen && (
                 <ChangePasswordModal
@@ -258,6 +262,7 @@ const UserFormModal = ({ user, onClose }) => {
             )}
         </div>
     );
+
 };
 
 export default UserFormModal;

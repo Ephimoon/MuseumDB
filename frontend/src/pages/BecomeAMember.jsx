@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
-    TextField,
     Typography,
     InputAdornment,
     Grid,
@@ -14,7 +13,6 @@ import {
     CircularProgress,
     IconButton
 } from '@mui/material';
-import LockIcon from '@mui/icons-material/Lock';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
@@ -26,8 +24,6 @@ const BecomeAMember = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [userRole, setUserRole] = useState(null);
     const [formData, setFormData] = useState({
-        dob: '',
-        password: '',
         membershipType: '',
     });
 
@@ -41,6 +37,8 @@ const BecomeAMember = () => {
     const firstName = localStorage.getItem('firstName') || 'Unknown';
     const lastName = localStorage.getItem('lastName') || 'Unknown';
     const username = localStorage.getItem('username');
+
+    const [membershipPrice, setMembershipPrice] = useState(0);
 
     useEffect(() => {
         const checkAccess = async () => {
@@ -101,6 +99,13 @@ const BecomeAMember = () => {
             ...formData,
             [name]: value,
         });
+
+        if (name === 'membershipType') {
+            // Update the membership price based on the selection
+            const price = value === 'standard' ? 55.0 : 80.0;
+            setMembershipPrice(price);
+        }
+
         if (errors[name]) {
             setErrors((prev) => ({ ...prev, [name]: '' }));
         }
@@ -117,9 +122,8 @@ const BecomeAMember = () => {
 
         const userId = localStorage.getItem('userId');
         const userRole = localStorage.getItem('role');
-        // Get names from localStorage with proper keys
-        const firstName = localStorage.getItem('firstName');  // matches the key we set in Login.jsx
-        const lastName = localStorage.getItem('lastName');    // matches the key we set in Login.jsx
+        const firstName = localStorage.getItem('firstName');
+        const lastName = localStorage.getItem('lastName');
 
         // Debug log to verify data
         console.log('Data from localStorage:', {
@@ -127,25 +131,25 @@ const BecomeAMember = () => {
             lastName,
             userId,
             userRole,
-            formData
+            formData,
         });
 
         const submitData = {
-            first_name: firstName,  // using the values from localStorage
-            last_name: lastName,    // using the values from localStorage
+            user_id: userId,
+            first_name: firstName,
+            last_name: lastName,
             username: username,
-            dob: formData.dob,
-            password: formData.password,
             type_of_membership: formData.membershipType,
+            membership_price: membershipPrice,
         };
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/membership-registration`, {
+            const response = await fetch(`http://localhost:5000/membership-registration`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,
-                    'role': userRole,
+                    role: userRole,
                 },
                 body: JSON.stringify(submitData),
             });
@@ -241,40 +245,6 @@ const BecomeAMember = () => {
                         Become a Member
                     </Typography>
                     <Box component="form" onSubmit={handleSubmit} noValidate>
-                        <TextField
-                            fullWidth
-                            label="Date of Birth"
-                            type="date"
-                            value={formData.dob}
-                            onChange={handleChange}
-                            name="dob"
-                            InputLabelProps={{ shrink: true }}
-                            sx={{ mt: 2 }}
-                            error={!!errors.dob}
-                            helperText={errors.dob}
-                            required
-                        />
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            label="Password"
-                            type="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            name="password"
-                            error={!!errors.password}
-                            helperText={errors.password}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <LockIcon />
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-
                         <FormControl fullWidth sx={{ mt: 2 }}>
                             <InputLabel id="membership-type-label">Membership Type</InputLabel>
                             <Select
@@ -287,10 +257,16 @@ const BecomeAMember = () => {
                                 error={!!errors.membershipType}
                                 required
                             >
-                                <MenuItem value="family">Family</MenuItem>
-                                <MenuItem value="individual">Individual</MenuItem>
+                                <MenuItem value="standard">Standard</MenuItem>
+                                <MenuItem value="premium">Premium</MenuItem>
                             </Select>
                         </FormControl>
+
+                        {formData.membershipType && (
+                            <Typography variant="body1" sx={{ mt: 1 }}>
+                                Price: ${membershipPrice.toFixed(2)}
+                            </Typography>
+                        )}
 
                         <Button
                             type="submit"

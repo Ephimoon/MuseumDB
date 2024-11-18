@@ -7,7 +7,7 @@ import axios from 'axios';
 const ExhibitionCard = ({ exhibition_, onRefresh, onEditClick, onDeleteClick, isExhibitionDeletedOpen, exhibitionImages }) => {
     const handleRestoreClick = async (exId) => {
         try {
-            await axios.patch(`${process.env.REACT_APP_API_URL}/exhibition/${exId}/restore`);
+            await axios.patch(`http://localhost:5000/exhibition/${exId}/restore`);
             onRefresh();
         } catch (error) {
             console.error('Error restoring exhibition:', error);
@@ -23,7 +23,7 @@ const ExhibitionCard = ({ exhibition_, onRefresh, onEditClick, onDeleteClick, is
     return (
         <div className={styles2.cards}>
             {exhibition_.map((exhibition) => (
-                <div key={exhibition.exhibition_id} className={styles2.card}>
+                <div key={exhibition.exhibition_id} className={styles2.ex_card}>
                     <img
                         src={exhibitionImages[exhibition.exhibition_id] || ''}
                         alt={exhibition.name_ || 'Exhibition Image'}
@@ -32,15 +32,18 @@ const ExhibitionCard = ({ exhibition_, onRefresh, onEditClick, onDeleteClick, is
                     <h1>{exhibition.name_}</h1>
                     <p>Start Date: {formatDate(exhibition.start_date)}</p>
                     <p>End Date: {formatDate(exhibition.end_date)}</p>
-                    <p>Description: {exhibition.description_}</p>
-                    {!isExhibitionDeletedOpen ? (
-                        <>
-                            <button onClick={(e) => { e.stopPropagation(); onEditClick(exhibition); }}>Edit</button>
-                            <button onClick={(e) => { e.stopPropagation(); onDeleteClick(exhibition.exhibition_id); }}>Delete</button>
-                        </>
-                    ) : (
-                        <button onClick={(e) => { e.stopPropagation(); handleRestoreClick(exhibition.exhibition_id); }}>Restore</button>
-                    )}
+                    <p>{exhibition.description_}</p>
+                    <div className={styles2.outside2}>
+                        {!isExhibitionDeletedOpen ? (
+                            <>
+                                <button onClick={(e) => { e.stopPropagation(); onEditClick(exhibition); }} className={styles2.edit}>Edit</button>
+                                <button onClick={(e) => { e.stopPropagation(); onDeleteClick(exhibition.exhibition_id); }} className={styles2.delete}>Delete</button>
+                            </>
+                        ) : (
+                            <button onClick={(e) => { e.stopPropagation(); handleRestoreClick(exhibition.exhibition_id); }}>Restore</button>
+                        )}
+                    </div>
+
                 </div>
             ))}
         </div>
@@ -89,7 +92,7 @@ const EditExhibitionModal = ({ exhibition, onClose, onRefresh }) => {
         }
 
         try {
-            await axios.patch(`${process.env.REACT_APP_API_URL}/exhibition/${exhibition.exhibition_id}`, formData, {
+            await axios.patch(`http://localhost:5000/exhibition/${exhibition.exhibition_id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             onRefresh();
@@ -116,49 +119,52 @@ const EditExhibitionModal = ({ exhibition, onClose, onRefresh }) => {
     };
 
     return (
-        <div className={styles2.modal}>
-            <div className={styles2.modal_content}>
+        <div className={styles2.edit_modal}>
+            <div className={styles2.edit_modal_content}>
                 <h2>Edit Exhibition</h2>
-                <label>Exhibition Name *
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={handleFieldChange(setName, exhibition.name_ || '')}
-                    />
-                    {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
-                </label>
-                <label>Start Date *
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={handleFieldChange(setStartDate, formatDate(exhibition.start_date) || '')}
-                    />
-                </label>
-                <label>End Date *
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={handleFieldChange(setEndDate, formatDate(exhibition.end_date) || '')}
-                    />
-                </label>
-                <label>Description *
-                    <textarea
-                        value={description}
-                        onChange={handleFieldChange(setDescription, exhibition.description_ || '')}
-                    />
-                    {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-                </label>
-                <label>Change Image
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                </label>
-                <button onClick={onClose}>Cancel</button>
-                <button onClick={handleSave} disabled={isSaving || !isDirty}>
-                    {isSaving ? 'Saving...' : 'Save'}
-                </button>
+                <label>Exhibition Name *</label>
+                <input
+                    type="text"
+                    value={name}
+                    onChange={handleFieldChange(setName, exhibition.name_ || '')}
+                />
+                {errors.name && <p className={styles2.error_message}>{errors.name}</p>}
+
+                <label>Start Date *</label>
+                <input
+                    type="date"
+                    value={startDate}
+                    onChange={handleFieldChange(setStartDate, formatDate(exhibition.start_date) || '')}
+                />
+
+                <label>End Date *</label>
+                <input
+                    type="date"
+                    value={endDate}
+                    onChange={handleFieldChange(setEndDate, formatDate(exhibition.end_date) || '')}
+                />
+
+                <label>Description *</label>
+                <textarea
+                    value={description}
+                    onChange={handleFieldChange(setDescription, exhibition.description_ || '')}
+                />
+                {errors.description && <p className={styles2.error_message}>{errors.description}</p>}
+
+                <label>Change Image</label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                />
+
+                <div className={styles2.edit_modal_actions}>
+                    <button onClick={onClose}>Cancel</button>
+                    <button onClick={handleSave} disabled={isSaving || !isDirty}>
+                        {isSaving ? 'Saving...' : 'Save'}
+                    </button>
+                </div>
+
             </div>
         </div>
     );
@@ -170,9 +176,9 @@ const ConfirmDeleteExhibitionModal = ({ onConfirm, onCancel }) => {
             <div className={styles2.modal_content}>
                 <h2>Are you sure you want to delete this exhibition?</h2>
                 <p>This action can be undone. Go to 'View Deleted' to restore.</p>
-                <div className={styles2.buttonContainer}>
-                    <button onClick={onCancel}>Cancel</button>
-                    <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+                <div className={styles2.outside}>
+                    <button onClick={onCancel} className={styles2.cancel}>Cancel</button>
+                    <button onClick={onConfirm} className={styles2.delete}>Delete</button>
                 </div>
             </div>
         </div>
@@ -188,7 +194,7 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [exhibitionToDelete, setExhibitionToDelete] = useState(null);
     const [exhibitionImages, setExhibitionImages] = useState({});
-    const [dateFilter, setDateFilter] = useState('all');
+    const [dateFilter, setDateFilter] = useState('ongoing'); // Default to "ongoing"
 
     useEffect(() => {
         setFilteredExhibitions(searchAndSortExhibitions(exhibitions));
@@ -200,18 +206,17 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
         await Promise.all(
             exhibitions.map(async (exhibition) => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/exhibition/${exhibition.exhibition_id}/image`, {
-                        responseType: 'blob', // Use 'blob' to handle binary data
+                    const response = await axios.get(`http://localhost:5000/exhibition/${exhibition.exhibition_id}/image`, {
+                        responseType: 'blob',
                     });
-                    const imageUrl = URL.createObjectURL(response.data); // Create a URL for the binary data
-                    images[exhibition.exhibition_id] = imageUrl; // Assign the URL to the specific exhibition ID
-                    console.log(`Fetched image for exhibition ${exhibition.exhibition_id}`);
+                    const imageUrl = URL.createObjectURL(response.data);
+                    images[exhibition.exhibition_id] = imageUrl;
                 } catch (error) {
                     console.error(`Error fetching image for exhibition ${exhibition.exhibition_id}:`, error);
                 }
             })
         );
-        setExhibitionImages(images); // Update the state with all fetched images
+        setExhibitionImages(images);
     };
 
     const isExhibitionOngoing = (endDate) => new Date(endDate) >= new Date();
@@ -228,6 +233,10 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
             .sort((a, b) => {
                 if (sortOption === 'name_asc') return (a.name_ || '').localeCompare(b.name_ || '');
                 if (sortOption === 'name_desc') return (b.name_ || '').localeCompare(a.name_ || '');
+                if (sortOption === 'start_date_asc') return new Date(a.start_date) - new Date(b.start_date);
+                if (sortOption === 'start_date_desc') return new Date(b.start_date) - new Date(a.start_date);
+                if (sortOption === 'end_date_asc') return new Date(a.end_date) - new Date(b.end_date);
+                if (sortOption === 'end_date_desc') return new Date(b.end_date) - new Date(a.end_date);
                 return 0;
             });
     };
@@ -244,9 +253,9 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
 
     const handleConfirmDelete = async () => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/exhibition/${exhibitionToDelete}`);
+            await axios.delete(`http://localhost:5000/exhibition/${exhibitionToDelete}`);
             triggerExhibitionRefresh();
-            setIsDeleteModalOpen(false); // Close modal after deletion
+            setIsDeleteModalOpen(false);
         } catch (error) {
             console.error('Error deleting exhibition:', error);
         }
@@ -258,66 +267,74 @@ const ExLookUp = ({ exhibitions, triggerExhibitionRefresh, isDeletedOpen }) => {
     };
 
     return (
-        <div className={styles1.FilterContainer}>
-            <h1>{isDeletedOpen ? 'Deleted Exhibitions' : 'Search Exhibitions'}</h1>
+        <div>
+            <div className={styles1.FilterContainer}>
+                <h1>{isDeletedOpen ? 'Deleted Exhibitions' : 'Search Exhibitions'}</h1>
+                <div className={styles1.sortByContainer}>
+                    {/* Filter */}
+                    <div className={styles1.sortByContainerExhibition}>
+                        <label>Filter</label>
+                        <select onChange={(e) => setDateFilter(e.target.value)} value={dateFilter}>
+                            <option value="all">All</option>
+                            <option value="ongoing">Still Ongoing</option>
+                            <option value="passed">Passed Date</option>
+                        </select>
+                    </div>
 
-            {/* Search */}
-            <div className={styles1.search}>
-                <input
-                    type="text"
-                    placeholder="Search exhibition by name..."
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                />
+                    {/* Sort By */}
+                    <div className={styles1.sortByContainerExhibition}>
+                        <label>Sort By</label>
+                        <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                            <option value="name_asc">Name A-Z</option>
+                            <option value="name_desc">Name Z-A</option>
+                            <option value="start_date_asc">Start Date Ascending</option>
+                            <option value="start_date_desc">Start Date Descending</option>
+                            <option value="end_date_asc">End Date Ascending</option>
+                            <option value="end_date_desc">End Date Descending</option>
+                        </select>
+                    </div>
+
+                    {/* Search */}
+                    <div className={styles1.search}>
+                        <input
+                            type="text"
+                            placeholder="Search exhibition by name..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                        />
+                    </div>
+                </div>
             </div>
+            <div>
+                {/* Display Exhibitions */}
+                {filteredExhibitions.length > 0 ? (
+                    <ExhibitionCard
+                        exhibition_={filteredExhibitions}
+                        onRefresh={triggerExhibitionRefresh}
+                        onEditClick={handleEditClick}
+                        onDeleteClick={(id) => openDeleteModal(id)}
+                        isExhibitionDeletedOpen={isDeletedOpen}
+                        exhibitionImages={exhibitionImages}
+                    />
+                ) : (
+                    <p>No exhibitions found matching your search.</p>
+                )}
 
-            {/* Date Filter */}
-            <div className={styles1.filterSection}>
-                <label>Filter By Date:</label>
-                <select onChange={(e) => setDateFilter(e.target.value)} value={dateFilter}>
-                    <option value="all">All</option>
-                    <option value="ongoing">Still Ongoing</option>
-                    <option value="passed">Passed Date</option>
-                </select>
+                {/* Modals for Editing and Deleting */}
+                {isExhibitionModalOpen && (
+                    <EditExhibitionModal
+                        exhibition={selectedExhibition}
+                        onClose={() => setIsExhibitionModalOpen(false)}
+                        onRefresh={triggerExhibitionRefresh}
+                    />
+                )}
+                {isDeleteModalOpen && (
+                    <ConfirmDeleteExhibitionModal
+                        onConfirm={handleConfirmDelete}
+                        onCancel={handleCancelDelete}
+                    />
+                )}
             </div>
-
-            {/* Sort By */}
-            <h2>Sort By</h2>
-            <div className={styles1.sortSection}>
-                <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
-                    <option value="name_asc">Name A-Z</option>
-                    <option value="name_desc">Name Z-A</option>
-                </select>
-            </div>
-
-            {/* Display Exhibitions */}
-            {filteredExhibitions.length > 0 ? (
-                <ExhibitionCard
-                    exhibition_={filteredExhibitions}
-                    onRefresh={triggerExhibitionRefresh}
-                    onEditClick={handleEditClick}
-                    onDeleteClick={(id) => openDeleteModal(id)}
-                    isExhibitionDeletedOpen={isDeletedOpen}
-                    exhibitionImages={exhibitionImages}
-                />
-            ) : (
-                <p>No exhibitions found matching your search.</p>
-            )}
-
-            {/* Modals for Editing and Deleting */}
-            {isExhibitionModalOpen && (
-                <EditExhibitionModal
-                    exhibition={selectedExhibition}
-                    onClose={() => setIsExhibitionModalOpen(false)}
-                    onRefresh={triggerExhibitionRefresh}
-                />
-            )}
-            {isDeleteModalOpen && (
-                <ConfirmDeleteExhibitionModal
-                    onConfirm={handleConfirmDelete}
-                    onCancel={handleCancelDelete}
-                />
-            )}
         </div>
     );
 };
@@ -330,10 +347,20 @@ const InsertExhibitionModal = ({ onClose, onSave }) => {
     const [image, setImage] = useState(null);
 
     const [errors, setErrors] = useState({});
+    const [hasChanges, setHasChanges] = useState(false);
+    const [isSaving, setIsSaving] = useState(false); // Loading state
 
-    const handleImageChange = (e) => setImage(e.target.files[0]);
+    const handleImageChange = (e) => {
+        setImage(e.target.files[0]);
+        setHasChanges(true);
+    };
 
-    const handleSave = () => {
+    const handleInputChange = (setter) => (e) => {
+        setter(e.target.value);
+        setHasChanges(true);
+    };
+
+    const handleSave = async () => {
         const newErrors = {};
         if (!name) newErrors.name = "Name is required.";
         if (!startDate) newErrors.startDate = "Start date is required.";
@@ -345,6 +372,8 @@ const InsertExhibitionModal = ({ onClose, onSave }) => {
         // Stop if there are any validation errors
         if (Object.keys(newErrors).length > 0) return;
 
+        setIsSaving(true); // Start loading state
+
         const formData = new FormData();
         formData.append('name', name);
         formData.append('sdate', startDate); // Use sdate to match the backend
@@ -352,70 +381,71 @@ const InsertExhibitionModal = ({ onClose, onSave }) => {
         formData.append('description', description);
         if (image) formData.append('image', image);
 
-        onSave(formData);
-        onClose();
+        try {
+            await onSave(formData); // Call the onSave function passed as a prop
+            onClose(); // Close the modal on success
+        } catch (error) {
+            console.error("Error saving exhibition:", error);
+        } finally {
+            setIsSaving(false); // Reset loading state
+        }
     };
 
     return (
-        <div className={styles1.modalOverlay}>
-            <div className={styles1.modalContent}>
+        <div className={styles2.edit_modal}>
+            <div className={styles2.edit_modal_content}>
                 <h2>Insert New Exhibition</h2>
 
-                <label>
-                    Name *
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                    {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
-                </label>
+                <label>Name *</label>
+                <input
+                    type="text"
+                    value={name}
+                    onChange={handleInputChange(setName)}
+                    required
+                />
+                {errors.name && <p className={styles2.error_message}>{errors.name}</p>}
 
-                <label>
-                    Start Date *
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        required
-                    />
-                    {errors.startDate && <p style={{ color: 'red' }}>{errors.startDate}</p>}
-                </label>
+                <label>Start Date *</label>
+                <input
+                    type="date"
+                    value={startDate}
+                    onChange={handleInputChange(setStartDate)}
+                    required
+                />
+                {errors.startDate && <p className={styles2.error_message}>{errors.startDate}</p>}
 
-                <label>
-                    End Date *
-                    <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        required
-                    />
-                    {errors.endDate && <p style={{ color: 'red' }}>{errors.endDate}</p>}
-                </label>
+                <label>End Date *</label>
+                <input
+                    type="date"
+                    value={endDate}
+                    onChange={handleInputChange(setEndDate)}
+                    required
+                />
+                {errors.endDate && <p className={styles2.error_message}>{errors.endDate}</p>}
 
-                <label>
-                    Description *
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                    />
-                    {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-                </label>
+                <label>Description *</label>
+                <textarea
+                    value={description}
+                    onChange={handleInputChange(setDescription)}
+                    required
+                />
+                {errors.description && <p className={styles2.error_message}>{errors.description}</p>}
 
-                <label>
-                    Image
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                </label>
+                <label>Image</label>
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                />
 
-                <div /*className={styles.buttonContainer}*/>
+                <div className={styles2.edit_modal_actions}>
                     <button onClick={onClose}>Cancel</button>
-                    <button onClick={handleSave}>Save</button>
+                    <button
+                        onClick={handleSave}
+                        disabled={!hasChanges || isSaving} // Disable if no changes or during saving
+                    >
+                        {isSaving ? 'Saving...' : 'Save'}
+                    </button>
                 </div>
             </div>
         </div>
@@ -434,7 +464,7 @@ const CurateExhibitions = () => {
 
     const fetchExhibitions = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/exhibition?isDeleted=${isDeletedOpen}`);
+            const response = await axios.get(`http://localhost:5000/exhibition?isDeleted=${isDeletedOpen}`);
             console.log("Fetched Exhibitions Data (Raw):", response.data);
 
             // Flatten the nested arrays in response.data
@@ -458,7 +488,7 @@ const CurateExhibitions = () => {
     const triggerExhibitionRefresh = () => setRefreshExhibitions(!refreshExhibitions);
 
     const saveInsertExhibition = (exData) => {
-        axios.post(`${process.env.REACT_APP_API_URL}/exhibition`, exData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        axios.post(`http://localhost:5000/exhibition`, exData, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(() => {
                 triggerExhibitionRefresh();
                 closeInsertExhibitionModal();
@@ -469,13 +499,15 @@ const CurateExhibitions = () => {
     return (
         <div className={styles1.ArtContainer}>
             <HomeNavBar />
-            <h1>Curate Exhibitions</h1>
-            {!isDeletedOpen && (
-                <button onClick={openInsertExhibitionModal}>Insert Exhibition</button>
-            )}
-            <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
-                {isDeletedOpen ? 'View Active' : 'View Deleted'}
-            </button>
+            <h1 className={styles1.searchTitle}>Curate Exhibitions</h1>
+            <div className={styles1.buttonContainer}>
+                {!isDeletedOpen && (
+                    <button onClick={openInsertExhibitionModal} className={styles1.addButton}>Insert Exhibition</button>
+                )}
+                <button onClick={() => setIsDeletedOpen(!isDeletedOpen)}>
+                    {isDeletedOpen ? 'View Active' : 'View Deleted'}
+                </button>
+            </div>
 
             <ExLookUp
                 exhibitions={exhibitions}

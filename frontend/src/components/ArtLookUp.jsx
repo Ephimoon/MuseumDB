@@ -27,6 +27,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     const [selectedDepartmentQ, setSelectedDepartmentQ] = useState('');
     const [selectedGenderQ, setSelectedGenderQ] = useState('');
     const [selectedNationalityQ, setSelectedNationalityQ] = useState('');
+    const [isSearchActive, setIsSearchActive] = useState(false);
 
     const [activeTab, setActiveTab] = useState('artwork');
     const [sortOption, setSortOption] = useState(activeTab === 'artwork' ? 'title_asc' : 'artist_asc');
@@ -57,7 +58,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchArtwork = () => {
         console.log("isDeletedView:", isDeletedView);
-        axios.get(`${process.env.REACT_APP_API_URL}/artwork?isDeleted=${isDeletedView}`)
+        axios.get(`http://localhost:5000/artwork?isDeleted=${isDeletedView}`)
             .then(response => {
                 console.log("Artwork data:", response.data); // Log the data to see if it's fetched
                 setArtworks(response.data[0]);
@@ -74,7 +75,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         await Promise.all(
             artworks.map(async (art_image) => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${art_image.ArtworkID}/image`, {
+                    const response = await axios.get(`http://localhost:5000/artwork/${art_image.ArtworkID}/image`, {
                         responseType: 'blob',
                     });
                     const imageUrl = URL.createObjectURL(response.data);
@@ -97,8 +98,8 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchArtists = async () => {
         try {
-            const responseWithArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-with-artwork?isDeleted=${isDeletedView}`);
-            const responseWithoutArtwork = await axios.get(`${process.env.REACT_APP_API_URL}/artist-null-artwork?isDeleted=${isDeletedView}`);
+            const responseWithArtwork = await axios.get(`http://localhost:5000/artist-with-artwork?isDeleted=${isDeletedView}`);
+            const responseWithoutArtwork = await axios.get(`http://localhost:5000/artist-null-artwork?isDeleted=${isDeletedView}`);
 
             // Combine and filter out entries without ArtistID
             const artistsWithArtwork = responseWithArtwork.data.flat().filter(artist => artist.ArtistID);
@@ -124,7 +125,7 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
         await Promise.all(
             artists.filter(artist_image => artist_image.ArtistID).map(async (artist_image) => {
                 try {
-                    const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist_image.ArtistID}/image`, {
+                    const response = await axios.get(`http://localhost:5000/artist/${artist_image.ArtistID}/image`, {
                         responseType: 'blob',
                     });
                     const imageUrl = URL.createObjectURL(response.data);
@@ -151,13 +152,14 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
 
     const fetchFilterOptions = async () => {
         try {
-            const departmentRes = await axios.get(`${process.env.REACT_APP_API_URL}/department`);
-            const mediumsRes = await axios.get(`${process.env.REACT_APP_API_URL}/mediums`);
-            const yearsRes = await axios.get(`${process.env.REACT_APP_API_URL}/creation-years`);
-            //const conditionsRes = await axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`);
-            const nationalitiesRes = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
+            const departmentRes = await axios.get(`http://localhost:5000/department`);
+            const mediumsRes = await axios.get(`http://localhost:5000/mediums`);
+            const yearsRes = await axios.get(`http://localhost:5000/creation-years`);
+            //const conditionsRes = await axios.get(`http://localhost:5000/artworkconditions`);
+            const nationalitiesRes = await axios.get(`http://localhost:5000/nationalities`);
 
-            setDepartments(departmentRes.data);
+            const validDepartments = departmentRes.data.flat().filter(department => department.DepartmentID);
+            setDepartments(validDepartments);
             setMediums(mediumsRes.data);
             setYears(yearsRes.data);
             //setConditions(conditionsRes.data);
@@ -255,7 +257,27 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
             });
     };
 
+    useEffect(() => {
+        // Check if any of the filters or search query is active
+        const isFiltering =
+            query.trim() !== '' ||
+            selectedMediumQ !== '' ||
+            selectedArtistQ !== '' ||
+            selectedYearQ !== '' ||
+            selectedDepartmentQ !== '' ||
+            selectedGenderQ !== '' ||
+            selectedNationalityQ !== '';
 
+        setIsSearchActive(isFiltering); // Update isSearchActive based on the filters
+    }, [
+        query,
+        selectedMediumQ,
+        selectedArtistQ,
+        selectedYearQ,
+        selectedDepartmentQ,
+        selectedGenderQ,
+        selectedNationalityQ
+    ]);
 
     const [selectedArtwork, setSelectedArtwork] = useState(null);
     const [selectedArtist, setSelectedArtist] = useState(null);
@@ -284,80 +306,109 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
     return (
         <div>
             <div className={styles.FilterContainer}>
-                <h1>{isDeletedView ? 'Deleted Collection' : 'Search Collection'}</h1>
-                <div className={styles.tabs}>
-                    <button onClick={() => handleTabSwitch('artwork')} className={activeTab === 'artwork' ? styles.activeTab : ''}>
-                        Artwork
-                    </button>
-                    <button onClick={() => handleTabSwitch('artist')} className={activeTab === 'artist' ? styles.activeTab : ''}>
-                        Artist
-                    </button>
+                <div className={styles.sortHeader}>
+                    <h1>{isDeletedView ? 'Deleted Collection' : 'Search Collection'}</h1>
+
+                    {/* Tabs */}
+                    <div className={styles.tabs}>
+                        <button onClick={() => handleTabSwitch('artwork')} className={activeTab === 'artwork' ? styles.activeTab : ''}>
+                            Artwork
+                        </button>
+                        <button onClick={() => handleTabSwitch('artist')} className={activeTab === 'artist' ? styles.activeTab : ''}>
+                            Artist
+                        </button>
+                    </div>
                 </div>
 
-                {/* Search */}
-                <div className={styles.search}>
-                    <input
-                        type="text"
-                        placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
-                        value={query}
-                        className='search'
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
+                {/* Search and Sort */}
+                <div className={styles.sortByContainer}>
+                    <h2>Sort By</h2>
+                    <div className={styles.search}>
+                        <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                            {activeTab === 'artwork' && (
+                                <>
+                                    <option value="title_asc">Title A-Z</option>
+                                    <option value="title_desc">Title Z-A</option>
+                                    <option value="year_asc">Year Ascending</option>
+                                    <option value="year_desc">Year Descending</option>
+                                    <option value="artist_asc">Artist A-Z</option>
+                                    <option value="artist_desc">Artist Z-A</option>
+                                </>
+                            )}
+                            {activeTab === 'artist' && (
+                                <>
+                                    <option value="artist_asc">Artist A-Z</option>
+                                    <option value="artist_desc">Artist Z-A</option>
+                                </>
+                            )}
+                        </select>
+                        <input
+                            type="text"
+                            placeholder={activeTab === 'artwork' ? 'Search artwork or artist name...' : 'Search artist name...'}
+                            value={query}
+                            onChange={(e) => {
+                                const inputValue = e.target.value;
+                                setQuery(inputValue);
+                                setIsSearchActive(inputValue.trim() !== ''); // Set true if input is not empty
+                            }}
+                        />
+                    </div>
                 </div>
 
-                <h2>Filter By</h2>
 
-                {/* Filters for Artwork */}
-                {activeTab === 'artwork' && (
-                    <div className={styles.filterSection}>
-                        <select onChange={(e) => setSelectedMediumQ(e.target.value)} value={selectedMediumQ}>
-                            <option value="">Medium</option>
-                            {mediums.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
+                {/* Filters */}
+                <div className={styles.sortByContainer}>
+                    <h2>Filter By</h2>
+                    {activeTab === 'artwork' && (
+                        <div className={styles.filterSection}>
+                            <select onChange={(e) => setSelectedMediumQ(e.target.value)} value={selectedMediumQ}>
+                                <option value="">Medium</option>
+                                {mediums.map((option) => (
+                                    <option key={option} value={option}>{option}</option>
+                                ))}
+                            </select>
 
-                        <select onChange={(e) => setSelectedArtistQ(e.target.value)} value={selectedArtistQ}>
-                            <option value="">Artist</option>
-                            {artistsWithArtwork.map(option => (
-                                <option key={option.ArtistID} value={option.name_}>{option.name_}</option>
-                            ))}
-                        </select>
+                            <select onChange={(e) => setSelectedArtistQ(e.target.value)} value={selectedArtistQ}>
+                                <option value="">Artist</option>
+                                {artistsWithArtwork.map((option) => (
+                                    <option key={option.ArtistID} value={option.name_}>{option.name_}</option>
+                                ))}
+                            </select>
 
-                        <select onChange={(e) => setSelectedYearQ(e.target.value)} value={selectedYearQ}>
-                            <option value="">Year</option>
-                            {years.map((year) => (
-                                <option key={year} value={year}>{year}</option>
-                            ))}
-                        </select>
+                            <select onChange={(e) => setSelectedYearQ(e.target.value)} value={selectedYearQ}>
+                                <option value="">Year</option>
+                                {years.map((year) => (
+                                    <option key={year} value={year}>{year}</option>
+                                ))}
+                            </select>
 
-                        <select onChange={(e) => setSelectedDepartmentQ(e.target.value)} value={selectedDepartmentQ}>
-                            <option value="">Department</option>
-                            {departments.map(department => (
-                                <option key={department.DepartmentID} value={department.Name}>{department.Name}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+                            <select onChange={(e) => setSelectedDepartmentQ(e.target.value)} value={selectedDepartmentQ}>
+                                <option value="">Department</option>
+                                {departments.map((department) => (
+                                    <option key={department.DepartmentID} value={department.Name}>{department.Name}</option>
+                                ))}
+                            </select>
 
-                {/* Filters for Artists */}
-                {activeTab === 'artist' && (
-                    <div className={styles.filterSection}>
-                        <select onChange={(e) => setSelectedGenderQ(e.target.value)} value={selectedGenderQ}>
-                            <option value="">Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
+                        </div>
+                    )}
+                    {activeTab === 'artist' && (
+                        <div className={styles.filterSection}>
+                            <select onChange={(e) => setSelectedGenderQ(e.target.value)} value={selectedGenderQ}>
+                                <option value="">Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
 
-                        <select onChange={(e) => setSelectedNationalityQ(e.target.value)} value={selectedNationalityQ}>
-                            <option value="">Nationality</option>
-                            {nationalities.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+                            <select onChange={(e) => setSelectedNationalityQ(e.target.value)} value={selectedNationalityQ}>
+                                <option value="">Nationality</option>
+                                {nationalities.map(option => (
+                                    <option key={option} value={option}>{option}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                </div>
 
                 {/* Clearable Filter Tags */}
                 <div className={styles.tagContainer}>
@@ -368,118 +419,114 @@ const ArtLookUp = ({ refreshArtworks, refreshArtists, triggerRefreshArtists, tri
                     {selectedGenderQ && <span>{selectedGenderQ} <button onClick={() => setSelectedGenderQ('')}>X</button></span>}
                     {selectedNationalityQ && <span>{selectedNationalityQ} <button onClick={() => setSelectedNationalityQ('')}>X</button></span>}
                 </div>
-
-                {/* Sort by */}
-                <h2>Sort By</h2>
-                <div className={styles.sortSection}>
-                    <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
-                        {activeTab === 'artwork' && (
-                            <>
-                                <option value="title_asc">Title A-Z</option>
-                                <option value="title_desc">Title Z-A</option>
-                                <option value="year_asc">Year Ascending</option>
-                                <option value="year_desc">Year Descending</option>
-                                <option value="artist_asc">Artist A-Z</option>
-                                <option value="artist_desc">Artist Z-A</option>
-                            </>
-                        )}
-                        {activeTab === 'artist' && (
-                            <>
-                                <option value="artist_asc">Artist A-Z</option>
-                                <option value="artist_desc">Artist Z-A</option>
-                            </>
-                        )}
-                    </select>
-                </div>
-
             </div>
 
             {/* Display Artwork or Artist */}
             <div>
                 {activeTab === 'artwork' ? (
                     <>
-                        <p>{isDeletedView ? 'Restore deleted artwork' : ''}</p>
-                        {searchArtwork(filteredArtworks).length > 0 ? (
-                            <>
-                                <ArtworkCard artwork_=
-                                                 {filteredArtworks}
-                                             onCardClick={openArtworkModal}
-                                             artworkImages={artworkImages}
-                                />
-                                {isArtworkModalOpen && (
-                                    <ArtworkModalUser
-                                        artwork_={selectedArtwork}
-                                        onClose={closeArtworkModal}
-                                        onRefresh={triggerRefreshArtworks}
-                                        artworkPreviewImages={artworkPreviewImages} // Pass preview images
-                                        handlePreviewImageChange={handlePreviewImageChange} // Pass function to update preview
-                                        isDeletedView={isDeletedView} // Pass function to open edit modal
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            <p>No artwork found matching your search.</p>
-                        )}
+                        <div className={styles.no}>
+                            <h3>{isDeletedView ? 'Restore deleted artwork' : ''}</h3>
+                            {!isSearchActive && filteredArtworks.length === 0 ? (
+                                // No artworks exist in the database
+                                <h3>No Artwork</h3>
+                            ) : (
+                                isSearchActive && searchArtwork(filteredArtworks).length === 0 ? (
+                                    // Active search but no matches
+                                    <h3>No artwork found matching your search.</h3>
+                                ) : (
+                                    // Display artwork matching the search
+                                    <>
+                                        <ArtworkCard
+                                            artwork_={filteredArtworks}
+                                            onCardClick={openArtworkModal}
+                                            artworkImages={artworkImages}
+                                        />
+                                        {isArtworkModalOpen && (
+                                            <ArtworkModalUser
+                                                artwork_={selectedArtwork}
+                                                onClose={closeArtworkModal}
+                                                onRefresh={triggerRefreshArtworks}
+                                                artworkPreviewImages={artworkPreviewImages} // Pass preview images
+                                                handlePreviewImageChange={handlePreviewImageChange} // Pass function to update preview
+                                                isDeletedView={isDeletedView} // Pass function to open edit modal
+                                            />
+                                        )}
+                                    </>
+                                )
+                            )}
+                        </div>
                     </>
 
                 ) : (
                     <>
                         {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
-                            <>
-                                <h2>Artists Without Artwork</h2>
-                                <p>These artists will not be displayed</p>
-                                {filteredArtistsWithoutArtwork.length > 0 ? (
-                                    searchArtists(filteredArtistsWithoutArtwork).length > 0 ? (
-                                        // Display artists that match the search criteria
-                                        <>
-                                            <ArtistCard artist_=
-                                                            {filteredArtistsWithoutArtwork}
-                                                        onCardClick={openArtistModal}
-                                                        artistImages={artistImages}
-                                            />
-                                            {isArtistModalOpen && (
-                                                <ArtistModalUser
-                                                    artist_={selectedArtist}
-                                                    onClose={closeArtistModal}
-                                                    onRefresh={triggerRefreshArtists}
-                                                    artistPreviewImages={artistPreviewImages} // Pass preview images
-                                                    handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
-                                                    isDeletedView={isDeletedView}
-                                                />
-                                            )}
-                                        </>
+                            <div className={styles.no}>
+                                <h3>{isDeletedView ? 'Restore deleted artists' : ''}</h3>
+                                <h2 className={styles.artisttitle}>Artists Without Artwork (These artists will not be displayed)</h2>
+                                <div>
+                                    {!isSearchActive && filteredArtistsWithoutArtwork.length === 0 ? (
+                                        // No artists exist in the database
+                                        <h3>No artists without Artwork</h3>
                                     ) : (
-                                        // If there's an active search but no matches
-                                        <p>No artists found matching your search.</p>
-                                    )
+                                        isSearchActive && searchArtists(filteredArtistsWithoutArtwork).length === 0 ? (
+                                            // Active search but no matches
+                                            <h3>No artists found matching your search.</h3>
+                                        ) : (
+                                            // Display artists matching the search
+                                            <>
+                                                <ArtistCard
+                                                    artist_={searchArtists(filteredArtistsWithoutArtwork)} // Pass only searched artists
+                                                    onCardClick={openArtistModal}
+                                                    artistImages={artistImages}
+                                                />
+                                                {isArtistModalOpen && (
+                                                    <ArtistModalUser
+                                                        artist_={selectedArtist}
+                                                        onClose={closeArtistModal}
+                                                        onRefresh={triggerRefreshArtists}
+                                                        artistPreviewImages={artistPreviewImages}
+                                                        handlePreviewArtistImageChange={handlePreviewArtistImageChange}
+                                                        isDeletedView={isDeletedView}
+                                                    />
+                                                )}
+                                            </>
+                                        )
+                                    )}
+                                </div>
+                                <h2 className={styles.artisttitle}>Artists With Artwork</h2>
+                            </div>
+                        )}
+                        <div className={styles.no}>
+                            {!isSearchActive && filteredArtistsWithArtwork.length === 0 ? (
+                                // No artists exist in the database
+                                <h3>No artists with Artwork</h3>
+                            ) : (
+                                isSearchActive && searchArtists(filteredArtistsWithArtwork).length === 0 ? (
+                                    // Active search but no matches
+                                    <h3>No artists found matching your search.</h3>
                                 ) : (
-                                    // If there’s no active search and no artists without artwork
-                                    <p>No artists without Artwork</p>
-                                )}
-                                <h2>Artists With Artwork</h2>
-                            </>
-                        )}
-                        {searchArtists(filteredArtistsWithArtwork).length > 0 ? (
-                            <>
-                                <ArtistCard
-                                    artist_={filteredArtistsWithArtwork}
-                                    onCardClick={openArtistModal}
-                                    artistImages={artistImages}
-                                />
-                                {isArtistModalOpen && (
-                                    <ArtistModalUser
-                                        artist_={selectedArtist}
-                                        onClose={closeArtistModal}
-                                        onRefresh={triggerRefreshArtists}
-                                        artistPreviewImages={artistPreviewImages} // Pass preview images
-                                        handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
-                                        isDeletedView={isDeletedView}
-                                    />
-                                )}
-                            </>
-                        ) : (
-                            <p>No artists found matching your search.</p>
-                        )}
+                                    // Display artists matching the search
+                                    <>
+                                        <ArtistCard
+                                            artist_={filteredArtistsWithArtwork}
+                                            onCardClick={openArtistModal}
+                                            artistImages={artistImages}
+                                        />
+                                        {isArtistModalOpen && (
+                                            <ArtistModalUser
+                                                artist_={selectedArtist}
+                                                onClose={closeArtistModal}
+                                                onRefresh={triggerRefreshArtists}
+                                                artistPreviewImages={artistPreviewImages} // Pass preview images
+                                                handlePreviewArtistImageChange={handlePreviewArtistImageChange} // Pass function to update preview
+                                                isDeletedView={isDeletedView}
+                                            />
+                                        )}
+                                    </>
+                                )
+                            )}
+                        </div>
                     </>
                 )}
             </div>
@@ -500,11 +547,11 @@ const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
     }, [isDepartmentDeletedOpen, filterType, refreshDepartments]);
 
     const fetchDepartments = async () => {
-        let endpoint = '${process.env.REACT_APP_API_URL}/department';
+        let endpoint = `http://localhost:5000/department`;
         if (filterType === 'withArtwork') {
-            endpoint = '${process.env.REACT_APP_API_URL}/department-with-artwork';
+            endpoint = `http://localhost:5000/department-with-artwork`;
         } else if (filterType === 'withoutArtwork') {
-            endpoint = '${process.env.REACT_APP_API_URL}/department-null-artwork';
+            endpoint = `http://localhost:5000/department-null-artwork`;
         }
 
         try {
@@ -532,7 +579,7 @@ const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
 
     const handleDeleteConfirm = async () => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/department/${selectedDepartment}`);
+            await axios.delete(`http://localhost:5000/department/${selectedDepartment}`);
             fetchDepartments(); // Refresh the department list after deletion
             setIsDeleteModalOpen(false);
         } catch (error) {
@@ -548,25 +595,34 @@ const DepartmentLookUp = ({ isDepartmentDeletedOpen, refreshDepartments }) => {
 
     return (
         <div>
-            <div className={styles.FilterContainer}>
+            <div className={styles.FilterContainerDepartment}>
                 <h1>{isDepartmentDeletedOpen ? 'Deleted Departments' : 'Departments'}</h1>
-
-                {/* Filter by artwork association */}
                 <div>
-                    <label>Filter Departments:</label>
-                    <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
-                        <option value="all">All</option>
-                        <option value="withArtwork">With Artwork</option>
-                        <option value="withoutArtwork">Without Artwork</option>
-                    </select>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <h2>Filter:</h2>
+                        <select onChange={(e) => setFilterType(e.target.value)} value={filterType}>
+                            <option value="all">All</option>
+                            <option value="withArtwork">With Artwork</option>
+                            <option value="withoutArtwork">Without Artwork</option>
+                        </select>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <h2>Sort By:</h2>
+                        <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
+                            <option value="department_asc">Department A-Z</option>
+                            <option value="department_desc">Department Z-A</option>
+                        </select>
+                    </div>
                 </div>
-
-                {/* Sort Departments */}
-                <div className={styles.sortSection}>
-                    <select onChange={(e) => setSortOption(e.target.value)} value={sortOption}>
-                        <option value="department_asc">Department A-Z</option>
-                        <option value="department_desc">Department Z-A</option>
-                    </select>
+                {/* Clearable Filter Tags */}
+                <div className={styles.tagContainer}>
+                    {filterType && filterType !== 'all' && (
+                        <span>
+                            {filterType === 'withArtwork' && 'With Artwork'}
+                            {filterType === 'withoutArtwork' && 'Without Artwork'}
+                            <button onClick={() => setFilterType('all')}>X</button>
+                        </span>
+                    )}
                 </div>
             </div>
 

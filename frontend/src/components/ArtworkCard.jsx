@@ -39,7 +39,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
 
   const fetchArtworkImage = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}/image`, {responseType: 'blob', });
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}/image`, {responseType: 'blob', });
       setImageUrl(URL.createObjectURL(response.data));
     } catch (error) {
       console.error('Error fetching artwork image:', error);
@@ -52,7 +52,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`);
+      await axios.delete(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
       console.log("Artwork deleted successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -63,7 +63,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`);
+      const response = await axios.get(`http://localhost:5000/artwork/${artwork.ArtworkID}`);
       setArtwork(response.data);
       fetchArtworkImage();
     } catch (error) {
@@ -81,8 +81,8 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
     try {
       // Fetch both the artist and department information in parallel
       const [artistResponse, departmentResponse] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_API_URL}/artist/${artistId}`),
-        axios.get(`${process.env.REACT_APP_API_URL}/department/${departmentId}`)
+        axios.get(`http://localhost:5000/artist/${artistId}`),
+        axios.get(`http://localhost:5000/department/${departmentId}`)
       ]);
 
       const artistData = artistResponse.data;
@@ -110,7 +110,7 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
       }
 
       // Proceed with restoring the artwork if the artist and department are active
-      await axios.patch(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}/restore`);
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}/restore`);
       console.log("Artwork restored successfully");
       onRefresh(); // Refresh the artwork list
       onClose(); // Close the modal
@@ -145,23 +145,23 @@ const ArtworkModalUser = ({ artwork_, onClose, onRefresh, artworkPreviewImages, 
                   day: 'numeric'
                 }) : 'N/A'}</p>
                 <p><strong>Condition:</strong> {artwork.ArtworkCondition}</p>
-                <p><strong>Location:</strong> {artwork.location || 'Not Specified'}</p>
+                <p><strong>Location:</strong> {artwork.location || 'Not Displayed'}</p>
                 <p><strong>Price:</strong> {artwork.price ? `$${artwork.price}` : 'N/A'}</p>
-                <p><strong>Description:</strong> {artwork.Description}</p>
+                <p>{artwork.Description}</p>
                 {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
-                    <>
+                    <div className={styles.outside}>
                       {!isDeletedView ? (
                           <>
-                            <button onClick={openEditMode}>Edit Artwork</button>
-                            <button onClick={openConfirmDelete}>Delete Artwork</button>
+                            <button onClick={openEditMode} className={styles.edit}>Edit Artwork</button>
+                            <button onClick={openConfirmDelete} className={styles.delete}>Delete Artwork</button>
                           </>
                       ) : (
                           <>
-                            {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-                            <button onClick={() => handleRestore(artwork.artist_id, artwork.department_id)}>Restore</button>
+                            {errorMessage && <p className={styles.error_message}>{errorMessage}</p>}
+                            <button onClick={() => handleRestore(artwork.artist_id, artwork.department_id)} className={styles.edit}>Restore</button>
                           </>
                       )}
-                    </>
+                    </div>
                 )}
               </>
           ) : (
@@ -217,10 +217,10 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
     const fetchData = async () => {
       try {
         const [artistRes, departmentsRes, mediumsRes, conditionsRes] = await Promise.all([
-          axios.get(`${process.env.REACT_APP_API_URL}/artist`),
-          axios.get(`${process.env.REACT_APP_API_URL}/department`),
-          axios.get(`${process.env.REACT_APP_API_URL}/mediums`),
-          axios.get(`${process.env.REACT_APP_API_URL}/artworkconditions`)
+          axios.get(`http://localhost:5000/artist`),
+          axios.get(`http://localhost:5000/department`),
+          axios.get(`http://localhost:5000/mediums`),
+          axios.get(`http://localhost:5000/artworkconditions`)
         ]);
         const validArtists = Array.isArray(artistRes.data)
             ? artistRes.data.flat().filter(artist => artist.ArtistID)
@@ -331,7 +331,7 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
     if (image) formData.append('image', image);
 
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/artwork/${artwork.ArtworkID}`, formData, {
+      await axios.patch(`http://localhost:5000/artwork/${artwork.ArtworkID}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       onRefresh();
@@ -346,46 +346,45 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
   };
 
   return (
-      <div>
-        <h2>Edit Artwork</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div className={styles.edit_modal}>
+        <div className={styles.edit_modal_content}>
+          <div className={styles.edit_modal_header}>
+            <h2>Edit Artwork</h2>
+          </div>
 
-        <label>Image
+          {error && <p className={styles.error_message}>{error}</p>}
+
+          <label>Image</label>
           <input type="file" accept="image/*" onChange={handleImageChange} />
           {previewUrl && <img src={previewUrl} alt="Preview" style={{ maxWidth: '200px', marginTop: '10px' }} />}
-        </label>
 
-        <label>Title *
+          <label>Title *</label>
           <input type="text" value={Title} onChange={(e) => setTitle(e.target.value)} />
-          {errors.Title && <p style={{ color: 'red' }}>{errors.Title}</p>}
-        </label>
+          {errors.Title && <p className={styles.error_message}>{errors.Title}</p>}
 
-        <label>Artist *
+          <label>Artist *</label>
           <select value={artistId} onChange={(e) => setArtistId(e.target.value)}>
             <option value="">Select Artist</option>
             {artists.map((artist) => (
                 <option key={artist.ArtistID} value={artist.ArtistID}>{artist.name_}</option>
             ))}
           </select>
-          {errors.artistId && <p style={{ color: 'red' }}>{errors.artistId}</p>}
-        </label>
+          {errors.artistId && <p className={styles.error_message}>{errors.artistId}</p>}
 
-        <label>Department *
+          <label>Department *</label>
           <select value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
             <option value="">Select Department</option>
             {departments.map((department) => (
                 <option key={department.DepartmentID} value={department.DepartmentID}>{department.Name}</option>
             ))}
           </select>
-          {errors.departmentId && <p style={{ color: 'red' }}>{errors.departmentId}</p>}
-        </label>
+          {errors.departmentId && <p className={styles.error_message}>{errors.departmentId}</p>}
 
-        <label>Creation Year *
+          <label>Creation Year *</label>
           <input type="number" value={CreationYear} onChange={(e) => setCreationYear(e.target.value)} />
-          {errors.CreationYear && <p style={{ color: 'red' }}>{errors.CreationYear}</p>}
-        </label>
+          {errors.CreationYear && <p className={styles.error_message}>{errors.CreationYear}</p>}
 
-        <label>Medium *
+          <label>Medium *</label>
           <select value={medium} onChange={(e) => setMedium(e.target.value)}>
             <option value="">Select Medium</option>
             {mediums.map((med) => <option key={med} value={med}>{med}</option>)}
@@ -394,30 +393,25 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
           {medium === 'Other' && (
               <input type="text" placeholder="Specify medium" value={customMedium} onChange={(e) => setCustomMedium(e.target.value)} />
           )}
-          {errors.medium && <p style={{ color: 'red' }}>{errors.medium}</p>}
-          {errors.customMedium && <p style={{ color: 'red' }}>{errors.customMedium}</p>}
-        </label>
+          {errors.medium && <p className={styles.error_message}>{errors.medium}</p>}
+          {errors.customMedium && <p className={styles.error_message}>{errors.customMedium}</p>}
 
-        <label>Height (inches) *
+          <label>Height (inches) *</label>
           <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
-          {errors.height && <p style={{ color: 'red' }}>{errors.height}</p>}
-        </label>
+          {errors.height && <p className={styles.error_message}>{errors.height}</p>}
 
-        <label>Width (inches) *
+          <label>Width (inches) *</label>
           <input type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
-          {errors.width && <p style={{ color: 'red' }}>{errors.width}</p>}
-        </label>
+          {errors.width && <p className={styles.error_message}>{errors.width}</p>}
 
-        <label>Depth (inches)
+          <label>Depth (inches)</label>
           <input type="number" value={depth} onChange={(e) => setDepth(e.target.value)} />
-        </label>
 
-        <label>Acquisition Date *
+          <label>Acquisition Date *</label>
           <input type="date" value={acquisitionDate} onChange={(e) => setAcquisitionDate(e.target.value)} />
-          {errors.acquisitionDate && <p style={{ color: 'red' }}>{errors.acquisitionDate}</p>}
-        </label>
+          {errors.acquisitionDate && <p className={styles.error_message}>{errors.acquisitionDate}</p>}
 
-        <label>Condition *
+          <label>Condition *</label>
           <select value={condition} onChange={(e) => setCondition(e.target.value)}>
             <option value="">Select Condition</option>
             {conditions.map((cond) => <option key={cond} value={cond}>{cond}</option>)}
@@ -426,40 +420,40 @@ const EditArtworkModal = ({ artwork, onClose, onRefresh, onModalRefresh, setModa
           {condition === 'Other' && (
               <input type="text" placeholder="Specify condition" value={customCondition} onChange={(e) => setCustomCondition(e.target.value)} />
           )}
-          {errors.condition && <p style={{ color: 'red' }}>{errors.condition}</p>}
-          {errors.customCondition && <p style={{ color: 'red' }}>{errors.customCondition}</p>}
-        </label>
+          {errors.condition && <p className={styles.error_message}>{errors.condition}</p>}
+          {errors.customCondition && <p className={styles.error_message}>{errors.customCondition}</p>}
 
-        <label>Location
+          <label>Location</label>
           <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
-        </label>
 
-        <label>Price
+          <label>Price</label>
           <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
-        </label>
 
-        <label>Description *
+          <label>Description *</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-          {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-        </label>
+          {errors.description && <p className={styles.error_message}>{errors.description}</p>}
 
-        <button onClick={onClose}>Cancel</button>
-        <button onClick={handleSave} disabled={!hasChanges || isSaving}>
-          {isSaving ? 'Saving...' : 'Save'}
-        </button>
+          <div className={styles.edit_modal_actions}>
+            <button onClick={onClose}>Cancel</button>
+            <button onClick={handleSave} disabled={!hasChanges || isSaving} className={styles.save}>
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
       </div>
+
   );
 };
 
 const ConfirmDeleteArtworkModal = ({ onConfirm, onCancel }) => {
   return (
-      <div className={styles.modalOverlay}>
-        <div className={styles.modalContent}>
+      <div className={styles.modal}>
+        <div className={styles.modal_content}>
           <h2>Are you sure you want to delete this artwork?</h2>
           <p>This action can be undone. Go to 'View Deleted' to restore.</p>
-          <div className={styles.buttonContainer}>
-            <button onClick={onCancel}>Cancel</button>
-            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          <div className={styles.outside}>
+            <button onClick={onCancel} className={styles.cancel}>Cancel</button>
+            <button onClick={onConfirm} className={styles.delete}>Delete</button>
           </div>
         </div>
       </div>
@@ -502,7 +496,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const fetchArtistImage = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}/image`, { responseType: 'blob' });
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}/image`, { responseType: 'blob' });
       setImageUrl(URL.createObjectURL(response.data));
     } catch (error) {
       console.error('Error fetching artist image:', error);
@@ -515,7 +509,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`);
+      await axios.delete(`http://localhost:5000/artist/${artist.ArtistID}`);
       console.log("Artist deleted successfully");
       onClose(); // Close the modal first to prevent further rendering issues
       onRefresh(); // Then refresh the artist list after closing the modal
@@ -526,7 +520,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const handleModalRefresh = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`);
+      const response = await axios.get(`http://localhost:5000/artist/${artist.ArtistID}`);
       setArtist(response.data);
       fetchArtistImage();
     } catch (error) {
@@ -542,7 +536,7 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
 
   const handleRestoreArtist = async (artistId) => {
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/artist/${artistId}/restore`);
+      await axios.patch(`http://localhost:5000/artist/${artistId}/restore`);
 
       onRefresh();
       onClose();
@@ -568,18 +562,18 @@ const ArtistModalUser = ({ artist_, onClose, onRefresh, artistPreviewImages, han
                 <p><strong>Nationality:</strong> {artist.nationality || 'Not specified'}</p>
                 <p><strong>Birth Year:</strong> {artist.birth_year || 'Not specified'}</p>
                 <p><strong>Death Year:</strong> {artist.death_year || 'N/A'}</p>
-                <p><strong>Description:</strong> {artist.description || 'No description provided'}</p>
+                <p>{artist.description || 'No description provided'}</p>
                 {(role === 'admin' || role === 'staff') && location.pathname !== '/Art' && (
-                    <>
+                    <div className={styles.outside}>
                       {!isDeletedView ? (
                           <>
-                            <button onClick={openEditMode}>Edit Artist</button>
-                            <button onClick={openConfirmDelete}>Delete Artist</button>
+                            <button onClick={openEditMode} className={styles.edit}>Edit Artist</button>
+                            <button onClick={openConfirmDelete} className={styles.delete}>Delete Artist</button>
                           </>
                       ) : (
-                          <button onClick={() => handleRestoreArtist(artist.ArtistID)}>Restore</button>
+                          <button onClick={() => handleRestoreArtist(artist.ArtistID)} className={styles.edit}>Restore</button>
                       )}
-                    </>
+                    </div>
                 )}
               </>
           ) : (
@@ -621,7 +615,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh, setModalA
   useEffect(() => {
     const fetchNationalities = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/nationalities`);
+        const response = await axios.get(`http://localhost:5000/nationalities`);
         setNationalities(response.data);
       } catch (error) {
         console.error('Error fetching nationalities:', error);
@@ -692,7 +686,7 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh, setModalA
     }
 
     try {
-      const response = await axios.patch(`${process.env.REACT_APP_API_URL}/artist/${artist.ArtistID}`, formData, {
+      const response = await axios.patch(`http://localhost:5000/artist/${artist.ArtistID}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       console.log("Response from backend:", response.data);
@@ -708,60 +702,67 @@ const EditArtistModal = ({ artist, onClose, onRefresh, onModalRefresh, setModalA
   };
 
   return (
-      <div>
-        <h2>Edit Artist</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <label>Change Image
-          <input type="file" onChange={handleImageChange}/></label>
-        {previewUrl && <img src={previewUrl} alt="Preview" style={{ maxWidth: '200px', marginTop: '10px' }} />}
-        <label>Name *
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required/></label>
-        {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
-        <label>Gender *
+      <div className={styles.edit_modal}>
+        <div className={styles.edit_modal_content}>
+          <div className={styles.edit_modal_header}>
+            <h2>Edit Artist</h2>
+          </div>
+
+          {error && <p className={styles.error_message}>{error}</p>}
+
+          <label>Change Image</label>
+          <input type="file" onChange={handleImageChange}/>
+          {previewUrl && <img src={previewUrl} alt="Preview" style={{ maxWidth: '200px', marginTop: '10px' }} />}
+          <label>Name *</label>
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required/>
+          {errors.name && <p className={styles.error_message}>{errors.name}</p>}
+          <label>Gender *</label>
           <select value={gender} onChange={(e) => setGender(e.target.value)} required>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
-          {errors.gender && <p style={{ color: 'red' }}>{errors.gender}</p>}
-        </label>
-        <label>Nationality *
+          {errors.gender && <p className={styles.error_message}>{errors.gender}</p>}
+          <label>Nationality *</label>
           <select value={nationality} onChange={(e) => setNationality(e.target.value)} required>
             {nationalities.map((nat) => (
                 <option key={nat} value={nat}>{nat}</option>
             ))}
           </select>
-          {errors.nationality && <p style={{ color: 'red' }}>{errors.nationality}</p>}
-        </label>
-        <label>Birth Year *
+          {errors.nationality && <p className={styles.error_message}>{errors.nationality}</p>}
+
+          <label>Birth Year *</label>
           <input type="number" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} required/>
-          {errors.birthYear && <p style={{ color: 'red' }}>{errors.birthYear}</p>}
-        </label>
-        <label>Death Year
+          {errors.birthYear && <p className={styles.error_message}>{errors.birthYear}</p>}
+
+          <label>Death Year</label>
           <input type="number" value={deathYear} onChange={(e) => setDeathYear(e.target.value)}/>
-        </label>
-        <label>Description *
+
+          <label>Description *</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)}/>
-          {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-        </label>
-        <button onClick={onClose}>Cancel</button>
-        <button onClick={handleSave} disabled={!hasChanges || isSaving}>
-          {isSaving ? 'Saving...' : 'Save'}
-        </button>
+          {errors.description && <p className={styles.error_message}>{errors.description}</p>}
+
+          <div className={styles.edit_modal_actions}>
+            <button onClick={onClose}>Cancel</button>
+            <button onClick={handleSave} disabled={!hasChanges || isSaving} className={styles.save}>
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
       </div>
   );
 };
 
 const ConfirmDeleteArtistModal = ({ onConfirm, onCancel }) => {
   return (
-      <div className={styles.modalOverlay}>
-        <div className={styles.modalContent}>
+      <div className={styles.modal}>
+        <div className={styles.modal_content}>
           <h2>Are you sure you want to delete this artist?</h2>
           <p>WARNING: All artwork from this artist WILL be removed from the collection</p>
           <p>This action can be undone. Go to 'View Deleted' to restore.</p>
-          <div className={styles.buttonContainer}>
-            <button onClick={onCancel}>Cancel</button>
-            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          <div className={styles.outside}>
+            <button onClick={onCancel} className={styles.cancel}>Cancel</button>
+            <button onClick={onConfirm} className={styles.delete}>Delete</button>
           </div>
         </div>
       </div>
@@ -772,7 +773,7 @@ const DepartmentCard = ({ department_, onRefresh, onEditClick, onDeleteClick, is
 
   const handleRestoreClick = async (departmentId) => {
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/department/${departmentId}/restore`);
+      await axios.patch(`http://localhost:5000/department/${departmentId}/restore`);
       onRefresh();
     } catch (error) {
       console.error('Error restoring department:', error);
@@ -782,18 +783,20 @@ const DepartmentCard = ({ department_, onRefresh, onEditClick, onDeleteClick, is
   return (
       <div className={styles.cards}>
         {department_.map((department) => (
-            <div key={department.DepartmentID} className={styles.card}>
+            <div key={department.DepartmentID} className={styles.outside_card}>
               <h1>{department.Name}</h1>
               <p>{department.Description}</p>
               <p>{department.Location}</p>
-              {!isDepartmentDeletedOpen ? (
-                  <>
-                    <button onClick={(e) => { e.stopPropagation(); onEditClick(department); }}>Edit</button>
-                    <button onClick={(e) => { e.stopPropagation(); onDeleteClick(department.DepartmentID); }}>Delete</button>
-                  </>
-              ) : (
-                  <button onClick={(e) => { e.stopPropagation(); handleRestoreClick(department.DepartmentID); }}>Restore</button>
-              )}
+              <div className={styles.outside2}>
+                {!isDepartmentDeletedOpen ? (
+                    <>
+                      <button onClick={(e) => { e.stopPropagation(); onEditClick(department); }} className={styles.edit}>Edit</button>
+                      <button onClick={(e) => { e.stopPropagation(); onDeleteClick(department.DepartmentID); }} className={styles.delete}>Delete</button>
+                    </>
+                ) : (
+                    <button onClick={(e) => { e.stopPropagation(); handleRestoreClick(department.DepartmentID); }} className={styles.edit}>Restore</button>
+                )}
+              </div>
             </div>
         ))}
       </div>
@@ -806,6 +809,16 @@ const EditDepartmentModal = ({ department, onClose, onRefresh }) => {
   const [description, setDescription] = useState(department.Description || '');
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false); // Track changes
+
+  // Update hasChanges whenever any field is changed
+  useEffect(() => {
+    const hasChanged =
+        name !== (department.Name || '') ||
+        location !== (department.Location || '') ||
+        description !== (department.Description || '');
+    setHasChanges(hasChanged);
+  }, [name, location, description, department]);
 
   // Function to validate fields
   const validateFields = () => {
@@ -824,11 +837,11 @@ const EditDepartmentModal = ({ department, onClose, onRefresh }) => {
     const updatedDepartmentData = {
       name,
       location,
-      description
+      description,
     };
 
     try {
-      await axios.patch(`${process.env.REACT_APP_API_URL}/department/${department.DepartmentID}`, updatedDepartmentData);
+      await axios.patch(`http://localhost:5000/department/${department.DepartmentID}`, updatedDepartmentData);
       onRefresh();
       onClose();
     } catch (error) {
@@ -839,23 +852,42 @@ const EditDepartmentModal = ({ department, onClose, onRefresh }) => {
   };
 
   return (
-      <div className={styles.modal}>
-        <div className={styles.modal_content}>
+      <div className={styles.edit_modal}>
+        <div className={styles.edit_modal_content}>
           <h2>Edit Department</h2>
-          <label>Department Name *
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-            {errors.name && <p style={{ color: 'red' }}>{errors.name}</p>}
-          </label>
-          <label>Location
-            <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
-            {errors.location && <p style={{ color: 'red' }}>{errors.location}</p>}
-          </label>
-          <label>Description *
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-            {errors.description && <p style={{ color: 'red' }}>{errors.description}</p>}
-          </label>
-          <button onClick={onClose}>Cancel</button>
-          <button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</button>
+
+          <label>Department Name *</label>
+          <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+          />
+          {errors.name && <p className={styles.error_message}>{errors.name}</p>}
+
+          <label>Location</label>
+          <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+          />
+
+          <label>Description *</label>
+          <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+          />
+          {errors.description && <p className={styles.error_message}>{errors.description}</p>}
+
+          <div className={styles.edit_modal_actions}>
+            <button onClick={onClose} className={styles.cancel}>Cancel</button>
+            <button
+                onClick={handleSave}
+                disabled={!hasChanges || isSaving} // Disable if no changes or saving
+                className={styles.save}
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
         </div>
       </div>
   );
@@ -867,14 +899,13 @@ const ConfirmDeleteDepartmentModal = ({ onConfirm, onCancel }) => {
         <div className={styles.modal_content}>
           <h2>Are you sure you want to delete this department? This will also delete the artwork associated with this department</h2>
           <p>This action can be undone. Go to 'View Deleted' to restore.</p>
-          <div className={styles.buttonContainer}>
-            <button onClick={onCancel}>Cancel</button>
-            <button onClick={onConfirm} style={{ color: "red" }}>Delete</button>
+          <div className={styles.outside}>
+            <button onClick={onCancel} className={styles.cancel}>Cancel</button>
+            <button onClick={onConfirm} className={styles.delete}>Delete</button>
           </div>
         </div>
       </div>
   );
 };
-
 
 export {ArtworkCard, ArtworkModalUser, ArtistCard, ArtistModalUser, DepartmentCard, EditDepartmentModal, ConfirmDeleteDepartmentModal};

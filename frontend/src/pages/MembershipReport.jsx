@@ -1,4 +1,4 @@
-// src/pages/Report.jsx
+// src/pages/MembershipReport.jsx
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -8,11 +8,11 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import Select from 'react-select';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify'; // Import toast from React Toastify
+import Select from 'react-select';
+import { toast } from 'react-toastify';
 
-const Report = () => {
+const MembershipReport = () => {
     const [reportType, setReportType] = useState('revenue');
     const [reportPeriodType, setReportPeriodType] = useState('date_range'); // 'date_range', 'month', 'year', or 'single_day'
     const [startDate, setStartDate] = useState(null); // Date object
@@ -20,11 +20,9 @@ const Report = () => {
     const [selectedMonth, setSelectedMonth] = useState(null); // Date object
     const [selectedYear, setSelectedYear] = useState(null); // Date object
     const [selectedDate, setSelectedDate] = useState(null); // Date object
-    const [itemCategory, setItemCategory] = useState([]); // Now an array
+    const [membershipType, setMembershipType] = useState([]); // Now an array
     const [paymentMethod, setPaymentMethod] = useState([]); // Now an array
-    const [itemId, setItemId] = useState([]); // Now an array
-    const [availableItems, setAvailableItems] = useState([]);
-    const [availableCategories, setAvailableCategories] = useState([]);
+    const [availableMembershipTypes, setAvailableMembershipTypes] = useState([]);
     const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
     const [reportData, setReportData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -39,43 +37,30 @@ const Report = () => {
         }
     }, [role, navigate]);
 
-    // Fetch available options for the filters when reportType changes
+    // Fetch available options for the filters when component mounts
     useEffect(() => {
-        if (reportType === 'revenue' || reportType === 'transaction_details') {
-            // Fetch available items
-            axios
-                .get(`http://localhost:5000/giftshopitemsreport`, {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then((response) => setAvailableItems(response.data))
-                .catch((error) => {
-                    console.error('Error fetching items:', error);
-                    toast.error('Error fetching items.');
-                });
+        // Fetch available membership types
+        axios
+            .get(`http://localhost:5000/membership-types`, {
+                headers: { 'Content-Type': 'application/json' },
+            })
+            .then((response) => setAvailableMembershipTypes(response.data))
+            .catch((error) => {
+                console.error('Error fetching membership types:', error);
+                toast.error('Error fetching membership types.');
+            });
 
-            // Fetch available categories
-            axios
-                .get(`http://localhost:5000/giftshopcategories`, {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then((response) => setAvailableCategories(response.data))
-                .catch((error) => {
-                    console.error('Error fetching categories:', error);
-                    toast.error('Error fetching categories.');
-                });
-
-            // Fetch available payment methods
-            axios
-                .get(`http://localhost:5000/paymentmethods`, {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                .then((response) => setAvailablePaymentMethods(response.data))
-                .catch((error) => {
-                    console.error('Error fetching payment methods:', error);
-                    toast.error('Error fetching payment methods.');
-                });
-        }
-    }, [reportType]);
+        // Fetch available payment methods
+        axios
+            .get(`http://localhost:5000/paymentmethods`, {
+                headers: { 'Content-Type': 'application/json' },
+            })
+            .then((response) => setAvailablePaymentMethods(response.data))
+            .catch((error) => {
+                console.error('Error fetching payment methods:', error);
+                toast.error('Error fetching payment methods.');
+            });
+    }, []);
 
     // Clear report data when report period type changes
     useEffect(() => {
@@ -126,13 +111,12 @@ const Report = () => {
             selected_month: selectedMonth ? selectedMonth.toISOString().split('T')[0].slice(0, 7) : '',
             selected_year: selectedYear ? selectedYear.getFullYear().toString() : '',
             selected_date: selectedDate ? selectedDate.toISOString().split('T')[0] : '',
-            item_category: itemCategory.map((option) => option.value),
+            membership_type: membershipType.map((option) => option.value),
             payment_method: paymentMethod.map((option) => option.value),
-            item_id: itemId.map((option) => option.value),
         };
 
         axios
-            .post(`http://localhost:5000/reports`, reportRequest, {
+            .post(`http://localhost:5000/membership-reports`, reportRequest, {
                 headers: {
                     'Content-Type': 'application/json',
                     'user-id': userId,
@@ -142,12 +126,11 @@ const Report = () => {
             .then((response) => {
                 setReportData(response.data.reportData);
                 setLoading(false);
-                toast.success('Report generated successfully!');
+                toast.success('Report generated successfully.');
             })
             .catch((error) => {
                 console.error('Error fetching report data:', error);
-                const errorMsg =
-                    error.response?.data?.message || 'Error fetching report data.';
+                const errorMsg = error.response?.data?.message || 'Error fetching report data.';
                 toast.error(errorMsg);
                 setLoading(false);
             });
@@ -177,6 +160,8 @@ const Report = () => {
                 return renderRevenueReport();
             case 'transaction_details':
                 return renderTransactionDetailsReport();
+            case 'membership_counts':
+                return renderMembershipCountsReport();
             default:
                 return null;
         }
@@ -241,19 +226,16 @@ const Report = () => {
                     transaction_type: item.transaction_type,
                     payment_status: item.payment_status,
                     username: item.username,
+                    subtotal: parseFloat(item.subtotal || 0),
+                    tax: parseFloat(item.tax || 0),
+                    total_amount: parseFloat(item.total_amount || 0),
                     items: [],
-                    total_amount: 0,
                 };
             }
             transactions[item.transaction_id].items.push({
-                item_id: item.item_id,
-                item_name: item.item_name,
-                category: item.category, // Include category
-                quantity: item.quantity,
-                price_at_purchase: item.price_at_purchase,
-                item_total: item.item_total,
+                type_of_membership: item.type_of_membership,
+                membership_price: item.membership_price,
             });
-            transactions[item.transaction_id].total_amount += parseFloat(item.item_total || 0);
         });
 
         // Convert transactions object to array
@@ -269,7 +251,9 @@ const Report = () => {
                         <th>User</th>
                         <th>Payment Method</th>
                         <th>Payment Status</th>
-                        <th>Items</th>
+                        <th>Memberships</th>
+                        <th>Subtotal</th>
+                        <th>Tax</th>
                         <th>Total Amount</th>
                     </tr>
                     </thead>
@@ -284,14 +268,15 @@ const Report = () => {
                             <td>
                                 {transaction.items.map((item, idx) => (
                                     <div key={idx}>
-                                        <strong>{item.item_name}</strong> (ID: {item.item_id})<br />
-                                        Category: {item.category}<br /> {/* Display category */}
-                                        Quantity: {item.quantity}<br />
-                                        Price: ${parseFloat(item.price_at_purchase).toFixed(2)}<br />
-                                        Item Total: ${parseFloat(item.item_total).toFixed(2)}<br />
+                                        <strong>{capitalizeFirstLetter(item.type_of_membership)}</strong>
+                                        <br />
+                                        Price: ${parseFloat(item.membership_price).toFixed(2)}
+                                        <br />
                                     </div>
                                 ))}
                             </td>
+                            <td>${transaction.subtotal.toFixed(2)}</td>
+                            <td>${transaction.tax.toFixed(2)}</td>
                             <td>${transaction.total_amount.toFixed(2)}</td>
                         </tr>
                     ))}
@@ -311,11 +296,8 @@ const Report = () => {
                     <th>User</th>
                     <th>Payment Method</th>
                     <th>Payment Status</th>
-                    <th>Item ID</th>
-                    <th>Item Name</th>
-                    <th>Quantity</th>
-                    <th>Price at Purchase</th>
-                    <th>Item Total</th>
+                    <th>Membership Type</th>
+                    <th>Price</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -326,15 +308,37 @@ const Report = () => {
                         <td>{item.username}</td>
                         <td>{item.transaction_type}</td>
                         <td>{item.payment_status}</td>
-                        <td>{item.item_id}</td>
-                        <td>{item.item_name}</td>
-                        <td>{item.quantity}</td>
-                        <td>${parseFloat(item.price_at_purchase).toFixed(2)}</td>
-                        <td>${parseFloat(item.item_total).toFixed(2)}</td>
+                        <td>{capitalizeFirstLetter(item.type_of_membership)}</td>
+                        <td>${parseFloat(item.membership_price).toFixed(2)}</td>
                     </tr>
                 ))}
                 </tbody>
             </table>
+        );
+    };
+
+    const renderMembershipCountsReport = () => {
+        return (
+            <>
+                <table className={styles.reportTable}>
+                    <thead>
+                    <tr>
+                        <th>{getDateLabel()}</th>
+                        <th>New Memberships</th>
+                        <th>Canceled Memberships</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {reportData.map((item, index) => (
+                        <tr key={index}>
+                            <td>{formatDateLabel(item.date)}</td>
+                            <td>{item.new_memberships}</td>
+                            <td>{item.canceled_memberships}</td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </>
         );
     };
 
@@ -370,12 +374,28 @@ const Report = () => {
             // dateStr is 'YYYY-MM'
             const [year, month] = dateStr.split('-');
             const monthNames = [
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
+                'January',
+                'February',
+                'March',
+                'April',
+                'May',
+                'June',
+                'July',
+                'August',
+                'September',
+                'October',
+                'November',
+                'December',
             ];
             return `${monthNames[parseInt(month, 10) - 1]} ${year}`;
         }
         return dateStr;
+    };
+
+    // Helper function to capitalize the first letter
+    const capitalizeFirstLetter = (string) => {
+        if (!string) return '';
+        return string.charAt(0).toUpperCase() + string.slice(1);
     };
 
     // Function to generate PDF of the report
@@ -384,7 +404,7 @@ const Report = () => {
             const doc = new jsPDF();
 
             if (reportType === 'revenue' && reportPeriodType === 'single_day') {
-                doc.text('Revenue Report - Single Day', 14, 20);
+                doc.text('Membership Revenue Report - Single Day', 14, 20);
 
                 // Group transactions by transaction ID
                 const transactions = {};
@@ -402,31 +422,33 @@ const Report = () => {
                     }
 
                     // Add item and update total
-                    if (item.quantity) {
+                    if (item.type_of_membership) {
                         transactions[item.transaction_id].items.push({
-                            item_name: item.item_name || 'Item',
-                            item_id: item.item_id,
-                            category: item.category, // Include category
-                            quantity: item.quantity,
-                            price_at_purchase: item.price_at_purchase || 0,
-                            item_total: parseFloat(item.item_total || 0)
+                            type_of_membership: item.type_of_membership,
+                            membership_price: item.membership_price || 0,
                         });
-                        transactions[item.transaction_id].total_amount += parseFloat(item.item_total || 0);
+                        transactions[item.transaction_id].total_amount += parseFloat(item.membership_price || 0);
                     }
                 });
 
                 // Create table body
-                const body = Object.values(transactions).map(trans => [
+                const body = Object.values(transactions).map((trans) => [
                     trans.transaction_id,
                     trans.transaction_date,
                     trans.username,
                     trans.transaction_type,
                     trans.payment_status,
                     // Format items details
-                    trans.items.map(item =>
-                        `${item.item_name}\nID: ${item.item_id}\nCategory: ${item.category}\nQty: ${item.quantity}\nPrice: $${parseFloat(item.price_at_purchase).toFixed(2)}\nTotal: $${item.item_total.toFixed(2)}`
-                    ).join('\n\n'),
-                    // Format total amount
+                    trans.items
+                        .map(
+                            (item) =>
+                                `${capitalizeFirstLetter(item.type_of_membership)}\nPrice: $${parseFloat(
+                                    item.membership_price
+                                ).toFixed(2)}`
+                        )
+                        .join('\n\n'),
+                    `$${trans.subtotal.toFixed(2)}`,
+                    `$${trans.tax.toFixed(2)}`,
                     `$${trans.total_amount.toFixed(2)}`,
                 ]);
 
@@ -440,7 +462,19 @@ const Report = () => {
                 body.push(['', '', '', '', '', 'Total:', `$${grandTotal.toFixed(2)}`]);
 
                 doc.autoTable({
-                    head: [['Trans ID', 'Date', 'User', 'Payment', 'Status', 'Items', 'Total']],
+                    head: [
+                        [
+                            'Trans ID',
+                            'Date',
+                            'User',
+                            'Payment',
+                            'Status',
+                            'Memberships',
+                            'Subtotal',
+                            'Tax',
+                            'Total',
+                        ],
+                    ],
                     body: body,
                     startY: 30,
                     styles: { fontSize: 8 },
@@ -450,14 +484,16 @@ const Report = () => {
                         2: { cellWidth: 15 }, // User
                         3: { cellWidth: 17 }, // Payment
                         4: { cellWidth: 20 }, // Status
-                        5: { cellWidth: 70 }, // Items (increased width)
-                        6: { cellWidth: 25 }, // Total
+                        5: { cellWidth: 60 }, // Memberships
+                        6: { cellWidth: 25 }, // Subtotal
+                        7: { cellWidth: 25 }, // Tax
+                        8: { cellWidth: 25 }, // Total
                     },
                     headStyles: { fillColor: [66, 139, 202] },
-                    alternateRowStyles: { fillColor: [245, 245, 245] }
+                    alternateRowStyles: { fillColor: [245, 245, 245] },
                 });
             } else if (reportType === 'revenue') {
-                doc.text('Revenue Report', 14, 20);
+                doc.text('Membership Revenue Report', 14, 20);
                 let body = reportData.map((item) => {
                     const revenue = Number(item.total_revenue);
                     const formattedRevenue = isNaN(revenue) ? 'N/A' : revenue.toFixed(2);
@@ -478,7 +514,7 @@ const Report = () => {
                     startY: 30,
                 });
             } else if (reportType === 'transaction_details') {
-                doc.text('Transaction Details Report', 14, 20);
+                doc.text('Membership Transaction Details Report', 14, 20);
 
                 let body = reportData.map((item) => {
                     return [
@@ -487,11 +523,8 @@ const Report = () => {
                         item.username,
                         item.transaction_type,
                         item.payment_status,
-                        item.item_id,
-                        item.item_name,
-                        item.quantity,
-                        parseFloat(item.price_at_purchase).toFixed(2),
-                        parseFloat(item.item_total).toFixed(2),
+                        capitalizeFirstLetter(item.type_of_membership),
+                        parseFloat(item.membership_price).toFixed(2),
                     ];
                 });
 
@@ -503,16 +536,26 @@ const Report = () => {
                             'User',
                             'Payment Method',
                             'Payment Status',
-                            'Item ID',
-                            'Item Name',
-                            'Quantity',
-                            'Price at Purchase',
-                            'Item Total',
+                            'Membership Type',
+                            'Price',
                         ],
                     ],
                     body: body,
                     startY: 30,
                     styles: { fontSize: 8 },
+                });
+            } else if (reportType === 'membership_counts') {
+                doc.text('Membership Counts Report', 14, 20);
+
+                let body = reportData.map((item) => {
+                    const dateLabel = formatDateLabel(item.date);
+                    return [dateLabel, item.new_memberships, item.canceled_memberships];
+                });
+
+                doc.autoTable({
+                    head: [[getDateLabel(), 'New Memberships', 'Canceled Memberships']],
+                    body: body,
+                    startY: 30,
                 });
             }
 
@@ -526,7 +569,7 @@ const Report = () => {
     return (
         <div className={styles.reportContainer}>
             <HomeNavBar />
-            <h1 className={styles.title}>Gift Shop Report</h1>
+            <h1 className={styles.title}>Membership Report</h1>
             <div className={styles.filterContainer}>
                 <div className={styles.formGroup}>
                     <label htmlFor="reportType">Report Type:</label>
@@ -535,14 +578,14 @@ const Report = () => {
                         value={reportType}
                         onChange={(e) => {
                             setReportType(e.target.value);
-                            setItemCategory([]);
+                            setMembershipType([]);
                             setPaymentMethod([]);
-                            setItemId([]);
                             setReportData([]);
                         }}
                     >
                         <option value="revenue">Revenue Report</option>
                         <option value="transaction_details">Transaction Details Report</option>
+                        <option value="membership_counts">Membership Counts Report</option>
                     </select>
                 </div>
                 {/* Report Period Type Selection using Buttons */}
@@ -599,40 +642,21 @@ const Report = () => {
                 {(reportType === 'revenue' || reportType === 'transaction_details') && (
                     <>
                         <div className={styles.formGroup}>
-                            <label htmlFor="itemCategory">Category:</label>
+                            <label htmlFor="membershipType">Membership Type:</label>
                             <Select
                                 isMulti
-                                id="itemCategory"
-                                value={itemCategory}
+                                id="membershipType"
+                                value={membershipType}
                                 onChange={(selectedOptions) => {
-                                    setItemCategory(selectedOptions || []);
+                                    setMembershipType(selectedOptions || []);
                                     setReportData([]);
                                 }}
-                                options={availableCategories.map((category) => ({
-                                    value: category.category,
-                                    label: category.category,
+                                options={availableMembershipTypes.map((type) => ({
+                                    value: type.type_of_membership,
+                                    label: capitalizeFirstLetter(type.type_of_membership),
                                 }))}
                                 className={styles.multiSelect}
-                                placeholder="Select Categories..."
-                            />
-                        </div>
-
-                        <div className={styles.formGroup}>
-                            <label htmlFor="itemId">Item:</label>
-                            <Select
-                                isMulti
-                                id="itemId"
-                                value={itemId}
-                                onChange={(selectedOptions) => {
-                                    setItemId(selectedOptions || []);
-                                    setReportData([]);
-                                }}
-                                options={availableItems.map((item) => ({
-                                    value: item.item_id,
-                                    label: item.name_,
-                                }))}
-                                className={styles.multiSelect}
-                                placeholder="Select Items..."
+                                placeholder="Select Membership Types..."
                             />
                         </div>
 
@@ -752,4 +776,4 @@ const Report = () => {
     );
 };
 
-export default Report;
+export default MembershipReport;

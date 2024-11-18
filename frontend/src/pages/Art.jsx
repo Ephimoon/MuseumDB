@@ -16,6 +16,7 @@ const Art = () => {
                     </div>
                 </div>
 
+                <div style={{ marginBottom: '40px' }}></div>
                 <ArtLookUp />
 
             </div>

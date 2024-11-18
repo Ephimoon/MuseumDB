@@ -173,3 +173,6 @@
     font-weight: bold;
     cursor: pointer;
 }
+.multiSelect {
+    margin-top: 5px;
+}

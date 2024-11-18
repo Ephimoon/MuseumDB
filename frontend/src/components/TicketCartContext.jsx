@@ -3,36 +3,62 @@ import React, { createContext, useState } from 'react';
 export const TicketCartContext = createContext();
 
 export const TicketCartProvider = ({ children }) => {
-    const [ticketItems, setTicketItems] = useState([]);
+    const [ticketCartItems, setTicketCartItems] = useState([]);
 
-    const addTicketToCart = (ticket) => {
-        setTicketItems((prevItems) => {
-            const existingTicket = prevItems.find(
-                (t) => t.name_ === ticket.name_ && t.visitDate === ticket.visitDate
+    const addTicketToCart = (ticketItem) => {
+        setTicketCartItems((prevItems) => {
+            // Check if the same ticket type ID and date already exist
+            const existingItemIndex = prevItems.findIndex(
+                (item) =>
+                    item.ticket_type_id === ticketItem.ticket_type_id &&
+                    item.visitDate === ticketItem.visitDate
             );
-            if (existingTicket) {
-                return prevItems.map((t) =>
-                    t.name_ === ticket.name_ && t.visitDate === ticket.visitDate
-                        ? { ...t, quantity: t.quantity + ticket.quantity }
-                        : t
-                );
+
+            if (existingItemIndex !== -1) {
+                // Update the quantity
+                const updatedItems = [...prevItems];
+                updatedItems[existingItemIndex].quantity += ticketItem.quantity;
+                return updatedItems;
+            } else {
+                // Add new ticket item
+                return [...prevItems, ticketItem];
             }
-            return [...prevItems, ticket];
         });
     };
 
-    const clearTicketCart = () => setTicketItems([]);
-
-    const removeTicketFromCart = (ticket) => {
-        setTicketItems((prevItems) =>
+    const removeFromTicketCart = (ticket_type_id, visitDate) => {
+        setTicketCartItems((prevItems) =>
             prevItems.filter(
-                (t) => !(t.name_ === ticket.name_ && t.visitDate === ticket.visitDate)
+                (item) => item.ticket_type_id !== ticket_type_id || item.visitDate !== visitDate
             )
         );
     };
 
+    const updateTicketQuantity = (ticket_type_id, visitDate, quantity) => {
+        setTicketCartItems((prevItems) => {
+            return prevItems.map((item) => {
+                if (item.ticket_type_id === ticket_type_id && item.visitDate === visitDate) {
+                    return { ...item, quantity };
+                }
+                return item;
+            });
+        });
+    };
+
+    const clearTicketCart = () => {
+        setTicketCartItems([]);
+    };
+
     return (
-        <TicketCartContext.Provider value={{ ticketItems, addTicketToCart, clearTicketCart, removeTicketFromCart }}>
+        <TicketCartContext.Provider
+            value={{
+                ticketCartItems,
+                addTicketToCart,
+                removeFromTicketCart,
+                updateTicketQuantity,
+                clearTicketCart,
+            }}
+        >
             {children}
         </TicketCartContext.Provider>
     );

@@ -1,6 +1,6 @@
 // src/pages/MFAShop.jsx
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     Box,
     FormControl,
@@ -14,6 +14,7 @@ import {
 import HomeNavBar from '../components/HomeNavBar';
 import MFAShopCard from '../components/MFAShopCard';
 import MFAShopModalUser from '../components/MFAShopModalUser';
+import { toast } from 'react-toastify';
 
 const MFAShop = () => {
     const [shopItems, setShopItems] = useState([]);
@@ -29,10 +30,10 @@ const MFAShop = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 9; // Adjust the number of items per page as needed
 
-
-    useEffect(() => {
+    // Fetch shop items function
+    const fetchItems = useCallback(() => {
         setLoading(true);
-        fetch(`${process.env.REACT_APP_API_URL}/giftshopitems`)
+        fetch(`http://localhost:5000/giftshopitems`)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch shop items');
@@ -45,24 +46,34 @@ const MFAShop = () => {
                 console.log('Mapped shop items:', mappedData); // For debugging
                 setShopItems(mappedData);
                 setLoading(false);
+                toast.success('Shop items fetched successfully!');
             })
             .catch((error) => {
                 console.error('Error fetching shop items:', error);
                 setError(error.message);
                 setLoading(false);
+                toast.error('Failed to fetch shop items.');
             });
     }, []);
+
+    useEffect(() => {
+        fetchItems();
+    }, [fetchItems]);
 
     // Handle card click to show modal
     const handleCardClick = (item) => {
         if (item.stock > 0) {
             setSelectedItem(item);
             setIsModalOpen(true);
+        } else {
+            toast.info('This item is out of stock.');
         }
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
+        setSelectedItem(null);
+        fetchItems(); // Refresh items after closing the modal
     };
 
     // Filter shop items
@@ -255,6 +266,7 @@ const MFAShop = () => {
             </Box>
         </div>
     );
+
 };
 
 export default MFAShop;
